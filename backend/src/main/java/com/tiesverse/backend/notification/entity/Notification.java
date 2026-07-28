@@ -43,7 +43,7 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private NotificationCategory category;
 
-    @Column(name = "is_read")
+    @Column(name = "read")
     private boolean read;
 
     @Column(name = "read_at")

@@ -2,7 +2,7 @@ package com.tiesverse.backend.user.dto.request;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 public class UpdateProfileRequest {
@@ -10,6 +10,6 @@ public class UpdateProfileRequest {
     private String fullName;
     private String phone;
     private String bio;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private String address;
 }

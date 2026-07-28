@@ -4,7 +4,7 @@ import com.tiesverse.backend.common.enums.Role;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -18,5 +18,5 @@ public class UserResponse {
     private String phone;
     private String bio;
     private Role role;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 }

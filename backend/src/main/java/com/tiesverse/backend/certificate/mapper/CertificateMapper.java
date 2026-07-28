@@ -5,7 +5,7 @@ import com.tiesverse.backend.certificate.entity.Certificate;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface CertificateMapper {
 
     CertificateMapper INSTANCE = Mappers.getMapper(CertificateMapper.class);

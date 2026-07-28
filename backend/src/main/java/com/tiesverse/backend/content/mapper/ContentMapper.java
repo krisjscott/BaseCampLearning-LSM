@@ -5,7 +5,7 @@ import com.tiesverse.backend.content.entity.Content;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ContentMapper {
 
     ContentMapper INSTANCE = Mappers.getMapper(ContentMapper.class);

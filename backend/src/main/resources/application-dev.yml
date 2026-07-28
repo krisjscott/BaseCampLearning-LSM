@@ -2,7 +2,15 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/tiesverse_db
     username: postgres
-    password: postgres
+    password: ALASKA
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: dev-client-id
+            client-secret: dev-client-secret
 
   jpa:
     hibernate:

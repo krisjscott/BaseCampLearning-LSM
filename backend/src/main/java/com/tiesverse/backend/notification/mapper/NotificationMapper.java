@@ -5,7 +5,7 @@ import com.tiesverse.backend.notification.entity.Notification;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface NotificationMapper {
 
     NotificationMapper INSTANCE = Mappers.getMapper(NotificationMapper.class);
