@@ -1,0 +1,130 @@
+package com.tiesverse.backend.auth.service;
+
+import com.tiesverse.backend.auth.dto.request.ForgotPasswordRequest;
+import com.tiesverse.backend.auth.dto.request.LoginRequest;
+import com.tiesverse.backend.auth.dto.request.OtpRequest;
+import com.tiesverse.backend.auth.dto.request.RefreshTokenRequest;
+import com.tiesverse.backend.auth.dto.request.RegisterRequest;
+import com.tiesverse.backend.auth.dto.request.ResetPasswordRequest;
+import com.tiesverse.backend.auth.dto.request.VerifyEmailRequest;
+import com.tiesverse.backend.auth.dto.response.AuthResponse;
+import com.tiesverse.backend.auth.dto.response.TokenResponse;
+import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.auth.mapper.AuthMapper;
+import com.tiesverse.backend.auth.repository.AccountRepository;
+import com.tiesverse.backend.common.enums.AuthProvider;
+import com.tiesverse.backend.common.enums.Role;
+import com.tiesverse.backend.security.jwt.JwtProvider;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private final AccountRepository accountRepository;
+    private final JwtProvider jwtProvider;
+    private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public AuthResponse register(RegisterRequest request) {
+        if (accountRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        Account account = Account.builder()
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.PUBLIC_USER)
+                .authProvider(AuthProvider.LOCAL)
+                .emailVerified(false)
+                .build();
+
+        Account savedAccount = accountRepository.save(account);
+
+        String accessToken = jwtProvider.generateToken(
+                savedAccount.getEmail(),
+                Map.of("role", savedAccount.getRole().name())
+        );
+        String refreshToken = jwtProvider.generateRefreshToken(savedAccount.getEmail());
+
+        savedAccount.setRefreshToken(refreshToken);
+        accountRepository.save(savedAccount);
+
+        return AuthMapper.INSTANCE.toAuthResponse(savedAccount, accessToken, refreshToken, request.getFullName());
+    }
+
+    @Override
+    public AuthResponse login(LoginRequest request) {
+        Account account = accountRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+
+        if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+        String accessToken = jwtProvider.generateToken(
+                account.getEmail(),
+                Map.of("role", account.getRole().name())
+        );
+        String refreshToken = jwtProvider.generateRefreshToken(account.getEmail());
+
+        account.setRefreshToken(refreshToken);
+        accountRepository.save(account);
+
+        return AuthMapper.INSTANCE.toAuthResponse(account, accessToken, refreshToken, null);
+    }
+
+    @Override
+    public TokenResponse refreshToken(RefreshTokenRequest request) {
+        Account account = accountRepository.findByRefreshToken(request.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        String accessToken = jwtProvider.generateToken(
+                account.getEmail(),
+                Map.of("role", account.getRole().name())
+        );
+        String newRefreshToken = jwtProvider.generateRefreshToken(account.getEmail());
+
+        account.setRefreshToken(newRefreshToken);
+        accountRepository.save(account);
+
+        return TokenResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .expiresIn(3600)
+                .build();
+    }
+
+    @Override
+    public void logout(String email) {
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        account.setRefreshToken(null);
+        accountRepository.save(account);
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+        accountRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void verifyEmail(VerifyEmailRequest request) {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public void verifyOtp(OtpRequest request) {
+        throw new RuntimeException("Not implemented");
+    }
+}
