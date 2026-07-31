@@ -1,6 +1,7 @@
 package com.tiesverse.backend.notification.controller;
 
 import com.tiesverse.backend.common.response.ApiResponse;
+import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.notification.dto.response.NotificationResponse;
 import com.tiesverse.backend.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,18 +23,17 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final AccountRepository accountRepository;
 
     @GetMapping("/my-notifications")
-    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications() {
-        UUID userId = UUID.randomUUID();
-        List<NotificationResponse> notifications = notificationService.getUserNotifications(userId);
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(Principal principal) {
+        List<NotificationResponse> notifications = notificationService.getUserNotifications(currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
 
     @GetMapping("/unread-count")
-    public ResponseEntity<ApiResponse<Long>> getUnreadCount() {
-        UUID userId = UUID.randomUUID();
-        long count = notificationService.getUnreadCount(userId);
+    public ResponseEntity<ApiResponse<Long>> getUnreadCount(Principal principal) {
+        long count = notificationService.getUnreadCount(currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
@@ -43,9 +44,8 @@ public class NotificationController {
     }
 
     @PutMapping("/read-all")
-    public ResponseEntity<ApiResponse<Void>> markAllAsRead() {
-        UUID userId = UUID.randomUUID();
-        notificationService.markAllAsRead(userId);
+    public ResponseEntity<ApiResponse<Void>> markAllAsRead(Principal principal) {
+        notificationService.markAllAsRead(currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
     }
 
@@ -53,5 +53,11 @@ public class NotificationController {
     public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable UUID id) {
         notificationService.deleteNotification(id);
         return ResponseEntity.ok(ApiResponse.success("Notification deleted", null));
+    }
+
+    private UUID currentUserId(Principal principal) {
+        return accountRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Account not found"))
+                .getUserId();
     }
 }

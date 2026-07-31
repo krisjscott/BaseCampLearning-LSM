@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tiesverse_db
-    username: postgres
-    password: ALASKA
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tiesverse_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
 
   security:
     oauth2:

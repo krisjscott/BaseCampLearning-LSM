@@ -1,5 +1,6 @@
 package com.tiesverse.backend.dashboard.controller;
 
+import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.common.response.ApiResponse;
 import com.tiesverse.backend.dashboard.dto.response.AdminDashboardResponse;
 import com.tiesverse.backend.dashboard.dto.response.EmployeeDashboardResponse;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.UUID;
 
 @RestController
@@ -19,9 +21,15 @@ import java.util.UUID;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final AccountRepository accountRepository;
 
     @GetMapping("/public")
-    public ApiResponse<PublicDashboardResponse> getPublicDashboard(@RequestParam UUID userId) {
+    public ApiResponse<PublicDashboardResponse> getPublicDashboard(Principal principal) {
+        UUID userId = principal == null
+                ? null
+                : accountRepository.findByEmail(principal.getName())
+                        .orElseThrow(() -> new RuntimeException("Account not found"))
+                        .getUserId();
         return ApiResponse.success(dashboardService.getPublicDashboard(userId));
     }
 
