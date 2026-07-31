@@ -1,6 +1,6 @@
 # Base Camp
 
-Base Camp is TIES' internal, gamified learning and certification platform. It is planned as the learning layer inside Ties HQ for employees, interns, clients, and other approved audiences.
+Base Camp is TIES' gamified learning and certification platform. It is planned as the learning layer inside Ties HQ for employees, interns, clients, and other approved audiences.
 
 This repository is the UI-free product handoff. It contains the approved brand assets, favicon package, product scope, learner and administrator journeys, Crew ID standard, backend specification, and a static export of the Base Camp FigJam flow.
 
