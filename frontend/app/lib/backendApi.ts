@@ -131,7 +131,7 @@ const AUTH_STORAGE_KEYS = {
 const SESSION_COOKIE = "basecamp_session";
 const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]);
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081").replace(/\/$/, "");
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081").replace(/\/$/, "");
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -223,7 +223,7 @@ export async function backendRequest<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  if (token && !headers.has("Authorization")) {
+  if (token && !headers.has("Authorization") && !AUTH_ROUTES.has(path)) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
