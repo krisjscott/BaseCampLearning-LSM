@@ -19,6 +19,10 @@ public class CorsConfig {
                 "http://127.0.0.1:3000",
                 "http://localhost:3002",
                 "http://127.0.0.1:3002",
+                "http://localhost:3100",
+                "http://127.0.0.1:3100",
+                "http://localhost:3101",
+                "http://127.0.0.1:3101",
                 "http://localhost:5500",
                 "http://127.0.0.1:5500"
         ));

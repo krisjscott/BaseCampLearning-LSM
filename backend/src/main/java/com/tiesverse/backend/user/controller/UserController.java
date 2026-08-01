@@ -1,6 +1,7 @@
 package com.tiesverse.backend.user.controller;
 
 import com.tiesverse.backend.common.response.ApiResponse;
+import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.user.dto.request.UpdateProfileRequest;
 import com.tiesverse.backend.user.dto.request.UpdateSettingsRequest;
 import com.tiesverse.backend.user.dto.response.UserActivityResponse;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,32 +27,33 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final AccountRepository accountRepository;
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserResponse>> getProfile(@RequestParam UUID accountId) {
-        UserResponse response = userService.getProfile(accountId);
+    public ResponseEntity<ApiResponse<UserResponse>> getProfile(Principal principal) {
+        UserResponse response = userService.getProfile(currentAccountId(principal));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> updateProfile(
-            @RequestParam UUID accountId,
+            Principal principal,
             @RequestBody UpdateProfileRequest request) {
-        UserResponse response = userService.updateProfile(accountId, request);
+        UserResponse response = userService.updateProfile(currentAccountId(principal), request);
         return ResponseEntity.ok(ApiResponse.success("Profile updated successfully", response));
     }
 
     @GetMapping("/me/settings")
-    public ResponseEntity<ApiResponse<UserSettings>> getSettings(@RequestParam UUID accountId) {
-        UserSettings response = userService.getSettings(accountId);
+    public ResponseEntity<ApiResponse<UserSettings>> getSettings(Principal principal) {
+        UserSettings response = userService.getSettings(currentAccountId(principal));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PutMapping("/me/settings")
     public ResponseEntity<ApiResponse<UserSettings>> updateSettings(
-            @RequestParam UUID accountId,
+            Principal principal,
             @RequestBody UpdateSettingsRequest request) {
-        UserSettings response = userService.updateSettings(accountId, request);
+        UserSettings response = userService.updateSettings(currentAccountId(principal), request);
         return ResponseEntity.ok(ApiResponse.success("Settings updated successfully", response));
     }
 
@@ -62,9 +65,15 @@ public class UserController {
 
     @PutMapping("/me/profile-picture")
     public ResponseEntity<ApiResponse<UserResponse>> updateProfilePicture(
-            @RequestParam UUID accountId,
+            Principal principal,
             @RequestParam String url) {
-        UserResponse response = userService.updateProfilePicture(accountId, url);
+        UserResponse response = userService.updateProfilePicture(currentAccountId(principal), url);
         return ResponseEntity.ok(ApiResponse.success("Profile picture updated successfully", response));
+    }
+
+    private UUID currentAccountId(Principal principal) {
+        return accountRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Account not found"))
+                .getId();
     }
 }

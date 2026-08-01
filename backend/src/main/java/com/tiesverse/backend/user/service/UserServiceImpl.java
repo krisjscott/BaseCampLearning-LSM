@@ -1,5 +1,7 @@
 package com.tiesverse.backend.user.service;
 
+import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.user.dto.request.UpdateProfileRequest;
 import com.tiesverse.backend.user.dto.request.UpdateSettingsRequest;
 import com.tiesverse.backend.user.dto.response.UserActivityResponse;
@@ -24,23 +26,28 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserActivityRepository userActivityRepository;
     private final UserSettingsRepository userSettingsRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     public UserResponse getProfile(UUID accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return UserMapper.INSTANCE.toUserResponse(user, null, null);
+        return UserMapper.INSTANCE.toUserResponse(user, account.getEmail(), account.getRole().name());
     }
 
     @Override
     public UserResponse updateProfile(UUID accountId, UpdateProfileRequest request) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserMapper.INSTANCE.updateUserFromRequest(request, user);
         User updatedUser = userRepository.save(user);
 
-        return UserMapper.INSTANCE.toUserResponse(updatedUser, null, null);
+        return UserMapper.INSTANCE.toUserResponse(updatedUser, account.getEmail(), account.getRole().name());
     }
 
     @Override
@@ -77,10 +84,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateProfilePicture(UUID accountId, String url) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setProfilePictureUrl(url);
         User updatedUser = userRepository.save(user);
-        return UserMapper.INSTANCE.toUserResponse(updatedUser, null, null);
+        return UserMapper.INSTANCE.toUserResponse(updatedUser, account.getEmail(), account.getRole().name());
     }
 }

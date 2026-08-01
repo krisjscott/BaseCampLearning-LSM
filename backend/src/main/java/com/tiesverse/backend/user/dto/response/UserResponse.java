@@ -19,4 +19,5 @@ public class UserResponse {
     private String bio;
     private Role role;
     private LocalDate dateOfBirth;
+    private String address;
 }

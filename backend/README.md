@@ -1,86 +1,85 @@
-# Backend Specification and Status
+# BaseCamp Spring Boot Backend
 
-## Status
+Spring Boot API for the BaseCamp learning demo.
 
-No production Base Camp backend has been implemented yet. The previous local UI project included Drizzle and Cloudflare bindings, but its database schema was empty. This directory documents the approved backend boundary without presenting starter code as finished work.
+## Local Profile
 
-## Recommended services
+The `local` profile is the recommended demo mode. It uses file-based H2 and does not require PostgreSQL, Redis, RabbitMQ, mail, or OAuth credentials.
 
-- Identity and access
-- People and organizations
-- Catalog and course authoring
-- Assignments and enrollments
-- Media and resource storage
-- Progress and event ledger
-- Assessment and grading
-- Completion rules
-- Certificate issuance and verification
-- Notifications
-- Reporting and audit
+```powershell
+cd F:\basecamp\backend\backend
+$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+$env:SPRING_PROFILES_ACTIVE="local"
+.\mvnw.cmd spring-boot:run
+```
 
-These can begin as modules in a modular monolith and separate later only when scale or ownership justifies it.
+Service URL:
 
-## Core entities
+```text
+http://localhost:8081
+```
 
-- `users`
-- `crew_id_sequences`
-- `organizations`
-- `memberships`
-- `roles` and `permissions`
-- `courses` and `course_versions`
-- `modules`
-- `lessons`
-- `activities`
-- `resources`
-- `assignments`
-- `enrollments`
-- `video_watch_sessions`
-- `progress_events`
-- `quizzes`, `questions`, and `answer_options`
-- `quiz_attempts` and `responses`
-- `submissions` and `reviews`
-- `completion_rules`
-- `certificates`
-- `xp_ledger`, `badges`, and `streaks`
-- `notifications`
-- `audit_events`
+Health check:
 
-## Integrity rules
+```text
+http://localhost:8081/actuator/health
+```
 
-- Published course versions are immutable.
-- Unlocking and completion are calculated server-side.
-- Video completion uses verified watch intervals, not only a client-reported percentage.
-- Assessment attempts are append-only.
-- Progress is an event ledger with derived summaries.
-- XP is ledger-based and idempotent.
-- Certificate numbers are unique and permanent.
-- Revoked certificates remain verifiable as revoked.
-- Privileged actions create immutable audit events.
+H2 console:
 
-## API surface
+```text
+http://localhost:8081/h2-console
+```
 
-Initial API groups:
+H2 console values:
 
-- `/auth` and `/sessions`
-- `/users`, `/crew-ids`, and `/organizations`
-- `/catalog`, `/courses`, `/course-versions`, `/modules`, and `/lessons`
-- `/assignments` and `/enrollments`
-- `/media`, `/watch-sessions`, and `/progress`
-- `/quizzes`, `/attempts`, `/submissions`, and `/reviews`
-- `/completions` and `/certificates`
-- `/xp`, `/badges`, and `/achievements`
-- `/notifications`
-- `/admin/reports` and `/admin/audit`
+```text
+JDBC URL: jdbc:h2:file:./data/basecamp-local;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+User: sa
+Password: leave blank
+```
 
-## Non-functional requirements
+Generated DB file:
 
-- Transactional Crew ID and certificate allocation
-- Idempotency keys for progress, grading, XP, and certificate operations
-- Encryption in transit and at rest
-- Least-privilege authorization on every server operation
-- Signed, time-limited media access
-- Malware scanning for uploads
-- Rate limiting and abuse prevention
-- Structured logs, metrics, tracing, backups, and tested restoration
-- Data export and retention controls
+```text
+F:\basecamp\backend\backend\data\basecamp-local.mv.db
+```
 
+## Demo Account
+
+```text
+Email: demo@basecamp.local
+Password: password
+```
+
+## What The Local DB Seeds
+
+- Demo user account and profile.
+- User settings.
+- Demo organization.
+- Course catalogue.
+- Enrollments and progress.
+- Certificate record.
+- Notifications.
+- Recent activity.
+
+Fresh registrations are also persisted. The registration flow creates account, profile, settings, and starter demo experience rows so the frontend can immediately show a complete learning journey after onboarding.
+
+## Build
+
+```powershell
+$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"
+$env:Path="$env:JAVA_HOME\bin;$env:Path"
+.\mvnw.cmd -DskipTests package
+```
+
+## Reset Local DB
+
+Stop the backend, then delete:
+
+```powershell
+Remove-Item F:\basecamp\backend\backend\data\basecamp-local* -Force
+```
+
+Start the local profile again and Flyway will recreate the schema and seed data.

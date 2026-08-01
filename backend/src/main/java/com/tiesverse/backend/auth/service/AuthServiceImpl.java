@@ -15,9 +15,14 @@ import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.security.jwt.JwtProvider;
+import com.tiesverse.backend.user.entity.User;
+import com.tiesverse.backend.user.entity.UserSettings;
+import com.tiesverse.backend.user.repository.UserRepository;
+import com.tiesverse.backend.user.repository.UserSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -26,10 +31,14 @@ import java.util.Map;
 public class AuthServiceImpl implements AuthService {
 
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
+    private final UserSettingsRepository userSettingsRepository;
+    private final DemoExperienceService demoExperienceService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
@@ -44,6 +53,22 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         Account savedAccount = accountRepository.save(account);
+        User savedUser = userRepository.save(User.builder()
+                .fullName(request.getFullName())
+                .accountId(savedAccount.getId())
+                .build());
+
+        savedAccount.setUserId(savedUser.getId());
+        savedAccount = accountRepository.save(savedAccount);
+
+        userSettingsRepository.save(UserSettings.builder()
+                .userId(savedUser.getId())
+                .emailNotifications(true)
+                .pushNotifications(true)
+                .language("en")
+                .timezone("Asia/Kolkata")
+                .build());
+        demoExperienceService.attachDemoExperience(savedUser.getId(), request.getFullName());
 
         String accessToken = jwtProvider.generateToken(
                 savedAccount.getEmail(),

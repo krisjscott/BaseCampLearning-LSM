@@ -23,6 +23,7 @@ public interface UserMapper {
     @Mapping(target = "bio", source = "user.bio")
     @Mapping(target = "role", source = "role")
     @Mapping(target = "dateOfBirth", source = "user.dateOfBirth")
+    @Mapping(target = "address", source = "user.address")
     UserResponse toUserResponse(User user, String email, String role);
 
     @Mapping(target = "id", source = "id")
