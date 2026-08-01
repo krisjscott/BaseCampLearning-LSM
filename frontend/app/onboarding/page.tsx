@@ -16,6 +16,7 @@ import {
   Search,
 } from "lucide-react";
 import { UserResponse, getCurrentUser, updateCurrentUser } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const goals = [
   {
@@ -157,7 +158,7 @@ function Footer({
   );
 }
 
-export default function OnboardingScreens() {
+function OnboardingScreens() {
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
@@ -476,9 +477,18 @@ export default function OnboardingScreens() {
               </section>
             </div>
           </>
-        )}
+         )}
       </section>
     </main>
   );
 }
+
+export default function OnboardingPage() {
+  return (
+    <AuthGuard>
+      <OnboardingScreens />
+    </AuthGuard>
+  );
+}
+
 

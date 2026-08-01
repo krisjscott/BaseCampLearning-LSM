@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CertificateResponse, UserResponse, getCertificates, getCurrentUser } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -48,7 +49,7 @@ function longDate(value?: string | null) {
   return new Date(value).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
 }
 
-export default function CertificatesWallet() {
+function CertificatesWallet() {
   const [backendCertificates, setBackendCertificates] = useState<CertificateResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
 
@@ -178,5 +179,13 @@ export default function CertificatesWallet() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function CertificatesPage() {
+  return (
+    <AuthGuard>
+      <CertificatesWallet />
+    </AuthGuard>
   );
 }
