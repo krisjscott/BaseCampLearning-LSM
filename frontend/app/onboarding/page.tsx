@@ -144,13 +144,15 @@ function Footer({
     <footer className="onboarding-footer">
       {note ? <p>{note}</p> : <span />}
       <div className="footer-actions">
-        <button type="button" className="secondary-button" onClick={onBack} disabled={disableBack}>
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </button>
+        {!disableBack && (
+          <button type="button" className="secondary-button" onClick={onBack}>
+            <ArrowLeft size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button type="button" className={final ? "accent-button" : "inverse-button"} onClick={onNext}>
-          {final ? <Loader size={16} /> : <ArrowRight size={16} />}
           <span>{final ? "Build my learning plan" : "Next"}</span>
+          {final ? <Loader size={16} /> : <ArrowRight size={16} />}
         </button>
       </div>
     </footer>
