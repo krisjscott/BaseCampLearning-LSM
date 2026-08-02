@@ -37,20 +37,20 @@ input {
 }
 
 .auth-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 44px 48px;
+  padding: clamp(0.875rem, 3vw, 2.75rem);
   background: linear-gradient(90deg, #f5f9fc 0%, #fff0e5 100%);
   overflow: hidden;
 }
 
 .auth-shell {
-  width: min(1304px, 100%);
-  min-height: min(812px, calc(100vh - 88px));
+  width: 100%;
+  min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 720px) minmax(420px, 584px);
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
   border: 1px solid rgb(255 255 255 / 88%);
   border-radius: 32px;
   overflow: hidden;
@@ -60,9 +60,9 @@ input {
 
 .visual-panel {
   position: relative;
-  min-height: 812px;
+  min-height: 0;
   overflow: hidden;
-  padding: 48px;
+  padding: clamp(1.25rem, 4vw, 3rem);
   background:
     radial-gradient(circle at 20% 18%, rgb(255 255 255 / 32%), transparent 30%),
     linear-gradient(104deg, rgb(255 92 31 / 94%) 0%, rgb(255 133 56 / 72%) 50%, rgb(212 227 255 / 90%) 100%);
@@ -71,7 +71,7 @@ input {
 .visual-panel::before {
   content: "";
   position: absolute;
-  inset: 48px;
+  inset: clamp(1.25rem, 4vw, 3rem);
   border: 1px dashed rgb(255 255 255 / 62%);
   border-radius: 24px;
   background: rgb(255 255 255 / 11%);
@@ -80,8 +80,8 @@ input {
 .visual-frame {
   position: relative;
   z-index: 1;
-  height: 520px;
-  padding: 34px;
+  height: auto;
+  padding: clamp(1.125rem, 3vw, 2.125rem);
   border-radius: 26px;
   background:
     linear-gradient(145deg, rgb(255 255 255 / 24%), rgb(255 255 255 / 8%)),
@@ -247,8 +247,8 @@ input {
 
 .form-panel {
   position: relative;
-  min-height: 812px;
-  padding: 56px 76px;
+  min-height: 0;
+  padding: clamp(1.25rem, 5vh, 3.5rem) clamp(1.25rem, 5vw, 4.75rem);
   background: rgb(255 255 255 / 92%);
 }
 
@@ -8065,39 +8065,39 @@ input {
 
 /* Full-flow fluid layout pass. */
 .auth-page {
-  padding: clamp(16px, 4vw, 44px);
+  padding: clamp(0.875rem, 3vw, 2.75rem);
   overflow: auto;
 }
 
 .auth-shell {
-  width: min(1304px, 100%);
-  grid-template-columns: minmax(320px, 1.15fr) minmax(320px, 0.85fr);
+  width: 100%;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 }
 
 .visual-panel,
 .form-panel {
-  min-height: min(812px, calc(100vh - clamp(32px, 8vw, 88px)));
+  min-height: 0;
 }
 
 .visual-frame {
   height: auto;
-  min-height: min(520px, 58vh);
+  min-height: 0;
 }
 
 .visual-caption {
-  left: clamp(24px, 5vw, 72px);
-  bottom: clamp(28px, 6vw, 90px);
-  width: min(430px, calc(100% - clamp(48px, 10vw, 144px)));
+  left: clamp(1.5rem, 5vw, 4.5rem);
+  bottom: clamp(1.75rem, 6vw, 5.625rem);
+  width: min(68%, 28rem);
 }
 
 .form-panel {
-  padding: clamp(34px, 5vw, 56px) clamp(24px, 6vw, 76px);
+  padding: clamp(1.25rem, 5vh, 3.5rem) clamp(1.25rem, 5vw, 4.75rem);
 }
 
 .legal-copy {
-  left: clamp(24px, 6vw, 76px);
-  right: clamp(24px, 6vw, 76px);
-  bottom: clamp(28px, 7vw, 94px);
+  left: clamp(1.5rem, 6vw, 4.75rem);
+  right: clamp(1.5rem, 6vw, 4.75rem);
+  bottom: clamp(1.75rem, 7vw, 5.875rem);
 }
 
 .onboarding-page,
@@ -11289,418 +11289,191 @@ body {
   transform: translateY(-1px);
 }
 
-/* PC auth screen must fit the viewport without page scroll. */
-@media (min-width: 981px) {
-  html:has(.auth-page),
-  body:has(.auth-page) {
-    height: 100%;
-    overflow: hidden;
-  }
+/* Fluid auth fit: responsive shell, no fixed Figma-artboard dimensions. */
+html:has(.auth-page),
+body:has(.auth-page) {
+  min-height: 100%;
+}
 
-  .auth-page {
-    --auth-scale: clamp(0.72, calc((100vh - 44px) / 812), 1);
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-    padding: clamp(14px, calc(22px * var(--auth-scale)), 44px) clamp(18px, calc(48px * var(--auth-scale)), 48px);
-  }
+.auth-page {
+  --auth-gap: clamp(0.875rem, 3vw, 2.75rem);
+  align-items: stretch !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  padding: var(--auth-gap) !important;
+  width: 100vw !important;
+}
 
-  .auth-shell {
-    height: min(calc(812px * var(--auth-scale)), calc(100dvh - clamp(28px, calc(44px * var(--auth-scale)), 88px)));
-    min-height: 0;
-    width: min(calc(1304px * var(--auth-scale)), 100%);
-    grid-template-columns: minmax(0, 1.22fr) minmax(calc(360px * var(--auth-scale)), 0.78fr);
-    border-radius: calc(32px * var(--auth-scale));
-  }
+.auth-shell {
+  align-self: stretch !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  inline-size: calc(100vw - (var(--auth-gap) * 2)) !important;
+  block-size: calc(100dvh - (var(--auth-gap) * 2)) !important;
+  justify-self: center !important;
+  min-block-size: 0 !important;
+  min-inline-size: 0 !important;
+  max-inline-size: none !important;
+}
 
-  .visual-panel,
-  .form-panel {
-    min-height: 0;
-    height: 100%;
-  }
+.visual-panel,
+.form-panel {
+  block-size: 100% !important;
+  min-block-size: 0 !important;
+  min-inline-size: 0 !important;
+  overflow: hidden !important;
+}
 
-  .visual-panel {
-    padding: calc(48px * var(--auth-scale));
-  }
+.visual-panel {
+  padding: clamp(1.25rem, 4vw, 3rem) !important;
+}
 
-  .visual-panel::before {
-    inset: calc(48px * var(--auth-scale));
-    border-radius: calc(24px * var(--auth-scale));
-  }
+.visual-panel::before {
+  inset: clamp(1.25rem, 4vw, 3rem) !important;
+}
 
-  .visual-frame {
-    height: calc(520px * var(--auth-scale));
-    padding: calc(34px * var(--auth-scale));
-    border-radius: calc(26px * var(--auth-scale));
-  }
+.visual-frame {
+  block-size: auto !important;
+  min-block-size: 0 !important;
+  padding: clamp(1.125rem, 3vw, 2.125rem) !important;
+}
 
-  .art-header {
-    font-size: calc(13px * var(--auth-scale));
-  }
+.mentor-card {
+  grid-template-columns: minmax(3.75rem, 16%) minmax(0, 1fr) !important;
+  gap: clamp(0.875rem, 2vw, 1.375rem) !important;
+  margin-top: clamp(1.25rem, 5vh, 3.25rem) !important;
+  padding: clamp(1rem, 2vw, 1.375rem) !important;
+}
 
-  .art-header strong {
-    font-size: calc(38px * var(--auth-scale));
-  }
+.portrait {
+  inline-size: 100% !important;
+  max-inline-size: 6rem !important;
+}
 
-  .mentor-card {
-    grid-template-columns: calc(96px * var(--auth-scale)) 1fr;
-    gap: calc(22px * var(--auth-scale));
-    margin-top: calc(52px * var(--auth-scale));
-    padding: calc(22px * var(--auth-scale));
-    border-radius: calc(22px * var(--auth-scale));
-  }
+.progress-track {
+  margin-block: clamp(1rem, 4vh, 2.125rem) !important;
+}
 
-  .portrait {
-    width: calc(96px * var(--auth-scale));
-    border-radius: calc(24px * var(--auth-scale));
-  }
+.lesson-stack {
+  gap: clamp(0.625rem, 1.6vh, 0.875rem) !important;
+}
 
-  .portrait span {
-    width: calc(52px * var(--auth-scale));
-    height: calc(70px * var(--auth-scale));
-  }
+.lesson-card {
+  min-block-size: auto !important;
+  padding: clamp(0.75rem, 1.8vh, 0.875rem) clamp(0.875rem, 2vw, 1rem) !important;
+}
 
-  .eyebrow {
-    margin-bottom: calc(10px * var(--auth-scale));
-    font-size: calc(10px * var(--auth-scale));
-  }
+.visual-caption {
+  inset-inline: clamp(1.25rem, 5vw, 4.5rem) auto !important;
+  inset-block-end: clamp(1.25rem, 7vh, 5.625rem) !important;
+  inline-size: min(68%, 28rem) !important;
+  min-block-size: 0 !important;
+  padding: clamp(1rem, 2.4vw, 1.375rem) !important;
+}
 
-  .mentor-card h2 {
-    font-size: calc(32px * var(--auth-scale));
-  }
+.form-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  padding: clamp(1.25rem, 5vh, 3.5rem) clamp(1.25rem, 5vw, 4.75rem) !important;
+}
 
-  .progress-track {
-    height: calc(12px * var(--auth-scale));
-    margin: calc(34px * var(--auth-scale)) calc(8px * var(--auth-scale));
-  }
+.brand-logo {
+  inline-size: clamp(6rem, 14vh, 9.25rem) !important;
+}
 
-  .lesson-stack {
-    gap: calc(14px * var(--auth-scale));
-  }
+.heading-group {
+  margin-top: clamp(0.75rem, 3vh, 1.75rem) !important;
+}
 
-  .lesson-card {
-    min-height: calc(66px * var(--auth-scale));
-    grid-template-columns: calc(38px * var(--auth-scale)) 1fr auto;
-    gap: calc(14px * var(--auth-scale));
-    padding: calc(14px * var(--auth-scale)) calc(16px * var(--auth-scale));
-    border-radius: calc(18px * var(--auth-scale));
-  }
+.heading-group h1 {
+  font-size: clamp(1.45rem, 2.7vw, 1.875rem) !important;
+}
 
-  .lesson-card p {
-    font-size: calc(14px * var(--auth-scale));
-  }
+.auth-mode-switch {
+  min-block-size: clamp(2.375rem, 5vh, 2.875rem) !important;
+  margin-top: clamp(0.75rem, 3vh, 1.5rem) !important;
+}
 
-  .lesson-card span {
-    font-size: calc(12px * var(--auth-scale));
-  }
+.auth-form {
+  margin-top: clamp(0.75rem, 2.7vh, 1.375rem) !important;
+}
 
-  .time-pill {
-    width: calc(58px * var(--auth-scale));
-    padding: calc(6px * var(--auth-scale)) 0;
-  }
+.auth-form label {
+  margin-bottom: clamp(0.3125rem, 1vh, 0.5rem) !important;
+}
 
-  .visual-caption {
-    left: calc(72px * var(--auth-scale));
-    bottom: calc(90px * var(--auth-scale));
-    width: calc(430px * var(--auth-scale));
-    min-height: calc(138px * var(--auth-scale));
-    padding: calc(22px * var(--auth-scale)) calc(20px * var(--auth-scale));
-    border-radius: calc(22px * var(--auth-scale));
-  }
+.auth-form input {
+  block-size: clamp(2.5rem, 5.8vh, 3.375rem) !important;
+  margin-bottom: clamp(0.5rem, 1.6vh, 0.875rem) !important;
+}
 
-  .visual-caption p {
-    margin-bottom: calc(12px * var(--auth-scale));
-    font-size: calc(22px * var(--auth-scale));
-  }
+.primary-action,
+.google-action {
+  block-size: clamp(2.5rem, 5.8vh, 3.375rem) !important;
+}
 
-  .visual-caption span {
-    font-size: calc(13px * var(--auth-scale));
-  }
+.divider {
+  margin-block: clamp(0.75rem, 2.8vh, 1.75rem) clamp(0.625rem, 2.4vh, 1.5rem) !important;
+}
 
-  .form-panel {
-    display: flex;
-    flex-direction: column;
-    padding: calc(48px * var(--auth-scale)) calc(66px * var(--auth-scale));
-    overflow: hidden;
-  }
+.organisation-note {
+  margin-top: clamp(0.75rem, 2.8vh, 2.125rem) !important;
+}
 
-  .brand-logo {
-    width: calc(148px * var(--auth-scale));
-  }
-
-  .heading-group {
-    margin-top: calc(24px * var(--auth-scale));
-  }
-
-  .heading-group h1 {
-    font-size: calc(30px * var(--auth-scale));
-  }
-
-  .heading-group p {
-    font-size: calc(14px * var(--auth-scale));
-  }
-
-  .auth-mode-switch {
-    height: calc(46px * var(--auth-scale));
-    margin-top: calc(22px * var(--auth-scale));
-  }
-
-  .auth-form {
-    margin-top: calc(18px * var(--auth-scale));
-  }
-
-  .auth-form label {
-    margin-bottom: calc(9px * var(--auth-scale));
-    font-size: max(9px, calc(10px * var(--auth-scale)));
-  }
-
-  .auth-form input {
-    height: calc(54px * var(--auth-scale));
-    margin-bottom: calc(12px * var(--auth-scale));
-    padding: 0 calc(18px * var(--auth-scale));
-    border-radius: calc(14px * var(--auth-scale));
-  }
-
-  .primary-action,
-  .google-action {
-    height: calc(54px * var(--auth-scale));
-    border-radius: calc(14px * var(--auth-scale));
-    font-size: calc(13px * var(--auth-scale));
-  }
-
-  .divider {
-    margin: calc(22px * var(--auth-scale)) 0 calc(18px * var(--auth-scale));
-  }
-
-  .organisation-note {
-    margin-top: calc(22px * var(--auth-scale));
-  }
-
-  .legal-copy {
-    position: static;
-    margin-top: auto;
-    padding-top: calc(18px * var(--auth-scale));
-  }
+.legal-copy {
+  inset: auto !important;
+  margin-top: auto !important;
+  padding-top: clamp(0.625rem, 2vh, 1.125rem) !important;
+  position: static !important;
 }
 
 @media (max-width: 980px) {
-  html:has(.auth-page),
-  body:has(.auth-page) {
-    overflow: hidden;
-  }
-
   .auth-page {
-    height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-    padding: 16px;
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: auto !important;
+    width: 100% !important;
   }
 
   .auth-shell {
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .visual-panel {
-    min-height: 0;
-    height: 38%;
-  }
-
-  .form-panel {
-    min-height: 0;
-    height: 62%;
-    overflow: hidden;
-  }
-}
-
-/* Hard final auth fit: no vertical page scroll on desktop/laptop viewports. */
-@media (min-width: 981px) {
-  .auth-page {
-    --auth-pad: clamp(12px, 3.2vh, 36px);
-    align-items: center !important;
-    height: 100dvh !important;
-    justify-content: center !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    padding: var(--auth-pad) clamp(18px, 3.4vw, 48px) !important;
-  }
-
-  .auth-shell {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1.16fr) minmax(360px, 0.84fr) !important;
-    grid-template-rows: 1fr !important;
-    height: calc(100dvh - var(--auth-pad) - var(--auth-pad)) !important;
-    max-height: calc(100dvh - var(--auth-pad) - var(--auth-pad)) !important;
-    min-height: 0 !important;
-    width: min(1304px, 100%) !important;
+    block-size: auto !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto !important;
   }
 
   .visual-panel,
   .form-panel {
-    height: 100% !important;
-    max-height: 100% !important;
-    min-height: 0 !important;
-  }
-
-  .visual-panel {
-    padding: clamp(22px, 4.4vh, 48px) !important;
-  }
-
-  .visual-panel::before {
-    inset: clamp(22px, 4.4vh, 48px) !important;
-  }
-
-  .visual-frame {
-    height: clamp(300px, 58vh, 520px) !important;
-    padding: clamp(20px, 3.1vh, 34px) !important;
-  }
-
-  .mentor-card {
-    margin-top: clamp(22px, 4.3vh, 52px) !important;
-    padding: clamp(16px, 2.8vh, 22px) !important;
-  }
-
-  .progress-track {
-    margin-top: clamp(18px, 3.3vh, 34px) !important;
-    margin-bottom: clamp(18px, 3.3vh, 34px) !important;
+    block-size: auto !important;
+    overflow: visible !important;
   }
 
   .visual-caption {
-    bottom: clamp(26px, 6.5vh, 90px) !important;
-    left: clamp(42px, 5.6vh, 72px) !important;
-    min-height: 0 !important;
-    padding: clamp(16px, 2.7vh, 22px) clamp(16px, 2.5vh, 20px) !important;
-  }
-
-  .form-panel {
-    padding: clamp(26px, 4.2vh, 54px) clamp(34px, 5vw, 76px) !important;
-  }
-
-  .brand-logo {
-    width: clamp(102px, 15vh, 148px) !important;
-  }
-
-  .heading-group {
-    margin-top: clamp(14px, 2.4vh, 28px) !important;
-  }
-
-  .auth-mode-switch {
-    height: clamp(38px, 5.4vh, 46px) !important;
-    margin-top: clamp(14px, 2.8vh, 24px) !important;
-  }
-
-  .auth-form {
-    margin-top: clamp(12px, 2.4vh, 22px) !important;
-  }
-
-  .auth-form label {
-    margin-bottom: clamp(5px, 1.1vh, 8px) !important;
-  }
-
-  .auth-form input {
-    height: clamp(40px, 6vh, 54px) !important;
-    margin-bottom: clamp(8px, 1.7vh, 14px) !important;
-  }
-
-  .primary-action,
-  .google-action {
-    height: clamp(40px, 6vh, 54px) !important;
-  }
-
-  .divider {
-    margin: clamp(12px, 2.8vh, 28px) 0 clamp(10px, 2.4vh, 24px) !important;
-  }
-
-  .organisation-note {
-    margin-top: clamp(12px, 2.8vh, 34px) !important;
-  }
-
-  .organisation-note p {
-    margin-top: clamp(5px, 1.1vh, 10px) !important;
-  }
-
-  .legal-copy {
-    bottom: auto !important;
-    left: auto !important;
-    margin-top: auto !important;
-    padding-top: clamp(10px, 2vh, 18px) !important;
-    position: static !important;
-    right: auto !important;
+    inline-size: auto !important;
   }
 }
 
 @media (min-width: 981px) and (max-height: 700px) {
-  .visual-caption {
+  .visual-caption,
+  .organisation-note,
+  .legal-copy {
     display: none !important;
-  }
-
-  .visual-frame {
-    height: calc(100dvh - 80px) !important;
-    max-height: 520px !important;
   }
 
   .brand-logo {
-    width: 96px !important;
+    inline-size: clamp(5.5rem, 12vh, 7rem) !important;
   }
 
   .heading-group h1 {
-    font-size: 23px !important;
-  }
-
-  .heading-group p,
-  .organisation-note p {
-    font-size: 11px !important;
-  }
-
-  .organisation-note strong,
-  .legal-copy {
-    font-size: 10px !important;
-  }
-
-  .organisation-note {
-    display: none !important;
-  }
-
-  .legal-copy {
-    display: none !important;
-  }
-}
-
-@media (min-width: 981px) and (max-height: 760px) {
-  .auth-page {
-    --auth-pad: 16px;
+    font-size: clamp(1.25rem, 2.4vw, 1.55rem) !important;
   }
 
   .form-panel {
-    padding-top: 22px !important;
-    padding-bottom: 22px !important;
-  }
-
-  .heading-group {
-    margin-top: 12px !important;
-  }
-
-  .auth-mode-switch {
-    margin-top: 12px !important;
-  }
-
-  .auth-form {
-    margin-top: 12px !important;
-  }
-
-  .auth-form input {
-    height: 42px !important;
-    margin-bottom: 8px !important;
-  }
-
-  .primary-action,
-  .google-action {
-    height: 42px !important;
-  }
-
-  .divider {
-    margin: 12px 0 !important;
+    padding-block: clamp(1rem, 3vh, 1.5rem) !important;
   }
 }
 
