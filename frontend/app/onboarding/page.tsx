@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,9 +8,7 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   Compass,
-  Eye,
   GitBranch,
-  LayoutDashboard,
   Loader,
   Rocket,
   Search,
@@ -150,20 +147,6 @@ function Footer({
 }
 
 function OnboardingScreens() {
-  const router = useRouter();
-
-  const pathItems = [
-    ["1", "Project management essentials", "In progress", true],
-    ["2", "Communication foundations", "Next up", false],
-    ["3", "Design specialisation", "Suggested", false],
-  ] as const;
-
-  const courses = [
-    ["Google Project Management", "Foundations of project management", "Recommended"],
-    ["Effective Communication", "Collaboration for the workplace", "Popular"],
-    ["Introduction to UX Design", "Design thinking fundamentals", "New"],
-  ] as const;
-
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState("");
@@ -207,7 +190,7 @@ function OnboardingScreens() {
   const progress = useMemo(() => Math.min((step + 1) * 25, 100), [step]);
 
   function next() {
-    setStep((current) => Math.min(current + 1, 5));
+    setStep((current) => Math.min(current + 1, 4));
   }
 
   function back() {
@@ -444,63 +427,6 @@ function OnboardingScreens() {
           </div>
         )}
 
-        {loadingDone && (
-          <>
-            <div className="ready-hero">
-              <div>
-                <p>Your learning plan is ready</p>
-                <h1>A focused path, built around your goals.</h1>
-                <span>Start with project management, strengthen communication, then add a design specialisation.</span>
-              </div>
-              <button type="button" onClick={completeOnboarding}>
-                <LayoutDashboard size={16} />
-                <span>Open my dashboard</span>
-              </button>
-            </div>
-            <div className="ready-layout">
-              <aside className="path-card">
-                <h2>Recommended path</h2>
-                <p>Based on your onboarding answers</p>
-                <div className="path-list">
-                  {pathItems.map(([level, title, status, active]) => (
-                    <div className="path-row" key={title}>
-                      <span className={active ? "active" : ""}>{level[0]}</span>
-                      <div>
-                        <p>{level}</p>
-                        <strong>{title}</strong>
-                      </div>
-                      <em>{status}</em>
-                    </div>
-                  ))}
-                </div>
-              </aside>
-              <section className="course-panel">
-                <div className="course-heading">
-                  <h2>Recommended for you</h2>
-                  <a href="/explore">View all courses</a>
-                </div>
-                <div className="course-grid">
-                  {courses.map(([title, meta, badge]) => (
-                    <article className="course-card" key={title}>
-                      <div>
-                        <span>BaseCamp course</span>
-                        <strong>{badge}</strong>
-                      </div>
-                      <section>
-                        <h3>{title}</h3>
-                        <p>{meta}</p>
-                        <button type="button" onClick={() => router.push("/course")}>
-                          <Eye size={16} />
-                          <span>View course</span>
-                        </button>
-                      </section>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </>
-         )}
       </section>
     </main>
   );
