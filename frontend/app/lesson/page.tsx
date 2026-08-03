@@ -29,6 +29,29 @@ const lessons = [
 
 const playbackRates = [1, 1.25, 1.5, 2] as const;
 
+const captionCues = [
+  {
+    start: 0,
+    end: 5,
+    text: "Welcome to the BaseCamp lesson player demo.",
+  },
+  {
+    start: 5,
+    end: 11,
+    text: "This sample video lets you test playback, progress, volume, captions, speed, and fullscreen.",
+  },
+  {
+    start: 11,
+    end: 17,
+    text: "Use the course checklist on the right to follow your module progress.",
+  },
+  {
+    start: 17,
+    end: 24,
+    text: "When the lesson finishes, the watch progress updates to complete.",
+  },
+] as const;
+
 function formatTime(value: number) {
   if (!Number.isFinite(value)) {
     return "00:00";
@@ -50,6 +73,9 @@ export default function LessonPlayer() {
   const [playbackRate, setPlaybackRate] = useState(1);
   const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
   const watchedPercent = Math.min(100, Math.round(progress));
+  const activeCaption = captionsEnabled
+    ? captionCues.find((cue) => currentTime >= cue.start && currentTime < cue.end)?.text || ""
+    : "";
 
   useEffect(() => {
     const video = videoRef.current;
@@ -120,7 +146,7 @@ export default function LessonPlayer() {
 
     const next = !captionsEnabled;
     Array.from(video.textTracks).forEach((track) => {
-      track.mode = next ? "showing" : "disabled";
+      track.mode = next ? "hidden" : "disabled";
     });
     setCaptionsEnabled(next);
   };
@@ -152,16 +178,16 @@ export default function LessonPlayer() {
     await target.requestFullscreen();
   };
 
-  const seek = (event: React.MouseEvent<HTMLDivElement>) => {
+  const seekTo = (value: number) => {
     const video = videoRef.current;
-    const bounds = event.currentTarget.getBoundingClientRect();
 
-    if (!video || !duration || bounds.width === 0) {
+    if (!video || !duration) {
       return;
     }
 
-    const nextProgress = Math.min(1, Math.max(0, (event.clientX - bounds.left) / bounds.width));
-    video.currentTime = nextProgress * duration;
+    const nextTime = Math.min(duration, Math.max(0, value));
+    video.currentTime = nextTime;
+    setCurrentTime(nextTime);
   };
 
   return (
@@ -220,17 +246,25 @@ export default function LessonPlayer() {
               </span>
               <strong>{isPlaying ? "Playing lesson demo" : `Resume from ${formatTime(currentTime)}`}</strong>
             </button>
+            {captionsEnabled && activeCaption ? (
+              <div className="lesson-caption-box" aria-live="polite">
+                {activeCaption}
+              </div>
+            ) : null}
             <div className="video-controls">
-              <div
-                className="video-progress"
-                role="slider"
-                aria-label="Video progress"
-                aria-valuemin={0}
-                aria-valuemax={Math.round(duration)}
-                aria-valuenow={Math.round(currentTime)}
-                onClick={seek}
-              >
+              <div className="video-progress" aria-label="Video progress">
                 <span style={{ width: `${progress}%` }} />
+                <input
+                  className="video-progress-input"
+                  type="range"
+                  min={0}
+                  max={Math.max(duration, 0.1)}
+                  step={0.1}
+                  value={Math.min(currentTime, duration)}
+                  aria-label="Seek video"
+                  onInput={(event) => seekTo(Number(event.currentTarget.value))}
+                  onChange={(event) => seekTo(Number(event.currentTarget.value))}
+                />
               </div>
               <div className="control-row">
                 <button type="button" aria-label={isPlaying ? "Pause" : "Play"} onClick={togglePlayback}>

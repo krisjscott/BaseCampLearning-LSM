@@ -15591,3 +15591,70 @@ body:has(.auth-page) {
   color: rgba(255, 255, 255, 0.94) !important;
 }
 
+.lesson-player .video-progress {
+  position: relative !important;
+  cursor: pointer !important;
+}
+
+.lesson-player .video-progress-input {
+  position: absolute !important;
+  inset: -0.7rem 0 !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  height: calc(100% + 1.4rem) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+  appearance: none !important;
+}
+
+.lesson-player .video-progress-input::-webkit-slider-thumb {
+  width: 1.3rem !important;
+  height: 1.3rem !important;
+  appearance: none !important;
+}
+
+.lesson-player .video-progress-input::-moz-range-thumb {
+  width: 1.3rem !important;
+  height: 1.3rem !important;
+  border: 0 !important;
+}
+
+.lesson-player .lesson-caption-box {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: clamp(5.55rem, 8.2dvh, 7rem) !important;
+  z-index: 5 !important;
+  max-width: min(78%, 46rem) !important;
+  padding: 0.58rem 0.88rem !important;
+  border-radius: 0.55rem !important;
+  background: rgba(5, 8, 9, 0.8) !important;
+  color: #ffffff !important;
+  font-size: clamp(0.9rem, 0.98vw, 1.05rem) !important;
+  font-weight: 750 !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+  transform: translateX(-50%) !important;
+  pointer-events: none !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24) !important;
+  backdrop-filter: blur(10px) saturate(120%) !important;
+  animation: lessonCaptionIn 180ms ease both !important;
+}
+
+.lesson-player .video-card:fullscreen .lesson-caption-box {
+  bottom: clamp(6rem, 9dvh, 8rem) !important;
+}
+
+@keyframes lessonCaptionIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
