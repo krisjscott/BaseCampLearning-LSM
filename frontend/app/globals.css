@@ -19537,3 +19537,294 @@ select:focus-visible,
   }
 }
 
+/* Final small-screen system pass: mobile/tablet should breathe, not squeeze. */
+@media (max-width: 980px) {
+  html:has(.auth-page),
+  body:has(.auth-page) {
+    min-height: 100dvh !important;
+    overflow: auto !important;
+  }
+
+  .auth-page {
+    width: 100% !important;
+    min-height: 100dvh !important;
+    height: auto !important;
+    align-items: center !important;
+    overflow: visible !important;
+    padding: clamp(1rem, 4vw, 1.5rem) !important;
+  }
+
+  .auth-shell {
+    align-self: center !important;
+    width: min(100%, 44rem) !important;
+    inline-size: min(100%, 44rem) !important;
+    min-height: 0 !important;
+    block-size: auto !important;
+    margin: 0 auto !important;
+    grid-template-columns: 1fr !important;
+    border-radius: 1.6rem !important;
+    overflow: hidden !important;
+  }
+
+  .visual-panel {
+    display: none !important;
+  }
+
+  .form-panel {
+    block-size: auto !important;
+    height: auto !important;
+    min-block-size: 0 !important;
+    border-radius: 1.6rem !important;
+    padding: clamp(2rem, 6vw, 3rem) clamp(1.25rem, 5vw, 2.2rem) !important;
+  }
+
+  .brand-logo {
+    width: clamp(6.4rem, 18vw, 8.4rem) !important;
+    inline-size: clamp(6.4rem, 18vw, 8.4rem) !important;
+  }
+
+  .heading-group {
+    margin-top: clamp(1.4rem, 5vw, 2.35rem) !important;
+  }
+
+  .auth-mode-switch,
+  .auth-form input,
+  .primary-action,
+  .google-action {
+    min-height: 3.35rem !important;
+    block-size: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body:has(.onboarding-page.flow) {
+    overflow: auto !important;
+  }
+
+  .onboarding-page.flow,
+  .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
+    height: auto !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .onboarding-page.flow .onboarding-topbar {
+    height: auto !important;
+    min-height: 4.85rem !important;
+    padding-block: 0.85rem !important;
+    align-items: center !important;
+  }
+
+  .onboarding-page.flow .onboarding-logo {
+    width: 5.8rem !important;
+  }
+
+  .onboarding-page.flow .topbar-actions {
+    gap: 0.9rem !important;
+    align-items: center !important;
+  }
+
+  .onboarding-page.flow .topbar-actions span {
+    max-width: 4.8rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .onboarding-page.flow .step-progress {
+    top: 4.85rem !important;
+  }
+
+  .onboarding-page.flow .goal-content,
+  .onboarding-page.flow .interests-content,
+  .onboarding-page.flow .context-content,
+  .onboarding-page.flow .education-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    display: grid !important;
+    gap: 1.15rem !important;
+    padding: 1.35rem 1rem 1.5rem !important;
+    overflow: visible !important;
+  }
+
+  .onboarding-page.flow .screen-heading {
+    gap: 0.55rem !important;
+    text-align: center !important;
+  }
+
+  .onboarding-page.flow .screen-heading h1 {
+    font-size: clamp(2rem, 9vw, 2.45rem) !important;
+    line-height: 1.08 !important;
+  }
+
+  .onboarding-page.flow .screen-heading span {
+    font-size: clamp(0.98rem, 4vw, 1.08rem) !important;
+    line-height: 1.32 !important;
+  }
+
+  .onboarding-page.flow .goal-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    height: auto !important;
+  }
+
+  .onboarding-page.flow .goal-card {
+    min-height: 11.25rem !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-rows: 6.25rem auto auto !important;
+    overflow: hidden !important;
+  }
+
+  .onboarding-page.flow .goal-icon {
+    flex: none !important;
+    min-height: 6.25rem !important;
+  }
+
+  .onboarding-page.flow .goal-card strong {
+    margin: 0.9rem 1rem 0 !important;
+    font-size: 1rem !important;
+  }
+
+  .onboarding-page.flow .goal-card span {
+    display: block !important;
+    margin: 0.35rem 1rem 1rem !important;
+    font-size: 0.95rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .onboarding-page.flow .hint-pill {
+    width: min(100%, 22rem) !important;
+    margin-inline: auto !important;
+    text-align: center !important;
+    white-space: normal !important;
+  }
+
+  .onboarding-page.flow .search-field,
+  .onboarding-page.flow .role-search > div {
+    height: auto !important;
+    min-height: 3.65rem !important;
+    width: 100% !important;
+  }
+
+  .onboarding-page.flow .interest-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.65rem !important;
+  }
+
+  .onboarding-page.flow .interest-grid button,
+  .onboarding-page.flow .profile-pills button,
+  .onboarding-page.flow .suggestions button,
+  .onboarding-page.flow .education-list button {
+    min-height: 3.35rem !important;
+    height: auto !important;
+    padding-block: 0.8rem !important;
+  }
+
+  .onboarding-page.flow .profile-pills,
+  .onboarding-page.flow .selected-tags {
+    justify-content: flex-start !important;
+    gap: 0.65rem !important;
+  }
+
+  .onboarding-page.flow .education-list {
+    gap: 0.65rem !important;
+  }
+
+  .onboarding-page.flow .onboarding-footer {
+    position: sticky !important;
+    bottom: 0 !important;
+    min-height: 5.5rem !important;
+    height: auto !important;
+    padding: 0.8rem 1rem calc(0.8rem + env(safe-area-inset-bottom)) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    backdrop-filter: blur(14px) !important;
+  }
+
+  .onboarding-page.flow .onboarding-footer p {
+    display: none !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .quiz-review-content,
+  .quiz-result-content {
+    gap: 1.35rem !important;
+    padding-inline: 1rem !important;
+  }
+
+  .quiz-review-heading h1,
+  .quiz-result-heading h1 {
+    font-size: clamp(2.35rem, 11vw, 3rem) !important;
+    line-height: 1.04 !important;
+  }
+
+  .review-card,
+  .quiz-result-page .result-card {
+    padding: 1.35rem !important;
+    border-radius: 1.25rem !important;
+  }
+
+  .review-group-row {
+    min-height: 4.75rem !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 0.65rem !important;
+    align-items: center !important;
+    padding: 1rem !important;
+  }
+
+  .review-group-row > svg {
+    display: none !important;
+  }
+
+  .review-group-row button {
+    width: auto !important;
+    min-width: 0 !important;
+    justify-self: end !important;
+  }
+
+  .quiz-result-page .result-card {
+    gap: 1.25rem !important;
+  }
+
+  .quiz-result-page .result-card header {
+    gap: 0.75rem !important;
+  }
+
+  .quiz-result-page .result-card header strong {
+    font-size: clamp(3rem, 15vw, 4rem) !important;
+  }
+
+  .quiz-result-page .result-stat-grid {
+    gap: 0.75rem !important;
+  }
+
+  .quiz-result-page .result-stat-grid article {
+    min-height: 5.5rem !important;
+    height: auto !important;
+    padding: 1rem !important;
+  }
+}
+
+@media (min-width: 521px) and (max-width: 900px) {
+  .quiz-result-page .result-card {
+    gap: 1.45rem !important;
+    padding: 2rem !important;
+  }
+
+  .quiz-result-page .result-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.85rem !important;
+  }
+
+  .quiz-result-page .result-stat-grid article {
+    min-height: 6.25rem !important;
+    height: auto !important;
+    padding: 1.1rem !important;
+  }
+}
+
