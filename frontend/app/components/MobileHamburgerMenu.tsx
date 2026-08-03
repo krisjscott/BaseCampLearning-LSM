@@ -96,7 +96,13 @@ export default function MobileHamburgerMenu() {
   return (
     <section className="mobile-hamburger-shell" aria-label="Mobile navigation">
       <div className="mobile-hamburger-bar">
-        <button type="button" aria-expanded={open} aria-controls="mobile-learning-menu" onClick={() => setOpen((value) => !value)}>
+        <button
+          type="button"
+          className="mobile-menu-toggle"
+          aria-expanded={open}
+          aria-controls="mobile-learning-menu"
+          onClick={() => setOpen((value) => !value)}
+        >
           {open ? <X size={22} strokeWidth={2.4} /> : <Menu size={22} strokeWidth={2.4} />}
           <span>Menu</span>
         </button>

@@ -18769,7 +18769,7 @@ select:focus-visible,
     display: block;
   }
 
-  .mobile-hamburger-bar button,
+  .mobile-menu-toggle,
   .mobile-menu-panel-header button {
     display: inline-flex;
     align-items: center;
@@ -18785,7 +18785,7 @@ select:focus-visible,
     cursor: pointer;
   }
 
-  .mobile-hamburger-bar button {
+  .mobile-menu-toggle {
     min-height: 2.8rem;
     padding: 0 1rem;
   }
@@ -18973,11 +18973,11 @@ select:focus-visible,
     gap: 0.58rem;
   }
 
-  .mobile-hamburger-bar button span {
+  .mobile-menu-toggle span {
     display: none;
   }
 
-  .mobile-hamburger-bar button {
+  .mobile-menu-toggle {
     width: 2.75rem;
     padding: 0;
   }
@@ -19045,7 +19045,7 @@ select:focus-visible,
     padding-inline: clamp(1rem, 4vw, 1.25rem) !important;
   }
 
-  .mobile-hamburger-bar button {
+  .mobile-menu-toggle {
     position: relative !important;
     z-index: 2 !important;
     top: auto !important;
@@ -19160,13 +19160,13 @@ select:focus-visible,
   }
 
   .mobile-hamburger-bar {
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: 2.75rem auto minmax(0, 1fr) !important;
     align-items: center !important;
-    justify-content: flex-start !important;
     overflow: hidden !important;
   }
 
-  .mobile-hamburger-bar button {
+  .mobile-menu-toggle {
     display: inline-flex !important;
     flex: 0 0 auto !important;
     visibility: visible !important;

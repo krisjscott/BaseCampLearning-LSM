@@ -173,7 +173,7 @@ function LearningHome() {
           </label>
           <button type="button" className="xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            {loading ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()}</span>}
+            {loading ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()} XP</span>}
           </button>
           <button type="button" className="notification-button" aria-label="Notifications">
             <Bell size={22} strokeWidth={1.9} />
