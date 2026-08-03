@@ -15761,7 +15761,7 @@ body:has(.auth-page) {
   height: clamp(35.5rem, 63.5dvh, 47rem) !important;
   align-self: start !important;
   display: grid !important;
-  grid-template-rows: auto auto minmax(3rem, 1fr) auto !important;
+  grid-template-rows: auto auto auto minmax(0, 1fr) !important;
   gap: clamp(1.15rem, 1.8dvh, 1.6rem) !important;
   margin-top: 0 !important;
   padding: clamp(1.65rem, 3dvh, 3.2rem) clamp(2rem, 3.2vw, 3rem) !important;
@@ -15791,14 +15791,14 @@ body:has(.auth-page) {
 }
 
 .question-card > p {
-  align-self: end !important;
+  align-self: start !important;
   margin-bottom: clamp(0.3rem, 0.7dvh, 0.65rem) !important;
   color: #7f8991 !important;
   font-size: clamp(0.98rem, 1.02vw, 1.12rem) !important;
 }
 
 .answer-list {
-  align-self: end !important;
+  align-self: start !important;
   display: grid !important;
   gap: clamp(1rem, 2dvh, 1.55rem) !important;
 }
@@ -16074,181 +16074,191 @@ body:has(.auth-page) {
 }
 
 @media (min-width: 1181px) and (max-height: 800px) {
+  .quiz-page {
+    overflow: auto !important;
+  }
+
   .quiz-page .lesson-topbar {
-    height: 4rem !important;
-    flex-basis: 4rem !important;
+    height: 4.85rem !important;
+    flex-basis: 4.85rem !important;
     padding-inline: clamp(1.75rem, 3vw, 3.75rem) !important;
   }
 
   .quiz-page .lesson-brand-block img {
-    width: clamp(4.6rem, 5.1vw, 5.5rem) !important;
+    width: clamp(5rem, 5.5vw, 5.9rem) !important;
   }
 
   .quiz-page .lesson-brand-block span {
-    height: 2rem !important;
+    height: 2.45rem !important;
   }
 
   .quiz-page .lesson-brand-block strong,
   .quiz-page .lesson-top-actions p,
   .quiz-page .lesson-top-actions span {
-    font-size: 0.88rem !important;
+    font-size: 0.95rem !important;
   }
 
   .quiz-page .lesson-brand-block p {
-    font-size: 0.86rem !important;
+    font-size: 0.94rem !important;
   }
 
   .quiz-page .lesson-top-actions button {
-    height: 2.3rem !important;
+    height: 2.75rem !important;
   }
 
   .quiz-shell {
-    min-height: calc(100dvh - 4rem) !important;
-    height: calc(100dvh - 4rem) !important;
-    grid-template-columns: minmax(0, 1fr) clamp(26rem, 31vw, 34rem) !important;
+    min-height: calc(100dvh - 4.85rem) !important;
+    height: auto !important;
+    grid-template-columns: minmax(0, 1fr) clamp(28rem, 32vw, 36rem) !important;
+    align-items: start !important;
+    overflow: visible !important;
   }
 
   .quiz-main {
-    grid-template-rows: auto minmax(0, 1fr) auto !important;
-    padding: clamp(1.25rem, 2.4dvh, 1.6rem) clamp(2.25rem, 4vw, 4.2rem) clamp(1.1rem, 2dvh, 1.35rem) !important;
+    grid-template-rows: auto auto auto !important;
+    overflow: visible !important;
+    padding: clamp(2rem, 4dvh, 3rem) clamp(2.5rem, 4.4vw, 5.25rem) clamp(2rem, 4dvh, 3rem) !important;
   }
 
   .quiz-heading-row {
-    min-height: clamp(4.45rem, 10dvh, 5rem) !important;
+    min-height: clamp(5.4rem, 11dvh, 6.25rem) !important;
   }
 
   .quiz-heading-row h1 {
-    margin-block: 0.28rem !important;
-    font-size: clamp(1.7rem, 1.9vw, 2.05rem) !important;
+    margin-block: 0.42rem !important;
+    font-size: clamp(2rem, 2.1vw, 2.35rem) !important;
   }
 
   .quiz-heading-row span,
   .autosave-status span {
-    font-size: 0.9rem !important;
+    font-size: 1rem !important;
   }
 
   .autosave-status strong {
-    font-size: 0.92rem !important;
+    font-size: 1rem !important;
   }
 
   .question-card {
     height: auto !important;
-    align-self: stretch !important;
-    gap: clamp(0.72rem, 1.45dvh, 1rem) !important;
-    padding: clamp(1.15rem, 2.2dvh, 1.45rem) clamp(1.55rem, 2.6vw, 2.25rem) !important;
-    border-radius: 1.25rem !important;
+    min-height: 38rem !important;
+    align-self: start !important;
+    gap: clamp(1rem, 2dvh, 1.35rem) !important;
+    padding: clamp(1.8rem, 3.1dvh, 2.45rem) clamp(1.8rem, 3vw, 2.65rem) !important;
+    border-radius: 1.45rem !important;
   }
 
   .question-card h2 {
-    max-width: 47rem !important;
-    font-size: clamp(1.65rem, 1.85vw, 2rem) !important;
+    max-width: 52rem !important;
+    font-size: clamp(1.9rem, 2vw, 2.3rem) !important;
     line-height: 1.12 !important;
   }
 
   .question-card > p {
-    margin-bottom: 0 !important;
-    font-size: 0.92rem !important;
+    margin-bottom: 0.25rem !important;
+    font-size: 1rem !important;
   }
 
   .answer-list {
-    gap: clamp(0.62rem, 1.4dvh, 0.82rem) !important;
+    gap: clamp(0.95rem, 2dvh, 1.25rem) !important;
   }
 
   .answer-choice {
-    min-height: clamp(3.45rem, 7.2dvh, 3.9rem) !important;
-    grid-template-columns: 2.35rem minmax(0, 1fr) !important;
-    padding: 0.65rem 1.05rem !important;
+    min-height: 4.6rem !important;
+    grid-template-columns: 2.65rem minmax(0, 1fr) !important;
+    padding: 0.9rem 1.25rem !important;
   }
 
   .answer-choice > span {
-    width: 2.35rem !important;
-    height: 2.35rem !important;
+    width: 2.65rem !important;
+    height: 2.65rem !important;
   }
 
   .answer-choice p {
-    font-size: clamp(0.96rem, 1.05vw, 1.08rem) !important;
+    font-size: clamp(1rem, 1.08vw, 1.18rem) !important;
   }
 
   .quiz-actions {
-    height: 3.15rem !important;
-    margin-top: clamp(0.75rem, 1.7dvh, 1rem) !important;
+    height: 3.5rem !important;
+    margin-top: clamp(1.35rem, 2.8dvh, 2rem) !important;
   }
 
   .quiz-secondary,
   .quiz-primary {
-    min-height: 2.75rem !important;
-    font-size: 0.92rem !important;
+    min-height: 3.05rem !important;
+    font-size: 0.98rem !important;
   }
 
   .quiz-sidebar {
-    min-height: calc(100dvh - 4rem) !important;
-    height: calc(100dvh - 4rem) !important;
-    padding: clamp(1.3rem, 2.4dvh, 1.55rem) clamp(1.45rem, 2.5vw, 2rem) !important;
+    min-height: auto !important;
+    height: auto !important;
+    align-self: stretch !important;
+    padding: clamp(2rem, 3.8dvh, 2.65rem) clamp(1.8rem, 3vw, 2.35rem) !important;
+    overflow: visible !important;
   }
 
   .quiz-sidebar header h2 {
-    font-size: clamp(1.28rem, 1.45vw, 1.48rem) !important;
+    font-size: clamp(1.42rem, 1.55vw, 1.72rem) !important;
   }
 
   .quiz-sidebar header p {
-    margin-top: 0.42rem !important;
-    font-size: 0.94rem !important;
+    margin-top: 0.65rem !important;
+    font-size: 1rem !important;
   }
 
   .quiz-progress {
-    height: 0.42rem !important;
-    margin: 1rem 0 1.1rem !important;
+    height: 0.48rem !important;
+    margin: 1.25rem 0 1.35rem !important;
   }
 
   .quiz-legend {
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.35rem !important;
   }
 
   .quiz-legend span {
-    font-size: 0.9rem !important;
+    font-size: 0.98rem !important;
   }
 
   .question-grid {
-    gap: 0.72rem !important;
+    gap: 0.85rem !important;
   }
 
   .question-grid button {
-    height: clamp(3rem, 6.4dvh, 3.35rem) !important;
-    font-size: 0.94rem !important;
+    height: 3.75rem !important;
+    font-size: 1rem !important;
   }
 
   .quiz-sidebar hr {
-    margin: 1rem 0 !important;
+    margin: 1.4rem 0 !important;
   }
 
   .attempt-rules {
     min-height: 0 !important;
-    padding: 1rem 1.25rem !important;
+    padding: 1.35rem 1.55rem !important;
   }
 
   .attempt-rules h2 {
-    margin-bottom: 0.65rem !important;
-    font-size: 1.28rem !important;
+    margin-bottom: 0.85rem !important;
+    font-size: 1.45rem !important;
   }
 
   .attempt-rules ul {
-    font-size: 0.88rem !important;
-    line-height: 1.32 !important;
+    font-size: 0.98rem !important;
+    line-height: 1.42 !important;
   }
 
   .submit-card {
-    margin-top: 0.85rem !important;
-    padding: 0.95rem 1.1rem !important;
+    margin-top: 1.3rem !important;
+    padding: 1.25rem 1.35rem !important;
   }
 
   .submit-card p {
-    font-size: 0.88rem !important;
+    font-size: 0.98rem !important;
   }
 
   .submit-card button {
-    height: 2.75rem !important;
-    margin-top: 0.7rem !important;
-    font-size: 0.9rem !important;
+    height: 3.35rem !important;
+    margin-top: 0.95rem !important;
+    font-size: 0.98rem !important;
   }
 }
 
@@ -16297,5 +16307,28 @@ body:has(.auth-page) {
   .quiz-actions {
     height: auto !important;
   }
+}
+
+.quiz-page .answer-choice[aria-checked="true"],
+.quiz-page .answer-choice.selected {
+  border: 2px solid #ff5522 !important;
+  border-color: #ff5522 !important;
+  border-top-color: #ff5522 !important;
+  border-right-color: #ff5522 !important;
+  border-bottom-color: #ff5522 !important;
+  border-left-color: #ff5522 !important;
+  background: rgba(241, 241, 238, 0.82) !important;
+}
+
+.quiz-page .answer-choice[aria-checked="true"] > span,
+.quiz-page .answer-choice.selected > span {
+  border-color: #ff5522 !important;
+  background: #ff5522 !important;
+  color: #ffffff !important;
+}
+
+.quiz-page .answer-choice[aria-checked="false"]:focus,
+.quiz-page .answer-choice[aria-checked="false"]:focus-visible {
+  border-color: rgba(225, 227, 225, 0.96) !important;
 }
 
