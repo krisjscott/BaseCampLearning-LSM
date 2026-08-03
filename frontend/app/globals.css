@@ -15445,3 +15445,86 @@ body:has(.auth-page) {
   display: none !important;
 }
 
+/* Lesson video controls final pass: native-feeling overlay. */
+.lesson-player .video-card {
+  position: relative !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+.lesson-player .video-surface {
+  width: 100% !important;
+  height: 100% !important;
+  padding-bottom: clamp(4.7rem, 7dvh, 5.7rem) !important;
+}
+
+.lesson-player .video-controls {
+  position: absolute !important;
+  left: clamp(0.85rem, 1.25vw, 1.25rem) !important;
+  right: clamp(0.85rem, 1.25vw, 1.25rem) !important;
+  bottom: clamp(0.75rem, 1.15dvh, 1rem) !important;
+  min-height: clamp(3.75rem, 5.9dvh, 4.65rem) !important;
+  display: grid !important;
+  grid-template-rows: 0.28rem 1fr !important;
+  gap: clamp(0.55rem, 0.9dvh, 0.75rem) !important;
+  padding: clamp(0.6rem, 0.95dvh, 0.82rem) clamp(0.95rem, 1.4vw, 1.4rem) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: clamp(0.95rem, 1.25vw, 1.35rem) !important;
+  background: linear-gradient(180deg, rgba(22, 27, 29, 0.1), rgba(20, 25, 27, 0.72)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 14px 30px rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(14px) saturate(125%) !important;
+}
+
+.lesson-player .video-progress {
+  height: 0.28rem !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+.lesson-player .video-progress span {
+  background: #ff5522 !important;
+  box-shadow: 0 0 0 1px rgba(255, 85, 34, 0.08), 0 0 18px rgba(255, 85, 34, 0.28) !important;
+}
+
+.lesson-player .control-row {
+  grid-template-columns: auto auto minmax(0, 1fr) auto !important;
+  gap: clamp(0.7rem, 1.05vw, 1rem) !important;
+  min-height: 2.2rem !important;
+}
+
+.lesson-player .control-row > button,
+.lesson-player .control-icons button {
+  width: clamp(1.95rem, 2.15vw, 2.25rem) !important;
+  height: clamp(1.95rem, 2.15vw, 2.25rem) !important;
+  border: 0 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: none !important;
+}
+
+.lesson-player .control-row > button svg,
+.lesson-player .control-icons button svg {
+  width: clamp(0.92rem, 1vw, 1.05rem) !important;
+  height: clamp(0.92rem, 1vw, 1.05rem) !important;
+  stroke-width: 2 !important;
+}
+
+.lesson-player .control-row > button:hover,
+.lesson-player .control-icons button:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+.lesson-player .control-row > p {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: clamp(0.86rem, 0.9vw, 0.98rem) !important;
+  font-weight: 700 !important;
+}
+
+.lesson-player .control-icons {
+  gap: clamp(0.45rem, 0.8vw, 0.8rem) !important;
+}
+
+.lesson-player .control-icons button[aria-label="Playback speed"]::before {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: clamp(0.72rem, 0.76vw, 0.84rem) !important;
+}
+
