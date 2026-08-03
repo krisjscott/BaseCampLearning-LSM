@@ -15288,33 +15288,36 @@ body:has(.auth-page) {
   .lesson-playlist {
     min-height: calc(100dvh - clamp(5.1rem, 7.4dvh, 6rem)) !important;
     height: calc(100dvh - clamp(5.1rem, 7.4dvh, 6rem)) !important;
-    display: grid !important;
-    grid-template-rows: auto auto minmax(0, 1fr) auto !important;
-    align-content: stretch !important;
-    gap: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     padding-block: clamp(2rem, 3.25dvh, 2.8rem) !important;
   }
 
   .playlist-list {
-    min-height: 0 !important;
-    height: 100% !important;
+    flex: 1 0 auto !important;
+    min-height: max-content !important;
+    height: auto !important;
     display: grid !important;
-    grid-template-rows: repeat(7, minmax(4.7rem, 1fr)) !important;
-    gap: clamp(0.65rem, 1.2dvh, 1.05rem) !important;
-    align-content: stretch !important;
+    grid-template-rows: none !important;
+    gap: clamp(0.75rem, 1.35dvh, 1.15rem) !important;
+    align-content: start !important;
   }
 
   .playlist-row {
-    height: auto !important;
-    min-height: 4.7rem !important;
+    height: clamp(4.15rem, 7.1dvh, 5.45rem) !important;
+    min-height: 4.15rem !important;
   }
 
   .saved-card {
-    align-self: end !important;
+    flex: 0 0 auto !important;
+    align-self: stretch !important;
+    position: static !important;
+    z-index: auto !important;
     height: auto !important;
-    min-height: clamp(5.4rem, 8.8dvh, 6.9rem) !important;
+    min-height: clamp(5.4rem, 8.6dvh, 6.85rem) !important;
+    margin-top: clamp(1.15rem, 2dvh, 1.75rem) !important;
   }
 }
 
