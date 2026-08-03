@@ -39,6 +39,9 @@ public class JwtProvider {
     }
 
     private SecretKey getSignKey() {
+        if(secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT secret key config is empty");
+        }
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }

@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -38,7 +39,7 @@ const courses = [
   ["Communication Mastery", "Starts Aug 02", "View details ->"],
 ] as const;
 
-export default function MyLearning() {
+function MyLearning() {
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
 
@@ -173,5 +174,13 @@ export default function MyLearning() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function MyLearningPage() {
+  return (
+    <AuthGuard>
+      <MyLearning />
+    </AuthGuard>
   );
 }

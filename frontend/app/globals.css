@@ -7762,7 +7762,15 @@ input {
     height: auto;
   }
 
-  .video-controls {
+.lesson-video {
+  width: 100%;
+  height: 470px;
+  display: block;
+  background: var(--bc-color-bg-inverse);
+  object-fit: contain;
+}
+
+.video-controls {
     height: auto;
   }
 

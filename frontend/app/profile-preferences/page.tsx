@@ -18,6 +18,7 @@ import {
   updateCurrentUser,
   updateCurrentUserSettings,
 } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -50,7 +51,7 @@ function displayName(user: UserResponse | null) {
   return user?.fullName || user?.email?.split("@")[0] || "Nirjhar";
 }
 
-export default function ProfilePreferencesDesktop() {
+function ProfilePreferencesDesktop() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [settingsState, setSettingsState] = useState<UserSettingsResponse | null>(null);
   const [form, setForm] = useState({
@@ -301,5 +302,13 @@ export default function ProfilePreferencesDesktop() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ProfilePreferencesPage() {
+  return (
+    <AuthGuard>
+      <ProfilePreferencesDesktop />
+    </AuthGuard>
   );
 }

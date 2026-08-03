@@ -15,6 +15,7 @@ import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.security.jwt.JwtProvider;
+import com.tiesverse.backend.security.turnstile.TurnstileService;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.entity.UserSettings;
 import com.tiesverse.backend.user.repository.UserRepository;
@@ -36,10 +37,13 @@ public class AuthServiceImpl implements AuthService {
     private final DemoExperienceService demoExperienceService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final TurnstileService turnstileService;
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        turnstileService.verify(request.getTurnstileToken());
+
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
@@ -84,6 +88,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
+        turnstileService.verify(request.getTurnstileToken());
+
         Account account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
 
@@ -134,6 +140,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
+        turnstileService.verify(request.getTurnstileToken());
+
         accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
     }

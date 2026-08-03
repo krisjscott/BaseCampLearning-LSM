@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { NotificationResponse, UserResponse, getCurrentUser, getNotifications } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -39,7 +40,7 @@ const recentNotifications = [
   ["New recommendation", "Communication Mastery matches your goals", "View"],
 ] as const;
 
-export default function Notifications() {
+function Notifications() {
   const [backendNotifications, setBackendNotifications] = useState<NotificationResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
 
@@ -168,5 +169,13 @@ export default function Notifications() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function NotificationsPage() {
+  return (
+    <AuthGuard>
+      <Notifications />
+    </AuthGuard>
   );
 }

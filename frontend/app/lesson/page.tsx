@@ -16,6 +16,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
+import { getLesson, LessonResponse } from "../lib/backendApi";
 
 const lessons = [
   ["Project goals and stakeholders", "8 min video", "done"],
@@ -65,17 +66,40 @@ function formatTime(value: number) {
 export default function LessonPlayer() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const cardRef = useRef<HTMLElement | null>(null);
+  const [lesson, setLesson] = useState<LessonResponse | null>(null);
+  const [loadingLesson, setLoadingLesson] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [captionsEnabled, setCaptionsEnabled] = useState(false);
   const [duration, setDuration] = useState(24);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const videoUrl = lesson?.contentUrl || "/lesson-demo.mp4";
+  const lessonTitle = lesson?.title || "Define scope and deliverables";
+  const fallbackDuration = lesson?.durationMinutes ? lesson.durationMinutes * 60 : 24;
   const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
   const watchedPercent = Math.min(100, Math.round(progress));
   const activeCaption = captionsEnabled
     ? captionCues.find((cue) => currentTime >= cue.start && currentTime < cue.end)?.text || ""
     : "";
+
+  useEffect(() => {
+    const lessonId = new URLSearchParams(window.location.search).get("lessonId");
+
+    if (!lessonId) {
+      setLoadingLesson(false);
+      return;
+    }
+
+    getLesson(lessonId)
+      .then(setLesson)
+      .catch(() => setLesson(null))
+      .finally(() => setLoadingLesson(false));
+  }, []);
+
+  useEffect(() => {
+    setDuration(fallbackDuration);
+  }, [fallbackDuration]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -86,7 +110,7 @@ export default function LessonPlayer() {
 
     const sync = () => {
       setCurrentTime(video.currentTime);
-      setDuration(video.duration || 24);
+      setDuration(video.duration || fallbackDuration);
       setIsMuted(video.muted || video.volume === 0);
       setPlaybackRate(video.playbackRate);
     };
@@ -111,7 +135,7 @@ export default function LessonPlayer() {
       video.removeEventListener("pause", onPause);
       video.removeEventListener("ended", onPause);
     };
-  }, []);
+  }, [fallbackDuration, videoUrl]);
 
   const togglePlayback = async () => {
     const video = videoRef.current;
@@ -214,8 +238,8 @@ export default function LessonPlayer() {
         <section className="lesson-stage">
           <div className="lesson-heading">
             <p>LESSON 4 OF 7</p>
-            <h1>Define scope and deliverables</h1>
-            <span>24 sec video - Required</span>
+            <h1>{lessonTitle}</h1>
+            <span>{lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "24 sec video - Required"}</span>
           </div>
 
           <section className="video-card" aria-label="Video lesson player" ref={cardRef}>
@@ -226,8 +250,9 @@ export default function LessonPlayer() {
               poster="/basecamp-logo.png"
               playsInline
               onClick={togglePlayback}
+              key={videoUrl}
             >
-              <source src="/lesson-demo.mp4" type="video/mp4" />
+              <source src={videoUrl} type="video/mp4" />
               <track
                 src="/lesson-demo.vtt"
                 kind="captions"
@@ -244,7 +269,7 @@ export default function LessonPlayer() {
               <span className="play-badge">
                 {isPlaying ? <Pause size={24} fill="none" /> : <Play size={24} fill="none" />}
               </span>
-              <strong>{isPlaying ? "Playing lesson demo" : `Resume from ${formatTime(currentTime)}`}</strong>
+              <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson demo" : `Resume from ${formatTime(currentTime)}`}</strong>
             </button>
             {captionsEnabled && activeCaption ? (
               <div className="lesson-caption-box" aria-live="polite">
