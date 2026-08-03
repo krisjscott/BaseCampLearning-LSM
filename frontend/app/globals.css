@@ -11689,7 +11689,7 @@ body:has(.auth-page) {
   --onboarding-footer: clamp(6rem, 13.2vh, 11rem);
   --onboarding-content-offset: clamp(0.75rem, 5.8vh, 5.75rem);
   --onboarding-main-gap: clamp(1rem, 3.6vh, 3.4rem);
-  --goal-card-height: clamp(12rem, 32.5vh, 26.75rem);
+  --goal-card-height: clamp(16rem, 40vh, 26.75rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11897,7 +11897,7 @@ body:has(.auth-page) {
     --onboarding-footer: clamp(4.6rem, 12vh, 6.3rem);
     --onboarding-content-offset: clamp(0.6rem, 2.4vh, 1.25rem);
     --onboarding-main-gap: clamp(0.75rem, 2.2vh, 1.35rem);
-    --goal-card-height: clamp(8.75rem, 25vh, 15.75rem);
+    --goal-card-height: clamp(11.5rem, 31vh, 20rem);
   }
 
   .onboarding-page.flow .screen-heading {
