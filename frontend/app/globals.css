@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --ink: #14171a;
   --muted: #61666e;
   --line: #d1d4d6;
@@ -1660,7 +1660,7 @@ input {
   margin-top: 30px;
 }
 
-.learning-nav button {
+.learning-nav :is(button, a) {
   width: 250px;
   height: 46px;
   display: flex;
@@ -1673,10 +1673,11 @@ input {
   color: #0e0f11;
   font-size: 15px;
   font-weight: 500;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.learning-nav button.active {
+.learning-nav :is(button, a).active {
   border: 1px solid rgb(255 255 255 / 58%);
   background: rgb(255 255 255 / 46%);
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 66%);
@@ -7848,7 +7849,7 @@ input {
   height: auto;
 }
 
-.learning-nav button {
+.learning-nav :is(button, a) {
   width: 100%;
 }
 
@@ -9203,7 +9204,7 @@ button:focus-visible {
 :where(
   .topbar-actions button,
   .dashboard-nav button,
-  .learning-nav button,
+  .learning-nav :is(button, a),
   .course-breadcrumb button,
   .lesson-top-actions button,
   .course-tabs button,
@@ -9289,7 +9290,7 @@ button:focus-visible {
 :where(
   .topbar-actions button:hover,
   .dashboard-nav button:hover,
-  .learning-nav button:hover,
+  .learning-nav :is(button, a):hover,
   .course-breadcrumb button:hover,
   .lesson-top-actions button:hover,
   .course-tabs button:hover,
@@ -9437,14 +9438,14 @@ button:focus-visible {
 }
 
 .dashboard-nav button,
-.learning-nav button {
+.learning-nav :is(button, a) {
   justify-content: flex-start;
   width: 100%;
   color: #202428;
 }
 
 .dashboard-nav button.active,
-.learning-nav button.active,
+.learning-nav :is(button, a).active,
 .course-tabs button.active,
 .lesson-tabs button.active {
   border-color: #111111;
@@ -9493,7 +9494,7 @@ button:focus-visible {
   :where(
     .topbar-actions button,
     .dashboard-nav button,
-    .learning-nav button,
+    .learning-nav :is(button, a),
     .course-breadcrumb button,
     .lesson-top-actions button,
     .module-row button,
@@ -10313,7 +10314,7 @@ body {
   filter: drop-shadow(0 8px 12px rgb(17 24 39 / 8%));
 }
 
-.learning-nav button {
+.learning-nav :is(button, a) {
   border: 1px solid rgb(255 255 255 / 68%);
   background: rgb(255 255 255 / 62%);
   box-shadow: 0 10px 22px rgb(22 31 38 / 5%);
@@ -10324,13 +10325,13 @@ body {
     box-shadow 180ms ease;
 }
 
-.learning-nav button:hover {
+.learning-nav :is(button, a):hover {
   transform: translateY(-1px);
   background: #ffffff;
   box-shadow: 0 14px 28px rgb(22 31 38 / 8%);
 }
 
-.learning-nav button.active {
+.learning-nav :is(button, a).active {
   border-color: rgb(17 19 21 / 88%);
   background:
     linear-gradient(135deg, #111315 0%, #191d1f 100%);
@@ -10970,7 +10971,7 @@ body {
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 66%), 7px 0 26px rgb(18 28 38 / 6%);
 }
 
-.learning-nav button.active {
+.learning-nav :is(button, a).active {
   border: 1px solid rgb(255 255 255 / 58%);
   background: rgb(255 255 255 / 46%);
   color: #0e0f11;
@@ -13168,7 +13169,7 @@ body:has(.auth-page) {
   margin: 0 !important;
 }
 
-.learning-nav button {
+.learning-nav :is(button, a) {
   width: 100% !important;
   height: clamp(3.35rem, 5.35vh, 3.75rem) !important;
   display: flex !important;
@@ -13184,20 +13185,20 @@ body:has(.auth-page) {
   transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease !important;
 }
 
-.learning-nav button svg {
+.learning-nav :is(button, a) svg {
   width: clamp(1.25rem, 1.3vw, 1.5rem) !important;
   height: clamp(1.25rem, 1.3vw, 1.5rem) !important;
   color: #4d565e !important;
 }
 
-.learning-nav button.active,
-.learning-nav button:hover {
+.learning-nav :is(button, a).active,
+.learning-nav :is(button, a):hover {
   border-color: rgb(255 255 255 / 66%) !important;
   background: rgb(255 255 255 / 60%) !important;
   box-shadow: inset 0 1px 1px rgb(255 255 255 / 84%), 0 12px 28px rgb(18 28 38 / 5%) !important;
 }
 
-.learning-nav button:hover {
+.learning-nav :is(button, a):hover {
   transform: translateX(3px);
 }
 
@@ -13778,7 +13779,7 @@ body:has(.auth-page) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .learning-nav button,
+  .learning-nav :is(button, a),
   .xp-pill,
   .notification-button,
   .featured-course,
@@ -13826,7 +13827,7 @@ body:has(.auth-page) {
     align-content: stretch !important;
   }
 
-  .learning-nav button {
+  .learning-nav :is(button, a) {
     height: 100% !important;
     min-height: clamp(3.35rem, 5vh, 4rem) !important;
   }
@@ -13915,7 +13916,7 @@ body:has(.auth-page) {
     grid-template-rows: repeat(6, minmax(clamp(2.65rem, 4.4vh, 2.95rem), 1fr)) !important;
   }
 
-  .learning-nav button {
+  .learning-nav :is(button, a) {
     height: 100% !important;
     min-height: clamp(2.65rem, 4.4vh, 2.95rem) !important;
   }
@@ -18133,14 +18134,14 @@ select:focus-visible,
     grid-template-rows: none !important;
   }
 
-  .learning-nav button {
+  .learning-nav :is(button, a) {
     height: clamp(2.85rem, 4.7vh, 3.25rem) !important;
     min-height: clamp(2.85rem, 4.7vh, 3.25rem) !important;
     padding-inline: clamp(0.85rem, 1vw, 1.05rem) !important;
     font-size: clamp(0.9rem, 1vw, 1rem) !important;
   }
 
-  .learning-nav button svg {
+  .learning-nav :is(button, a) svg {
     width: clamp(1.05rem, 1.2vw, 1.28rem) !important;
     height: clamp(1.05rem, 1.2vw, 1.28rem) !important;
   }
@@ -18395,7 +18396,7 @@ select:focus-visible,
     display: none !important;
   }
 
-  .learning-nav button {
+  .learning-nav :is(button, a) {
     flex: 1 1 clamp(8.5rem, 30vw, 11rem) !important;
     width: auto !important;
     height: 2.55rem !important;
@@ -18408,7 +18409,7 @@ select:focus-visible,
     box-shadow: none !important;
   }
 
-  .learning-nav button svg {
+  .learning-nav :is(button, a) svg {
     width: 1rem !important;
     height: 1rem !important;
   }
@@ -18691,7 +18692,7 @@ select:focus-visible,
     margin-inline: -0.15rem !important;
   }
 
-  .learning-nav button {
+  .learning-nav :is(button, a) {
     flex-basis: calc(50% - 0.3rem) !important;
     height: 2.35rem !important;
     min-height: 2.35rem !important;
@@ -18699,7 +18700,7 @@ select:focus-visible,
     font-size: 0.78rem !important;
   }
 
-  .learning-nav button span {
+  .learning-nav :is(button, a) span {
     overflow: hidden !important;
     text-overflow: ellipsis !important;
   }
@@ -18720,7 +18721,7 @@ select:focus-visible,
     width: 100% !important;
   }
 
-  .learning-nav button svg {
+  .learning-nav :is(button, a) svg {
     width: 0.95rem !important;
     height: 0.95rem !important;
   }

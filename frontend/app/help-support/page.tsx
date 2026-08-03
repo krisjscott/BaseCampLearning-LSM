@@ -43,10 +43,21 @@ export default function HelpSupportDesktop() {
 
         <nav className="learning-nav" aria-label="Learning sections">
           {navItems.map(([label, Icon, active]) => (
-            <button type="button" className={active ? "active" : ""} key={label}>
+            <a
+              href={({
+                "Learning Home": "/learning",
+                "My Learning": "/my-learning",
+                Explore: "/explore",
+                Achievements: "/achievements",
+                Certificates: "/certificates",
+                Progress: "/progress",
+              } as const)[label]}
+              className={active ? "active" : ""}
+              key={label}
+            >
               <Icon size={22} strokeWidth={1.8} />
               <span>{label}</span>
-            </button>
+            </a>
           ))}
         </nav>
 
