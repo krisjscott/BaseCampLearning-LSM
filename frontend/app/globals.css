@@ -12881,8 +12881,41 @@ body:has(.auth-page) {
   font-size: clamp(0.78rem, 0.95vw, 0.9rem);
   font-weight: 800;
   letter-spacing: 0.03em;
-  text-transform: none;
+  text-transform: none !important;
   animation: loader-tag-float 1.8s ease-in-out infinite;
+}
+
+/* Step 4 final progress and vertical distribution. */
+@media (min-width: 721px) {
+  .onboarding-page.flow .step-progress[style*="100%"] {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    right: 0;
+  }
+
+  .onboarding-page.flow .education-content {
+    grid-template-rows: auto minmax(0, 1fr) auto !important;
+    align-content: stretch !important;
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.6rem, 1.8vh, 1.25rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.6rem, 1.8vh, 1.25rem)) !important;
+  }
+
+  .onboarding-page.flow .education-content .education-list {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    align-self: stretch;
+  }
+
+  .onboarding-page.flow .education-content .education-list button {
+    height: 100%;
+  }
+
+  .onboarding-page.flow .education-content .hint-pill {
+    align-self: end;
+    margin-top: 0 !important;
+    margin-bottom: clamp(1.5rem, 3.5vh, 3.8rem);
+  }
 }
 
 .onboarding-page.flow .personalising-card > p {
