@@ -6,6 +6,14 @@ Spring Boot API for the BaseCamp learning demo.
 
 The `local` profile is the recommended demo mode. It uses file-based H2 and does not require PostgreSQL, Redis, RabbitMQ, mail, or OAuth credentials.
 
+Optional local env:
+
+```powershell
+copy .env.example .env
+```
+
+The backend imports `.env` automatically when present. Store real cloud database, JWT, OAuth, mail, Redis, RabbitMQ, and Turnstile values there; `.env` is ignored by Git.
+
 ```powershell
 cd F:\basecamp\backend\backend
 $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"

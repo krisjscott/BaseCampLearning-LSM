@@ -1,6 +1,8 @@
 spring:
   application:
     name: tiesverse-basecamp-learning
+  config:
+    import: optional:file:.env[.properties]
   profiles:
     active: dev
 

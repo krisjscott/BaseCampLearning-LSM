@@ -57,6 +57,15 @@ Password: leave blank
 
 The local profile automatically runs Flyway migrations and seeds demo data.
 
+Optional backend env file:
+
+```powershell
+cd F:\basecamp\backend\backend
+copy .env.example .env
+```
+
+The backend imports `backend/.env` automatically when present. Keep real database, JWT, OAuth, mail, Redis, RabbitMQ, and Turnstile values in `.env`; it is ignored by Git.
+
 ## 2. Start The Frontend
 
 In a second PowerShell window from the project root:
@@ -78,6 +87,7 @@ http://127.0.0.1:3100
 
 ```text
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=
 ```
 
 ## Demo Login
