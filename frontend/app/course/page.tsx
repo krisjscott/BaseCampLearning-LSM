@@ -65,9 +65,9 @@ function Sidebar() {
 <section className="learner-profile" aria-label="Learner profile">
         <div>N</div>
         <section>
-          <strong>Nirjhar</strong>
-          <span>Builder - 2,480 XP</span>
-          <small>BC-CR-021</small>
+          <strong>Learner</strong>
+          <span>Learner</span>
+          <small>Account active</small>
         </section>
       </section>
     </aside>
@@ -81,7 +81,7 @@ export default function CourseOverview() {
 
       <section className="course-main">
         <header className="course-breadcrumb">
-          <p>My Learning / Google Project Management</p>
+          <p>My Learning / Selected course</p>
           <div>
             <button type="button"><Share2 size={16} /><span>Share</span></button>
           </div>
@@ -90,7 +90,7 @@ export default function CourseOverview() {
         <section className="course-hero">
           <div className="course-hero-copy">
             <p>BaseCamp certificate</p>
-            <h1>Google Project Management</h1>
+            <h1>Selected course</h1>
             <span>Build practical project management skills through guided lessons, real workplace scenarios and assessed checkpoints.</span>
             <div className="course-facts">
               <span>6 modules</span>

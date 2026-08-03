@@ -4,6 +4,7 @@ import { Award, BarChart3, Bell, BookOpen, Compass, Home, Menu, Trophy, X } from
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { getPublicDashboard } from "../lib/backendApi";
 
 const navItems = [
   { label: "Learning Home", href: "/learning", icon: Home },
@@ -53,6 +54,7 @@ function getActivePath(pathname: string) {
 export default function MobileHamburgerMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [activeCourses, setActiveCourses] = useState(0);
   const shouldShow = learningRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const activePath = getActivePath(pathname);
 
@@ -64,6 +66,18 @@ export default function MobileHamburgerMenu() {
     document.body.classList.toggle("mobile-menu-open", open);
     return () => document.body.classList.remove("mobile-menu-open");
   }, [open]);
+
+  useEffect(() => {
+    let active = true;
+    getPublicDashboard()
+      .then((dashboard) => {
+        if (active) setActiveCourses(dashboard?.continueLearning?.length || 0);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
 
   if (!shouldShow) return null;
 
@@ -80,7 +94,7 @@ export default function MobileHamburgerMenu() {
         <div className="mobile-hamburger-actions" aria-label="Learning status">
           <button type="button" className="mobile-xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            <span>2,480 XP</span>
+            <span>{activeCourses} active</span>
           </button>
           <Link href="/notifications" className="mobile-notification-button" aria-label="Notifications">
             <Bell size={19} strokeWidth={1.95} />

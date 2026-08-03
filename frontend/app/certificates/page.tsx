@@ -21,24 +21,6 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["1", "Ready"],
-  ["2", "In progress"],
-  ["0", "Expiring"],
-] as const;
-
-const credentials = [
-  ["Content Writing Foundations", "Issued Jul 20", "Verified", "Open"],
-  ["Google Project Management", "58% complete", "", "Progress"],
-  ["Graphic Design Essentials", "8% complete", "", "Progress"],
-] as const;
-
 function shortDate(value?: string | null) {
   if (!value) return "";
   return new Date(value).toLocaleDateString("en-US", { month: "short", day: "2-digit" });
@@ -58,7 +40,7 @@ function CertificatesWallet() {
     Promise.allSettled([getCertificates(), getCurrentUser()])
       .then(([certificatesResult, userResult]) => {
         if (!active) return;
-        if (certificatesResult.status === "fulfilled" && certificatesResult.value.length) {
+        if (certificatesResult.status === "fulfilled") {
           setBackendCertificates(certificatesResult.value);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
@@ -72,7 +54,6 @@ function CertificatesWallet() {
   }, []);
 
   const credentialRows = useMemo(() => {
-    if (!backendCertificates.length) return credentials;
     return backendCertificates.slice(0, 3).map((certificate) => [
       certificate.title || certificate.courseName || "Certificate",
       certificate.issuedDate ? `Issued ${shortDate(certificate.issuedDate)}` : "Issued",
@@ -82,7 +63,6 @@ function CertificatesWallet() {
   }, [backendCertificates]);
 
   const summaryStats = useMemo(() => {
-    if (!backendCertificates.length) return stats;
     return [
       [String(backendCertificates.length), "Ready"],
       ["0", "In progress"],
@@ -91,7 +71,7 @@ function CertificatesWallet() {
   }, [backendCertificates]);
 
   const heroCertificate = backendCertificates[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
   return (
     <main className="certificates-page">
@@ -109,19 +89,14 @@ function CertificatesWallet() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
+          <small>No course progress yet</small>
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
           <section>
             <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -139,12 +114,12 @@ function CertificatesWallet() {
         </header>
 
         <section className="certificates-hero">
-          <h2>{heroCertificate?.title || "Content Writing Foundations"}</h2>
+          <h2>{heroCertificate?.title || "No certificates yet"}</h2>
           <p>
-            {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Certificate issued Jul 20, 2026"}{" "}
-            - Credential {heroCertificate?.certificateNumber || "BC-CW-0148"}
+            {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Completed course certificates will appear here."}{" "}
+            {heroCertificate?.certificateNumber ? `- Credential ${heroCertificate.certificateNumber}` : ""}
           </p>
-          <button type="button">Download certificate -&gt;</button>
+          <button type="button">{heroCertificate ? "Download certificate ->" : "Explore courses ->"}</button>
         </section>
 
         <section className="certificates-stats" aria-label="Certificates summary">
@@ -160,7 +135,7 @@ function CertificatesWallet() {
 
         <div className="certificates-grid">
           <section className="credential-list" aria-label="Your credentials">
-            {credentialRows.map(([title, meta, status, action]) => (
+            {credentialRows.length ? credentialRows.map(([title, meta, status, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -168,25 +143,25 @@ function CertificatesWallet() {
                 </div>
                 <button type="button">{action} -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No credentials issued</h3>
+                  <p>Certificates are created from completed course assessments.</p>
+                </div>
+                <button type="button">Explore courses -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="public-profile-card">
             <div className="side-card-kicker">Public profile</div>
-            <h2>2 credentials visible</h2>
-            <p>Share a focused BaseCamp profile with verified progress.</p>
+            <h2>{backendCertificates.length} credentials visible</h2>
+            <p>Only certificates stored in the database appear on your profile.</p>
             <div className="profile-visibility-list" aria-label="Public profile visibility">
               <span>
-                <strong>Google Project Management</strong>
-                <small>Visible</small>
-              </span>
-              <span>
-                <strong>Content Strategy</strong>
-                <small>Visible</small>
-              </span>
-              <span>
-                <strong>Profile views</strong>
-                <small>18 this month</small>
+                <strong>{backendCertificates[0]?.courseName || "No public certificates"}</strong>
+                <small>{backendCertificates.length ? "Visible" : "Hidden"}</small>
               </span>
             </div>
             <button type="button">Manage visibility -&gt;</button>

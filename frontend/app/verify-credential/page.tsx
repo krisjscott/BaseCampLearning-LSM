@@ -30,8 +30,8 @@ const stats = [
 ] as const;
 
 const records = [
-  ["Learner", "Nirjhar"],
-  ["Course", "Content Writing Foundations"],
+  ["Learner", "Learner"],
+  ["Course", "Completed course"],
   ["Issuer", "BaseCamp - TIES HQ"],
 ] as const;
 
@@ -62,9 +62,9 @@ export default function PublicCredentialVerificationDesktop() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>
@@ -83,7 +83,7 @@ export default function PublicCredentialVerificationDesktop() {
 
         <section className="certificate-detail-hero">
           <h2>Verified certificate</h2>
-          <p>Content Writing Foundations - Awarded to Nirjhar - Issued Jul 20, 2026.</p>
+          <p>Completed course - Awarded to Learner - Issued Jul 20, 2026.</p>
           <button type="button">View certificate -&gt;</button>
         </section>
 

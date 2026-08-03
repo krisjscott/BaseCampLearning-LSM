@@ -15,7 +15,7 @@ export default function QuizResultPassed() {
           <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>Google Project Management</strong>
+            <strong>Selected course</strong>
             <p>Module checkpoint - Required assessment</p>
           </section>
         </div>

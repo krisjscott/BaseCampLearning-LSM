@@ -34,7 +34,7 @@ const captionCues = [
   {
     start: 0,
     end: 5,
-    text: "Welcome to the BaseCamp lesson player demo.",
+    text: "Welcome to the BaseCamp lesson player.",
   },
   {
     start: 5,
@@ -74,7 +74,7 @@ export default function LessonPlayer() {
   const [duration, setDuration] = useState(24);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const videoUrl = lesson?.contentUrl || "/lesson-demo.mp4";
+  const videoUrl = lesson?.contentUrl || "/lesson-sample.mp4";
   const lessonTitle = lesson?.title || "Define scope and deliverables";
   const fallbackDuration = lesson?.durationMinutes ? lesson.durationMinutes * 60 : 24;
   const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
@@ -221,8 +221,8 @@ export default function LessonPlayer() {
           <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>Google Project Management</strong>
-            <p>Module 3 - Planning and execution</p>
+            <strong>{lesson?.title || "Lesson player"}</strong>
+            <p>{lesson?.contentType || "Course lesson"}</p>
           </section>
         </div>
         <div className="lesson-top-actions">
@@ -254,7 +254,7 @@ export default function LessonPlayer() {
             >
               <source src={videoUrl} type="video/mp4" />
               <track
-                src="/lesson-demo.vtt"
+                src="/lesson-sample.vtt"
                 kind="captions"
                 srcLang="en"
                 label="English"
@@ -269,7 +269,7 @@ export default function LessonPlayer() {
               <span className="play-badge">
                 {isPlaying ? <Pause size={24} fill="none" /> : <Play size={24} fill="none" />}
               </span>
-              <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson demo" : `Resume from ${formatTime(currentTime)}`}</strong>
+              <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson" : `Resume from ${formatTime(currentTime)}`}</strong>
             </button>
             {captionsEnabled && activeCaption ? (
               <div className="lesson-caption-box" aria-live="polite">
@@ -322,7 +322,7 @@ export default function LessonPlayer() {
 
           <section className="watch-policy">
             <Lock size={18} />
-            <p>Video controls are enabled for demo playback testing.</p>
+            <p>Video progress is tracked from the active lesson media.</p>
             <strong>{watchedPercent}% watched</strong>
           </section>
 

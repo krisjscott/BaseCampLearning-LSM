@@ -62,9 +62,9 @@ export default function ReadingLessonDesktop() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

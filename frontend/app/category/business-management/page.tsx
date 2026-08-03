@@ -30,7 +30,7 @@ const stats = [
 ] as const;
 
 const featuredCourses = [
-  ["Google Project Management", "Certificate", "6 modules"],
+  ["Selected course", "Certificate", "6 modules"],
   ["Business Operations Essentials", "Course", "4 modules"],
   ["Leadership Foundations", "Course", "5 modules"],
 ] as const;
@@ -62,9 +62,9 @@ export default function BusinessManagementCategory() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

@@ -29,9 +29,9 @@ const stats = [
 ] as const;
 
 const recommendations = [
-  ["Project Management Foundations", "Beginner", "Certificate path"],
-  ["Content Writing Foundations", "Beginner", "4 modules"],
-  ["Graphic Design Essentials", "Beginner", "5 modules"],
+  ["Course foundations", "Beginner", "Certificate path"],
+  ["Completed course", "Beginner", "4 modules"],
+  ["Available course", "Beginner", "5 modules"],
 ] as const;
 
 export default function MyLearningEmptyStateDesktop() {
@@ -61,9 +61,9 @@ export default function MyLearningEmptyStateDesktop() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

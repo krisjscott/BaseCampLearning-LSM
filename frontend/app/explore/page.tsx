@@ -10,7 +10,14 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { CourseResponse, UserResponse, getCourses, getCurrentUser } from "../lib/backendApi";
+import {
+  CourseResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCourses,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -21,38 +28,24 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["42", "Courses"],
-  ["8", "Certificates"],
-  ["6", "Categories"],
-] as const;
-
-const popularCourses = [
-  ["Project Management Foundations", "Beginner", "24 hours"],
-  ["Content Strategy Essentials", "Beginner", "12 hours"],
-  ["Data Analytics Basics", "Intermediate", "18 hours"],
-] as const;
-
 export default function ExploreCourses() {
   const [backendCourses, setBackendCourses] = useState<CourseResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
 
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getCourses(12), getCurrentUser()])
-      .then(([coursesResult, userResult]) => {
+    Promise.allSettled([getCourses(12), getCurrentUser(), getPublicDashboard()])
+      .then(([coursesResult, userResult, dashboardResult]) => {
         if (!active) return;
-        if (coursesResult.status === "fulfilled" && coursesResult.value?.content?.length) {
-          setBackendCourses(coursesResult.value.content);
+        if (coursesResult.status === "fulfilled") {
+          setBackendCourses(coursesResult.value?.content || []);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
           setUser(userResult.value);
+        }
+        if (dashboardResult.status === "fulfilled" && dashboardResult.value) {
+          setDashboard(dashboardResult.value);
         }
       })
       .catch(() => undefined);
@@ -62,7 +55,6 @@ export default function ExploreCourses() {
   }, []);
 
   const courseRows = useMemo(() => {
-    if (!backendCourses.length) return popularCourses;
     return backendCourses.slice(0, 3).map((course) => [
       course.title,
       course.categoryName || course.status || "Course",
@@ -71,7 +63,6 @@ export default function ExploreCourses() {
   }, [backendCourses]);
 
   const summaryStats = useMemo(() => {
-    if (!backendCourses.length) return stats;
     const categories = new Set(backendCourses.map((course) => course.categoryName).filter(Boolean));
     const published = backendCourses.filter((course) => course.status === "PUBLISHED").length;
     return [
@@ -80,7 +71,11 @@ export default function ExploreCourses() {
       [String(categories.size || 1), "Categories"],
     ] as const;
   }, [backendCourses]);
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
+    item.courseTitle,
+    `${Math.round(item.completionPercentage || 0)}%`,
+  ] as const);
 
   return (
     <main className="explore-page">
@@ -98,19 +93,19 @@ export default function ExploreCourses() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
+          {trails.length ? trails.map(([name, progress]) => (
             <div key={name}>
               <span>{name}</span>
               <strong>{progress}</strong>
             </div>
-          ))}
+          )) : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
           <section>
             <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -146,7 +141,7 @@ export default function ExploreCourses() {
 
         <div className="explore-content-grid">
           <section className="popular-course-list" aria-label="Popular courses">
-            {courseRows.map(([title, level, duration]) => (
+            {courseRows.length ? courseRows.map(([title, level, duration]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -156,27 +151,36 @@ export default function ExploreCourses() {
                 </div>
                 <button type="button">View course -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No published courses yet</h3>
+                  <p>The production courses table did not return records for this account.</p>
+                </div>
+                <button type="button">Refresh -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="recommended-path-card">
             <div className="side-card-kicker">Recommended path</div>
-            <h2>Project Management</h2>
-            <p>Four-course pathway matched to your onboarding goals.</p>
+            <h2>{dashboard?.recommendedCourses?.[0]?.courseTitle || "No path selected"}</h2>
+            <p>{dashboard?.recommendedCourses?.length ? "Recommendations loaded from your learning profile." : "Complete onboarding and enrollments to generate recommendations."}</p>
             <div className="path-card-summary" aria-label="Recommended path summary">
               <section>
-                <strong>4</strong>
+                <strong>{dashboard?.recommendedCourses?.length || 0}</strong>
                 <span>courses</span>
               </section>
               <section>
-                <strong>24h</strong>
-                <span>guided work</span>
+                <strong>{backendCourses.reduce((total, course) => total + (course.durationHours || 0), 0)}</strong>
+                <span>hours listed</span>
               </section>
             </div>
             <div className="path-card-stack" aria-label="Path sequence">
-              <span>Foundations</span>
-              <span>Planning</span>
-              <span>Delivery</span>
+              {(dashboard?.recommendedCourses || []).slice(0, 3).map((course) => (
+                <span key={course.courseId}>{course.courseTitle}</span>
+              ))}
+              {!dashboard?.recommendedCourses?.length ? <span>No recommendations yet</span> : null}
             </div>
             <button type="button">Open path -&gt;</button>
           </aside>

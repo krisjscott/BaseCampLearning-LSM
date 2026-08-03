@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import DemoNavigator from "./components/DemoNavigator";
 import MobileHamburgerMenu from "./components/MobileHamburgerMenu";
 import "./globals.css";
 
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
     default: "BaseCamp Learning",
     template: "%s | BaseCamp Learning",
   },
-  description: "A responsive BaseCamp learning portal demo with onboarding, courses, assessments, progress, and certificates.",
+  description: "A responsive BaseCamp learning portal with onboarding, courses, assessments, progress, and certificates.",
   applicationName: "BaseCamp Learning",
   icons: {
     icon: [
@@ -27,7 +26,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "BaseCamp Learning",
-    description: "Responsive learning portal demo for onboarding, courses, assessments, and certificates.",
+    description: "Responsive learning portal for onboarding, courses, assessments, and certificates.",
     type: "website",
   },
 };
@@ -42,7 +41,6 @@ export default function RootLayout({
       <body className={inter.className}>
         <MobileHamburgerMenu />
         {children}
-        <DemoNavigator />
       </body>
     </html>
   );

@@ -38,7 +38,7 @@ const recentAchievements = [
 
 const levelLadder = [
   { level: "Starter", xp: "0 XP", state: "done", label: "Completed" },
-  { level: "Builder", xp: "2,480 XP", state: "current", label: "You are here" },
+  { level: "Builder", xp: "0 XP", state: "current", label: "You are here" },
   { level: "Achiever", xp: "4,000 XP", state: "next", label: "Next stage" },
   { level: "Champion", xp: "7,500 XP", state: "locked", label: "Final stage" },
 ] as const;
@@ -70,9 +70,9 @@ export default function Achievements() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

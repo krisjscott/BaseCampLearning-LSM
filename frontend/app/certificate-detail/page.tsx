@@ -71,9 +71,9 @@ export default function CertificateDetailShareDesktop() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>
@@ -92,8 +92,8 @@ export default function CertificateDetailShareDesktop() {
 
         <section className="certificate-detail-hero">
           <BadgeCheck size={28} />
-          <h2>Certified in Content Writing Foundations</h2>
-          <p>Awarded to Nirjhar after completing all required modules and assessments.</p>
+          <h2>Certified in Completed course</h2>
+          <p>Awarded to Learner after completing all required modules and assessments.</p>
           <button type="button">Verify credential -&gt;</button>
         </section>
 

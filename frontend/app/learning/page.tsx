@@ -26,20 +26,14 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
 const actionRows = [
-  ["Mandatory learning", "Required company and role training.", "3 items - Next due Jul 30", BookOpen],
-  ["Upcoming checkpoints", "Scheduled assessments and module dates.", "2 upcoming - Jul 28", CalendarClock],
-  ["Recommended paths", "Personalized courses based on your goals.", "4 curated paths", Compass],
+  ["Mandatory learning", "Required company and role training.", "Open assignments", BookOpen],
+  ["Upcoming checkpoints", "Scheduled assessments and module dates.", "View schedule", CalendarClock],
+  ["Recommended paths", "Personalized courses based on your goals.", "Browse courses", Compass],
 ] as const;
 
 function firstName(user?: UserResponse | null) {
-  return user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  return user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 }
 
 function LearningHome() {
@@ -63,7 +57,11 @@ function LearningHome() {
   const learnerName = firstName(user);
   const featured = dashboard?.continueLearning?.[0];
   const recommendations = dashboard?.recommendedCourses || [];
-  const progress = Math.round(featured?.completionPercentage ?? 58);
+  const progress = Math.round(featured?.completionPercentage ?? 0);
+  const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
+    item.courseTitle,
+    `${Math.round(item.completionPercentage || 0)}%`,
+  ] as const);
 
   const dashboardActions = useMemo(() => {
     if (!recommendations.length) return actionRows;
@@ -94,19 +92,19 @@ function LearningHome() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progressValue]) => (
+          {trails.length ? trails.map(([name, progressValue]) => (
             <div key={name}>
               <span>{name}</span>
               <strong>{progressValue}</strong>
             </div>
-          ))}
+          )) : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
           <section>
             <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -123,7 +121,7 @@ function LearningHome() {
           </label>
           <button type="button" className="xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            <span>2,480 XP</span>
+            <span>0 XP</span>
           </button>
           <button type="button" className="notification-button" aria-label="Notifications">
             <Bell size={22} strokeWidth={1.9} />
@@ -135,9 +133,9 @@ function LearningHome() {
             <h2>Your learning</h2>
 
             <article className="featured-course">
-              <p>In progress - Mandatory</p>
-              <h3>{featured?.courseTitle || "Google Project Management"}</h3>
-              <span>Module 3 - Planning &amp; Execution</span>
+              <p>{featured ? "In progress" : "No active course"}</p>
+              <h3>{featured?.courseTitle || "Choose a course to begin"}</h3>
+              <span>{featured ? "Progress loaded from your account" : "Explore the course catalogue to start learning."}</span>
               <div className="featured-progress" aria-label={`${progress} percent course progress`}>
                 <span style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }} />
               </div>
@@ -148,11 +146,11 @@ function LearningHome() {
               <dl className="course-meta">
                 <div>
                   <dt>Last activity</dt>
-                  <dd>{featured?.lastAccessedAt ? new Date(featured.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "Jul 24, 2026"}</dd>
+                  <dd>{featured?.lastAccessedAt ? new Date(featured.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "No activity yet"}</dd>
                 </div>
                 <div>
                   <dt>Next checkpoint</dt>
-                  <dd>Define scope &amp; deliverables - Jul 28</dd>
+                  <dd>{featured ? "Continue from your saved course progress" : "Not scheduled"}</dd>
                 </div>
               </dl>
               <button type="button">
@@ -163,7 +161,7 @@ function LearningHome() {
 
             <section className="timeline-card">
               <strong>Course timeline</strong>
-              <p>Started Jul 08 - Module 2 completed Jul 19 - Next checkpoint Jul 28</p>
+              <p>{featured ? "Timeline updates as you complete lessons and assessments." : "No timeline yet. Enrol in a course to create one."}</p>
             </section>
 
             <div className="learning-action-list">
@@ -188,12 +186,12 @@ function LearningHome() {
 
             <section className="stat-card level-card">
               <p>Current level</p>
-              <h3>Builder</h3>
-              <span>2,480 / 4,000 XP</span>
+              <h3>Learner</h3>
+              <span>0 / 4,000 XP</span>
               <div>
                 <span />
               </div>
-              <small>Next: Achiever - 1,520 XP to go</small>
+              <small>Progress is calculated from completed learning activity.</small>
             </section>
 
             <section className="stat-card week-card">
@@ -218,7 +216,7 @@ function LearningHome() {
             <section className="stat-card checkpoint-card">
               <p>Upcoming</p>
               <h3>Scope &amp; Deliverables Quiz</h3>
-              <span>Jul 28 - 12 questions - Required</span>
+              <span>No scheduled assessment yet</span>
               <hr />
               <small>Unlocks after the video is watched</small>
             </section>

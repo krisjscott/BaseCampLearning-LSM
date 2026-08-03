@@ -21,24 +21,6 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["3", "Active courses"],
-  ["58%", "Primary path"],
-  ["2h 18m", "This week"],
-] as const;
-
-const courses = [
-  ["Content Writing Foundations", "24% complete - Last activity Jul 24", "Continue ->"],
-  ["Graphic Design Essentials", "8% complete - 5 modules", "Resume ->"],
-  ["Communication Mastery", "Starts Aug 02", "View details ->"],
-] as const;
-
 function MyLearning() {
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
@@ -59,7 +41,6 @@ function MyLearning() {
 
   const continueLearning = dashboard?.continueLearning || [];
   const courseRows = useMemo(() => {
-    if (!continueLearning.length) return courses;
     return continueLearning.slice(0, 3).map((item) => [
       item.courseTitle,
       `${Math.round(item.completionPercentage || 0)}% complete${item.lastAccessedAt ? ` - Last activity ${new Date(item.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}` : ""}`,
@@ -68,7 +49,6 @@ function MyLearning() {
   }, [continueLearning]);
 
   const summaryStats = useMemo(() => {
-    if (!continueLearning.length) return stats;
     const primary = Math.round(continueLearning[0]?.completionPercentage || 0);
     return [
       [String(continueLearning.length), "Active courses"],
@@ -78,7 +58,11 @@ function MyLearning() {
   }, [continueLearning]);
 
   const featured = continueLearning[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+  const trails = continueLearning.slice(0, 3).map((item) => [
+    item.courseTitle,
+    `${Math.round(item.completionPercentage || 0)}%`,
+  ] as const);
 
   return (
     <main className="my-learning-page">
@@ -96,19 +80,19 @@ function MyLearning() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
+          {trails.length ? trails.map(([name, progress]) => (
             <div key={name}>
               <span>{name}</span>
               <strong>{progress}</strong>
             </div>
-          ))}
+          )) : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
           <section>
             <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -126,9 +110,9 @@ function MyLearning() {
         </header>
 
         <section className="continue-learning-card">
-          <h2>Continue {featured?.courseTitle || "Google Project Management"}</h2>
-          <p>Module 3 - Define scope and deliverables - Progress saved today</p>
-          <button type="button">Continue learning -&gt;</button>
+          <h2>{featured ? `Continue ${featured.courseTitle}` : "No active courses yet"}</h2>
+          <p>{featured ? "Progress loaded from your account." : "Browse the catalogue and enroll to start learning."}</p>
+          <button type="button">{featured ? "Continue learning ->" : "Browse courses ->"}</button>
         </section>
 
         <section className="my-learning-stats" aria-label="Learning summary">
@@ -144,7 +128,7 @@ function MyLearning() {
 
         <div className="my-learning-content-grid">
           <section className="my-course-list">
-            {courseRows.map(([title, meta, action]) => (
+            {courseRows.length ? courseRows.map(([title, meta, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -152,15 +136,23 @@ function MyLearning() {
                 </div>
                 <button type="button">{action}</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No courses enrolled</h3>
+                  <p>Your courses will appear here after enrollment.</p>
+                </div>
+                <button type="button">Explore courses -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="weekly-goal-card">
             <div className="side-card-kicker">Weekly goal</div>
-            <h2>3 of 5 complete</h2>
-            <p>Two goals left to keep your Builder streak alive.</p>
+            <h2>{continueLearning.length} active</h2>
+            <p>Weekly goals will update from your course progress.</p>
             <div className="side-card-meter" aria-label="3 of 5 learning goals completed">
-              <span style={{ width: "60%" }} />
+              <span style={{ width: `${Math.min(continueLearning.length * 20, 100)}%` }} />
             </div>
             <div className="weekly-goal-list" aria-label="Weekly goal checklist">
               <span className="done">Course lesson</span>

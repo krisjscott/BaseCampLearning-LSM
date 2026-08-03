@@ -11,10 +11,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
+  PublicDashboardResponse,
   UserResponse,
   UserSettingsResponse,
   getCurrentUser,
   getCurrentUserSettings,
+  getPublicDashboard,
   updateCurrentUser,
   updateCurrentUserSettings,
 } from "../lib/backendApi";
@@ -29,18 +31,6 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["4", "Interests"],
-  ["3", "Active courses"],
-  ["Public", "Profile visibility"],
-] as const;
-
 const settings = [
   ["Personal information", "Name, photo and profile summary", "Edit"],
   ["Learning interests", "Project management, content and design", "Update"],
@@ -48,12 +38,13 @@ const settings = [
 ] as const;
 
 function displayName(user: UserResponse | null) {
-  return user?.fullName || user?.email?.split("@")[0] || "Nirjhar";
+  return user?.fullName || user?.email?.split("@")[0] || "Learner";
 }
 
 function ProfilePreferencesDesktop() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [settingsState, setSettingsState] = useState<UserSettingsResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -69,17 +60,21 @@ function ProfilePreferencesDesktop() {
 
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getCurrentUser(), getCurrentUserSettings()])
-      .then(([userResult, settingsResult]) => {
+    Promise.allSettled([getCurrentUser(), getCurrentUserSettings(), getPublicDashboard()])
+      .then(([userResult, settingsResult, dashboardResult]) => {
         if (!active) return;
         const nextUser = userResult.status === "fulfilled" ? userResult.value : null;
         const nextSettings = settingsResult.status === "fulfilled" ? settingsResult.value : null;
+        const nextDashboard = dashboardResult.status === "fulfilled" ? dashboardResult.value : null;
 
         if (nextUser) {
           setUser(nextUser);
         }
         if (nextSettings) {
           setSettingsState(nextSettings);
+        }
+        if (nextDashboard) {
+          setDashboard(nextDashboard);
         }
 
         setForm((current) => ({
@@ -131,12 +126,24 @@ function ProfilePreferencesDesktop() {
 
   const name = displayName(user);
   const initial = name.charAt(0).toUpperCase();
+  const progressRows = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
+    item.courseTitle,
+    `${Math.round(item.completionPercentage || 0)}%`,
+  ] as const);
+  const statRows = useMemo(() => {
+    const activeCourses = dashboard?.continueLearning?.length || 0;
+    return [
+      [String(activeCourses), "Saved courses"],
+      [String(activeCourses), "Active courses"],
+      ["Public", "Profile visibility"],
+    ] as const;
+  }, [dashboard]);
   const settingsRows = useMemo(() => {
     if (!user) return settings;
     return [
-      ["Personal information", user.email || "Name, photo and profile summary", "Saved locally"] as const,
-      ["Learning interests", form.bio || "Add a short learning focus", "Saved locally"] as const,
-      ["Language & accessibility", `${form.language.toUpperCase()} - ${form.timezone}`, "Saved locally"] as const,
+      ["Personal information", user.email || "Name, photo and profile summary", "Saved to backend"] as const,
+      ["Learning interests", form.bio || "Add a short learning focus", "Saved to backend"] as const,
+      ["Language & accessibility", `${form.language.toUpperCase()} - ${form.timezone}`, "Saved to backend"] as const,
     ];
   }, [form.bio, form.language, form.timezone, user]);
 
@@ -156,19 +163,19 @@ function ProfilePreferencesDesktop() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([trailName, progress]) => (
+          {progressRows.length ? progressRows.map(([trailName, progress]) => (
             <div key={trailName}>
               <span>{trailName}</span>
               <strong>{progress}</strong>
             </div>
-          ))}
+          )) : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{initial}</div>
           <section>
             <strong>{name}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -186,13 +193,13 @@ function ProfilePreferencesDesktop() {
         </header>
 
         <section className="certificate-detail-hero">
-          <h2>{name} - Builder</h2>
-          <p>{user?.email || "Local demo account"} - {form.phone || "Phone not added"} - {form.address || "Address not added"}</p>
+          <h2>{name}</h2>
+          <p>{user?.email || "Account email unavailable"} - {form.phone || "Phone not added"} - {form.address || "Address not added"}</p>
           <button type="button">View public profile -&gt;</button>
         </section>
 
         <section className="certificate-detail-stats" aria-label="Profile summary">
-          {stats.map(([value, label]) => (
+          {statRows.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>

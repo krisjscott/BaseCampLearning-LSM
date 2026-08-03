@@ -30,7 +30,7 @@ const stats = [
 ] as const;
 
 const courseProgress = [
-  ["Google Project Management", "58%", "On track"],
+  ["Selected course", "58%", "On track"],
   ["Content Writing", "24%", "1h this week"],
   ["Graphic Design", "8%", "Needs attention"],
 ] as const;
@@ -62,9 +62,9 @@ export default function ProgressDashboard() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

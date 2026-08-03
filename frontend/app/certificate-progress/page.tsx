@@ -8,7 +8,7 @@ export default function CertificateProgressUnlocked() {
           <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>Google Project Management</strong>
+            <strong>Selected course</strong>
             <p>Module checkpoint - Required assessment</p>
           </section>
         </div>
@@ -27,7 +27,7 @@ export default function CertificateProgressUnlocked() {
 
         <section className="certificate-progress-card">
           <div className="certificate-copy">
-            <p>Google Project Management</p>
+            <p>Selected course</p>
             <h2>Certificate progress: 58%</h2>
             <div className="certificate-progress-bar" aria-label="Certificate progress 58 percent">
               <span />
@@ -45,7 +45,7 @@ export default function CertificateProgressUnlocked() {
           <button type="button" className="certificate-preview">
             <strong>base camp</strong>
             <span>Certificate of completion</span>
-            <h2>Nirjhar</h2>
+            <h2>Learner</h2>
             <p>Preview - Unlocks at course completion</p>
           </button>
         </section>

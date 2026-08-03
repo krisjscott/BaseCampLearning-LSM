@@ -63,6 +63,42 @@ export type LessonResponse = {
   orderIndex?: number | null;
 };
 
+export type AssessmentOptionResponse = {
+  id: string;
+  optionText: string;
+};
+
+export type AssessmentQuestionResponse = {
+  id: string;
+  questionText: string;
+  questionType?: string | null;
+  points?: number | null;
+  orderIndex?: number | null;
+  options?: AssessmentOptionResponse[] | null;
+};
+
+export type AssessmentResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  courseId?: string | null;
+  type?: string | null;
+  passingScore?: number | null;
+  timeLimitMinutes?: number | null;
+  maxAttempts?: number | null;
+  questions?: AssessmentQuestionResponse[] | null;
+};
+
+export type AssessmentResultResponse = {
+  id: string;
+  assessmentId: string;
+  assessmentTitle?: string | null;
+  score?: number | null;
+  attemptNumber?: number | null;
+  passed: boolean;
+  submittedAt?: string | null;
+};
+
 export type CertificateResponse = {
   id: string;
   certificateNumber: string;
@@ -390,6 +426,28 @@ export async function getPublicDashboard(): Promise<PublicDashboardResponse | nu
 export async function getLesson(lessonId: string): Promise<LessonResponse | null> {
   const response = await backendRequest<LessonResponse>(`/api/v1/courses/lessons/${lessonId}`, {
     headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function getAssessment(assessmentId: string): Promise<AssessmentResponse | null> {
+  const response = await backendRequest<AssessmentResponse>(`/api/v1/assessments/${assessmentId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function submitAssessment(payload: {
+  assessmentId: string;
+  answers: Array<{
+    questionId: string;
+    answerText?: string | null;
+    selectedOptionId?: string | null;
+  }>;
+}): Promise<AssessmentResultResponse | null> {
+  const response = await backendRequest<AssessmentResultResponse>("/api/v1/assessments/submit", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
   return response.data || null;
 }

@@ -30,7 +30,7 @@ const stats = [
 ] as const;
 
 const curriculum = [
-  ["1. Project Management Foundations", "Starter", "Start here", "Begin"],
+  ["1. Course foundations", "Starter", "Start here", "Begin"],
   ["2. Planning & Execution", "Builder", "Locked", "Requirements"],
   ["3. Leading Delivery", "Achiever", "Locked", "Requirements"],
 ] as const;
@@ -62,9 +62,9 @@ export default function ProjectManagementPath() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

@@ -22,24 +22,6 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["6", "Unread"],
-  ["2", "Deadline alerts"],
-  ["3", "Course updates"],
-] as const;
-
-const recentNotifications = [
-  ["Checkpoint reminder", "Quiz scheduled for Jul 28", "Open course"],
-  ["Certificate ready", "Content Writing certificate is available", "Download"],
-  ["New recommendation", "Communication Mastery matches your goals", "View"],
-] as const;
-
 function Notifications() {
   const [backendNotifications, setBackendNotifications] = useState<NotificationResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
@@ -49,7 +31,7 @@ function Notifications() {
     Promise.allSettled([getNotifications(), getCurrentUser()])
       .then(([notificationsResult, userResult]) => {
         if (!active) return;
-        if (notificationsResult.status === "fulfilled" && notificationsResult.value.length) {
+        if (notificationsResult.status === "fulfilled") {
           setBackendNotifications(notificationsResult.value);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
@@ -63,7 +45,6 @@ function Notifications() {
   }, []);
 
   const notificationRows = useMemo(() => {
-    if (!backendNotifications.length) return recentNotifications;
     return backendNotifications.slice(0, 3).map((item) => [
       item.title,
       item.message,
@@ -72,7 +53,6 @@ function Notifications() {
   }, [backendNotifications]);
 
   const summaryStats = useMemo(() => {
-    if (!backendNotifications.length) return stats;
     const unread = backendNotifications.filter((item) => !item.read).length;
     const deadlineAlerts = backendNotifications.filter((item) => item.category === "DEADLINE_REMINDER").length;
     const courseUpdates = backendNotifications.filter((item) => item.category === "COURSE_ASSIGNED").length;
@@ -84,7 +64,7 @@ function Notifications() {
   }, [backendNotifications]);
 
   const heroNotification = backendNotifications.find((item) => !item.read) || backendNotifications[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
   return (
     <main className="notifications-page">
@@ -102,19 +82,14 @@ function Notifications() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
+          <small>No course progress yet</small>
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
           <section>
             <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <span>{user?.role || "Learner"}</span>
+            <small>{user?.email || "Account active"}</small>
           </section>
         </section>
       </aside>
@@ -132,9 +107,9 @@ function Notifications() {
         </header>
 
         <section className="notifications-hero">
-          <h2>{heroNotification?.title || "One deadline needs attention"}</h2>
-          <p>{heroNotification?.message || "Workplace Safety Essentials is due Jul 30."}</p>
-          <button type="button">Review deadline -&gt;</button>
+          <h2>{heroNotification?.title || "No notifications yet"}</h2>
+          <p>{heroNotification?.message || "Course updates and reminders will appear here."}</p>
+          <button type="button">{heroNotification ? "Review notification ->" : "Manage preferences ->"}</button>
         </section>
 
         <section className="notifications-stats" aria-label="Notifications summary">
@@ -150,7 +125,7 @@ function Notifications() {
 
         <div className="notifications-content-grid">
           <section className="notification-list" aria-label="Recent notifications">
-            {notificationRows.map(([title, detail, action]) => (
+            {notificationRows.length ? notificationRows.map(([title, detail, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -158,7 +133,15 @@ function Notifications() {
                 </div>
                 <button type="button">{action} -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No recent notifications</h3>
+                  <p>Your backend notifications table has no records for this account.</p>
+                </div>
+                <button type="button">Preferences -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="notification-preferences-card">

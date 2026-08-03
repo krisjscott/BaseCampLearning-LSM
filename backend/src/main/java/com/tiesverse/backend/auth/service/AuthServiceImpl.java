@@ -34,7 +34,6 @@ public class AuthServiceImpl implements AuthService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final UserSettingsRepository userSettingsRepository;
-    private final DemoExperienceService demoExperienceService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
     private final TurnstileService turnstileService;
@@ -72,7 +71,6 @@ public class AuthServiceImpl implements AuthService {
                 .language("en")
                 .timezone("Asia/Kolkata")
                 .build());
-        demoExperienceService.attachDemoExperience(savedUser.getId(), request.getFullName());
 
         String accessToken = jwtProvider.generateToken(
                 savedAccount.getEmail(),

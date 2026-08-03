@@ -7812,7 +7812,7 @@ input {
   }
 }
 
-/* Demo responsiveness overrides: keep the coded Figma screens fluid across viewports. */
+/* Responsiveness overrides: keep coded screens fluid across viewports. */
 .learning-home,
 .my-learning-page,
 .explore-page,
@@ -9781,7 +9781,7 @@ button:focus-visible {
   color: var(--bc-color-text-inverse);
 }
 
-/* Re-assert design tokens at cascade end for the generated demo screens. */
+/* Re-assert design tokens at cascade end for the generated screens. */
 :root {
   --ink: #14171a;
   --muted: #61666e;
