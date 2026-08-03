@@ -247,10 +247,10 @@ export async function backendRequest<T>(
   return parseResponse<T>(response);
 }
 
-export async function login(email: string, password: string): Promise<AuthPayload> {
+export async function login(email: string, password: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, turnstileToken }),
   });
 
   if (!response.data) {
@@ -261,10 +261,10 @@ export async function login(email: string, password: string): Promise<AuthPayloa
   return response.data;
 }
 
-export async function register(email: string, password: string, fullName: string): Promise<AuthPayload> {
+export async function register(email: string, password: string, fullName: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, fullName }),
+    body: JSON.stringify({ email, password, fullName, turnstileToken }),
   });
 
   if (!response.data) {
