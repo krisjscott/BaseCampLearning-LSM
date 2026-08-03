@@ -1,10 +1,10 @@
 "use client";
 
-import { Award, BarChart3, Bell, BookOpen, Compass, Home, Menu, Trophy, X } from "lucide-react";
+import { Award, BarChart3, Bell, BookOpen, Compass, Home, LogOut, Menu, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPublicDashboard } from "../lib/backendApi";
+import { getPublicDashboard, logout } from "../lib/backendApi";
 import { Skeleton } from "./Skeleton";
 
 const navItems = [
@@ -57,6 +57,7 @@ export default function MobileHamburgerMenu() {
   const [open, setOpen] = useState(false);
   const [activeCourses, setActiveCourses] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState(true);
+  const [signingOut, setSigningOut] = useState(false);
   const shouldShow = learningRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const activePath = getActivePath(pathname);
 
@@ -86,6 +87,11 @@ export default function MobileHamburgerMenu() {
   }, [pathname]);
 
   if (!shouldShow) return null;
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    await logout();
+  }
 
   return (
     <section className="mobile-hamburger-shell" aria-label="Mobile navigation">
@@ -123,6 +129,10 @@ export default function MobileHamburgerMenu() {
             <span>{label}</span>
           </Link>
         ))}
+        <button type="button" className="mobile-menu-signout" onClick={handleSignOut} disabled={signingOut}>
+          <LogOut size={20} strokeWidth={1.9} />
+          <span>{signingOut ? "Signing out..." : "Sign out"}</span>
+        </button>
       </nav>
     </section>
   );

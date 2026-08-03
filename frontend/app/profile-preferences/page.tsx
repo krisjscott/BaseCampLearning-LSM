@@ -6,6 +6,7 @@ import {
   BookOpen,
   Compass,
   Home,
+  LogOut,
   Trophy,
   UserCheck,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import {
   getCurrentUser,
   getCurrentUserSettings,
   getPublicDashboard,
+  logout,
   updateCurrentUser,
   updateCurrentUserSettings,
 } from "../lib/backendApi";
@@ -59,6 +61,7 @@ function ProfilePreferencesDesktop() {
   });
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -125,6 +128,11 @@ function ProfilePreferencesDesktop() {
     } finally {
       setIsSaving(false);
     }
+  }
+
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    await logout();
   }
 
   const name = displayName(user);
@@ -322,8 +330,11 @@ function ProfilePreferencesDesktop() {
             {loading ? <CardSkeleton lines={3} /> : (
               <>
                 <h2>Account security</h2>
-                <p>Email sign-in and Crew ID access are active.</p>
-                <button type="button">Security settings -&gt;</button>
+                <p>Email sign-in and Crew ID access are active. Sign out clears this browser session and notifies the backend.</p>
+                <button type="button" className="secondary" onClick={handleSignOut} disabled={isSigningOut}>
+                  <LogOut size={17} />
+                  <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>
+                </button>
               </>
             )}
           </aside>
