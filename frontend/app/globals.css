@@ -17706,7 +17706,7 @@ select:focus-visible,
   transform: none !important;
 }
 
-/* Achievements level ladder: clean milestone rail. */
+/* Achievements level ladder: staged steps toward the next level. */
 .level-ladder-card {
   overflow: hidden !important;
 }
@@ -17718,63 +17718,96 @@ select:focus-visible,
 .level-ladder-steps {
   position: relative;
   display: grid;
-  gap: 0;
+  gap: clamp(0.55rem, 0.9vh, 0.7rem);
   margin-top: clamp(1.35rem, 2.2vh, 1.75rem);
-  padding: 0.15rem 0 0.15rem clamp(1.1rem, 1.35vw, 1.45rem);
+  padding: 0.1rem 0 0.1rem;
 }
 
 .level-ladder-steps::before {
-  content: "";
-  position: absolute;
-  left: clamp(0.75rem, 0.85vw, 0.9rem);
-  top: clamp(1.15rem, 1.6vh, 1.35rem);
-  bottom: clamp(1.15rem, 1.6vh, 1.35rem);
-  width: 0.14rem;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #35c67a 0 36%, #ff5522 36% 64%, rgba(17, 19, 21, 0.12) 64% 100%);
+  content: none;
 }
 
 .ladder-step {
   position: relative;
-  min-height: clamp(3.35rem, 5.35vh, 4rem);
+  min-height: clamp(3.85rem, 6.2vh, 4.5rem);
   display: grid;
-  grid-template-columns: clamp(1.35rem, 1.45vw, 1.65rem) minmax(0, 1fr);
+  grid-template-columns: clamp(2.15rem, 2.25vw, 2.55rem) minmax(0, 1fr);
   align-items: center;
-  gap: clamp(0.8rem, 1vw, 1.05rem);
-  padding: clamp(0.55rem, 0.8vh, 0.7rem) 0;
+  gap: clamp(0.75rem, 0.95vw, 1rem);
+  width: 100%;
+  padding: clamp(0.65rem, 1vh, 0.8rem) clamp(0.75rem, 1vw, 1rem);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.74), 0 12px 24px rgba(18, 28, 38, 0.06);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .ladder-step::after {
-  content: none;
-  display: none;
-}
-
-.ladder-step:first-child::after {
-  display: none;
-}
-
-.ladder-step > span {
-  position: relative;
-  z-index: 1;
-  width: clamp(0.85rem, 0.95vw, 1.05rem);
-  height: clamp(0.85rem, 0.95vw, 1.05rem);
-  justify-self: center;
-  border: 0.18rem solid #ffffff;
+  content: "";
+  position: absolute;
+  left: clamp(1.8rem, 1.9vw, 2.05rem);
+  bottom: calc(clamp(0.55rem, 0.9vh, 0.7rem) * -1 - 0.48rem);
+  width: 0.11rem;
+  height: clamp(0.65rem, 1vh, 0.85rem);
   border-radius: 999px;
-  background: #d8dcdd;
-  box-shadow: 0 0 0 1px rgba(17, 19, 21, 0.08), 0 8px 18px rgba(18, 28, 38, 0.08);
+  background: rgba(17, 19, 21, 0.16);
 }
 
-.ladder-step section {
+.ladder-step:last-child::after {
+  display: none;
+}
+
+.ladder-step:nth-child(2) {
+  width: calc(100% - clamp(0.8rem, 1.05vw, 1.1rem));
+  margin-left: clamp(0.8rem, 1.05vw, 1.1rem);
+}
+
+.ladder-step:nth-child(3) {
+  width: calc(100% - clamp(1.6rem, 2.1vw, 2.2rem));
+  margin-left: clamp(1.6rem, 2.1vw, 2.2rem);
+}
+
+.ladder-step:nth-child(4) {
+  width: calc(100% - clamp(2.4rem, 3.15vw, 3.3rem));
+  margin-left: clamp(2.4rem, 3.15vw, 3.3rem);
+}
+
+.ladder-step:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 16px 28px rgba(18, 28, 38, 0.08);
+}
+
+.ladder-step-number {
+  width: clamp(2rem, 2.15vw, 2.4rem);
+  height: clamp(2rem, 2.15vw, 2.4rem);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #eff0ed;
+  color: #111315;
+  font-size: clamp(0.82rem, 0.82vw, 0.92rem);
+  font-weight: 900;
+  box-shadow: 0 0 0 1px rgba(17, 19, 21, 0.08);
+}
+
+.ladder-step-copy {
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 0.75rem;
-  padding: clamp(0.7rem, 1.05vh, 0.9rem) clamp(0.9rem, 1.1vw, 1.15rem);
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: 0.95rem;
-  background: rgba(255, 255, 255, 0.44);
+  align-items: end;
+  column-gap: 0.65rem;
+  row-gap: 0.16rem;
+}
+
+.ladder-step-copy > span {
+  grid-column: 1 / -1;
+  color: #7f8991;
+  font-size: clamp(0.66rem, 0.66vw, 0.76rem);
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .ladder-step strong {
@@ -17793,28 +17826,48 @@ select:focus-visible,
 
 .ladder-step.done > span {
   background: #35c67a;
+  color: #ffffff;
 }
 
-.ladder-step.current > span {
+.ladder-step.done::after {
+  background: #35c67a;
+}
+
+.ladder-step.current {
+  border-color: rgba(255, 85, 34, 0.72);
+  background: rgba(255, 85, 34, 0.08);
+  box-shadow: 0 16px 30px rgba(255, 85, 34, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.72);
+}
+
+.ladder-step.current .ladder-step-number {
   background: #ff5522;
+  color: #ffffff;
   box-shadow: 0 0 0 0.28rem rgba(255, 85, 34, 0.13), 0 10px 22px rgba(255, 85, 34, 0.16);
 }
 
-.ladder-step.current section {
-  border-color: rgba(255, 85, 34, 0.5);
-  background: rgba(255, 85, 34, 0.08);
+.ladder-step.current::after {
+  background: linear-gradient(180deg, #ff5522, rgba(17, 19, 21, 0.16));
 }
 
 .ladder-step.current strong {
   color: #ff5522 !important;
 }
 
-.ladder-step.next > span {
+.ladder-step.next {
+  border-color: rgba(255, 85, 34, 0.24);
+}
+
+.ladder-step.next .ladder-step-number {
   background: #ffb29a;
+  color: #8f2a0f;
 }
 
 .ladder-step.locked {
-  opacity: 0.64;
+  opacity: 0.7;
+}
+
+.ladder-step.locked .ladder-step-number {
+  color: #7f8991;
 }
 
 .level-ladder-card button {

@@ -2,8 +2,10 @@ import {
   Award,
   BarChart3,
   BookOpen,
+  Check,
   Compass,
   Home,
+  LockKeyhole,
   Trophy,
 } from "lucide-react";
 
@@ -35,10 +37,10 @@ const recentAchievements = [
 ] as const;
 
 const levelLadder = [
-  ["Starter", "0 XP", "done"],
-  ["Builder", "2,480 XP", "current"],
-  ["Achiever", "4,000 XP", "next"],
-  ["Champion", "7,500 XP", "locked"],
+  { level: "Starter", xp: "0 XP", state: "done", label: "Completed" },
+  { level: "Builder", xp: "2,480 XP", state: "current", label: "You are here" },
+  { level: "Achiever", xp: "4,000 XP", state: "next", label: "Next stage" },
+  { level: "Champion", xp: "7,500 XP", state: "locked", label: "Final stage" },
 ] as const;
 
 export default function Achievements() {
@@ -120,10 +122,13 @@ export default function Achievements() {
           <aside className="level-ladder-card">
             <h2>Level ladder</h2>
             <div className="level-ladder-steps" aria-label="Starter to Champion level ladder">
-              {levelLadder.map(([level, xp, state]) => (
+              {levelLadder.map(({ level, xp, state, label }, index) => (
                 <div className={`ladder-step ${state}`} key={level}>
-                  <span />
-                  <section>
+                  <span className="ladder-step-number">
+                    {state === "done" ? <Check size={15} strokeWidth={2.7} /> : state === "locked" ? <LockKeyhole size={14} strokeWidth={2.3} /> : index + 1}
+                  </span>
+                  <section className="ladder-step-copy">
+                    <span>{label}</span>
                     <strong>{level}</strong>
                     <small>{xp}</small>
                   </section>
