@@ -12037,3 +12037,151 @@ body:has(.auth-page) {
   }
 }
 
+/* Step 2 reference match: skill selection screen. */
+@media (min-width: 721px) {
+  .onboarding-page.flow .interests-content {
+    width: min(70vw, 87.5rem);
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1rem, 4vh, 2.75rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1rem, 4vh, 2.75rem)) !important;
+    display: grid;
+    grid-template-rows: auto auto auto auto auto;
+    justify-items: center;
+    align-content: start;
+    gap: clamp(1.05rem, 2.35vh, 2.2rem);
+  }
+
+  .onboarding-page.flow .interests-content .screen-heading {
+    width: min(60rem, 100%);
+  }
+
+  .onboarding-page.flow .interests-content .screen-heading h1 {
+    font-size: clamp(2.1rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .onboarding-page.flow .interests-content .screen-heading span {
+    max-width: 78ch;
+  }
+
+  .onboarding-page.flow .interests-content .search-field {
+    width: min(100%, 62rem);
+    height: clamp(4rem, 7.8vh, 4.9rem);
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 1.8vw, 1.35rem);
+    padding: 0 clamp(1.45rem, 2vw, 1.75rem);
+    border: 1px solid rgb(255 255 255 / 74%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 45%);
+    box-shadow: inset 0 1px 1px rgb(255 255 255 / 72%), 0 18px 44px rgb(18 28 38 / 7%);
+    color: #4c5660;
+  }
+
+  .onboarding-page.flow .interests-content .search-field svg {
+    width: clamp(1.25rem, 1.7vw, 1.55rem);
+    height: clamp(1.25rem, 1.7vw, 1.55rem);
+    flex: 0 0 auto;
+  }
+
+  .onboarding-page.flow .interests-content .search-field input {
+    height: 100%;
+    color: #111111;
+    font-size: clamp(1rem, 1.5vw, 1.35rem);
+    font-weight: 500;
+  }
+
+  .onboarding-page.flow .interests-content .search-field input::placeholder {
+    color: #858c94;
+  }
+
+  .onboarding-page.flow .interests-content .selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: clamp(0.75rem, 1.4vw, 1rem);
+    margin: 0;
+  }
+
+  .onboarding-page.flow .interests-content .selected-tags button {
+    min-height: clamp(2.75rem, 5vh, 3.35rem);
+    padding: 0 clamp(1.1rem, 1.7vw, 1.45rem);
+    border: 0;
+    border-radius: 999px;
+    background: #0b0d0e;
+    color: #ffffff;
+    box-shadow: 0 16px 32px rgb(17 24 39 / 16%);
+    font-size: clamp(0.95rem, 1.22vw, 1.14rem);
+    font-weight: 600;
+  }
+
+  .onboarding-page.flow .interests-content .selected-tags span {
+    color: #ffffff;
+    opacity: 0.82;
+  }
+
+  .onboarding-page.flow .interests-content .interest-grid {
+    width: min(100%, 87.5rem);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(0.8rem, 1.6vh, 1.25rem) clamp(1rem, 1.5vw, 1.25rem);
+  }
+
+  .onboarding-page.flow .interests-content .interest-grid button {
+    height: clamp(3rem, 5.9vh, 3.75rem);
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid rgb(209 212 214 / 72%);
+    border-radius: 0.75rem;
+    padding: 0 clamp(1.05rem, 1.6vw, 1.35rem);
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgb(18 28 38 / 3%);
+    color: #111111;
+    font-size: clamp(0.94rem, 1.15vw, 1.05rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .onboarding-page.flow .interests-content .interest-grid button span:last-child {
+    color: #6f7780;
+    font-size: clamp(1rem, 1.2vw, 1.1rem);
+    font-weight: 700;
+  }
+
+  .onboarding-page.flow .interests-content .interest-grid button.selected {
+    border-color: #0b0d0e;
+    background: #0b0d0e;
+    color: #ffffff;
+    box-shadow: 0 14px 28px rgb(17 24 39 / 16%);
+  }
+
+  .onboarding-page.flow .interests-content .interest-grid button.selected span:last-child {
+    color: #ffffff;
+  }
+
+  .onboarding-page.flow .interests-content .hint-pill {
+    margin-top: clamp(0.55rem, 1.3vh, 0.95rem);
+    padding: clamp(0.65rem, 1.15vh, 0.8rem) clamp(1.2rem, 1.8vw, 1.55rem);
+    font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+  }
+}
+
+.onboarding-page.flow .secondary-button {
+  border: 1px solid #4d565f;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  color: #111111;
+  box-shadow: none;
+}
+
+.onboarding-page.flow .onboarding-footer.split-actions > span {
+  display: none;
+}
+
+.onboarding-page.flow .onboarding-footer.split-actions .footer-actions {
+  width: 100%;
+  justify-content: space-between;
+}
+

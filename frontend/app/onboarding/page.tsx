@@ -141,7 +141,7 @@ function Footer({
   disableBack?: boolean;
 }) {
   return (
-    <footer className="onboarding-footer">
+    <footer className={`onboarding-footer ${note ? "has-note" : "split-actions"}`}>
       {note ? <p>{note}</p> : <span />}
       <div className="footer-actions">
         {!disableBack && (
