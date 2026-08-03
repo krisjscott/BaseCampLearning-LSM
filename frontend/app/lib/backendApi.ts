@@ -127,6 +127,7 @@ export type UserResponse = {
   fullName?: string | null;
   email: string;
   profilePictureUrl?: string | null;
+  learnerCode?: string | null;
   phone?: string | null;
   bio?: string | null;
   role?: string | null;

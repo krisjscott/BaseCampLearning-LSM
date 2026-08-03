@@ -19,6 +19,7 @@ public interface UserMapper {
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "email", source = "email")
     @Mapping(target = "profilePictureUrl", source = "user.profilePictureUrl")
+    @Mapping(target = "learnerCode", source = "user.learnerCode")
     @Mapping(target = "phone", source = "user.phone")
     @Mapping(target = "bio", source = "user.bio")
     @Mapping(target = "role", source = "role")
@@ -32,6 +33,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "accountId", ignore = true)
     @Mapping(target = "profilePictureUrl", ignore = true)
+    @Mapping(target = "learnerCode", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateUserFromRequest(UpdateProfileRequest request, @MappingTarget User user);

@@ -14,6 +14,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   CertificateResponse,
   NotificationResponse,
@@ -119,14 +120,23 @@ function LearningHome() {
             </div>
           )) : <small>No course progress yet</small>}
         </section>
-        <section className="learner-profile" aria-label="Learner profile">
-          <div>{learnerName.charAt(0).toUpperCase()}</div>
-          <section>
-            <strong>{learnerName}</strong>
-            <span>{user?.role || "Learner"}</span>
-            <small>{user?.email || "Account active"}</small>
-          </section>
-        </section>
+        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
+          {loading ? (
+            <>
+              <div><Skeleton className="skeleton-pill" /></div>
+              <SidebarSkeleton />
+            </>
+          ) : (
+            <>
+              <div>{learnerName.charAt(0).toUpperCase()}</div>
+              <section>
+                <strong>{learnerName}</strong>
+                <span>{user?.role || "Learner"}</span>
+                <small>{user?.learnerCode || "Profile code pending"}</small>
+              </section>
+            </>
+          )}
+        </Link>
       </aside>
 
       <section className="learning-main">

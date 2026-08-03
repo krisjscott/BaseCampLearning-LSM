@@ -10,6 +10,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   CourseResponse,
   PublicDashboardResponse,
@@ -18,7 +19,7 @@ import {
   getCurrentUser,
   getPublicDashboard,
 } from "../lib/backendApi";
-import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
+import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -105,14 +106,23 @@ export default function ExploreCourses() {
             </div>
           )) : <small>No course progress yet</small>}
         </section>
-        <section className="learner-profile" aria-label="Learner profile">
-          <div>{learnerName.charAt(0).toUpperCase()}</div>
-          <section>
-            <strong>{learnerName}</strong>
-            <span>{user?.role || "Learner"}</span>
-            <small>{user?.email || "Account active"}</small>
-          </section>
-        </section>
+        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
+          {loading ? (
+            <>
+              <div><Skeleton className="skeleton-pill" /></div>
+              <SidebarSkeleton />
+            </>
+          ) : (
+            <>
+              <div>{learnerName.charAt(0).toUpperCase()}</div>
+              <section>
+                <strong>{learnerName}</strong>
+                <span>{user?.role || "Learner"}</span>
+                <small>{user?.learnerCode || "Profile code pending"}</small>
+              </section>
+            </>
+          )}
+        </Link>
       </aside>
 
       <section className="explore-main">

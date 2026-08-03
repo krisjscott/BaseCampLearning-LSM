@@ -28,6 +28,9 @@ public class User extends BaseEntity {
     @Column(name = "profile_picture_url")
     private String profilePictureUrl;
 
+    @Column(name = "learner_code", insertable = false, updatable = false)
+    private String learnerCode;
+
     @Column
     private String phone;
 

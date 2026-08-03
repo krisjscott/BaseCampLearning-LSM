@@ -178,7 +178,7 @@ function ProfilePreferencesDesktop() {
           <section>
             <strong>{name}</strong>
             <span>{user?.role || "Learner"}</span>
-            <small>{user?.email || "Account active"}</small>
+            <small>{user?.learnerCode || "Profile code pending"}</small>
           </section>
         </section>
       </aside>
@@ -199,7 +199,7 @@ function ProfilePreferencesDesktop() {
           {loading ? <CardSkeleton lines={3} /> : (
             <>
               <h2>{name}</h2>
-              <p>{user?.email || "Account email unavailable"} - {form.phone || "Phone not added"} - {form.address || "Address not added"}</p>
+              <p>{user?.email || "Account email unavailable"} - {user?.learnerCode || "Profile code pending"} - {form.phone || "Phone not added"}</p>
               <button type="button">View public profile -&gt;</button>
             </>
           )}
