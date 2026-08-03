@@ -2096,7 +2096,6 @@ input {
 
 .level-card > div span {
   display: block;
-  width: 62%;
   height: 100%;
   border-radius: inherit;
   background: #ff4f0f;
@@ -13630,7 +13629,6 @@ body:has(.auth-page) {
 }
 
 .level-card > div span {
-  width: 62% !important;
   background: #ff5a1f !important;
 }
 
