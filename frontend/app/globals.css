@@ -17676,3 +17676,33 @@ select:focus-visible,
   }
 }
 
+/* User preference: no achievements hero progress strip and no route-enter motion. */
+.achievements-hero::after {
+  content: none !important;
+  display: none !important;
+}
+
+.page-transition-shell,
+.learning-main,
+.course-main,
+.lesson-stage,
+.quiz-main,
+.quiz-review-content,
+.quiz-submit-content,
+.quiz-result-content,
+.certificate-progress-content,
+.my-learning-main,
+.explore-main,
+.search-results-main,
+.mandatory-main,
+.calendar-main,
+.notifications-main,
+.progress-dashboard-main,
+.achievements-main,
+.certificates-main,
+.certificate-detail-main {
+  animation: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
