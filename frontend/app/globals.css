@@ -13662,6 +13662,30 @@ body:has(.auth-page) {
 
 /* Dashboard final viewport-fit tuning. */
 @media (min-width: 1181px) {
+  .learning-sidebar {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(120 129 136 / 45%) transparent;
+  }
+
+  .learning-sidebar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .learning-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .learning-sidebar::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgb(120 129 136 / 35%);
+  }
+
+  .learner-profile {
+    flex-shrink: 0 !important;
+  }
+
   .learning-header {
     margin-bottom: clamp(34px, 3.35vh, 46px) !important;
   }
@@ -13727,6 +13751,54 @@ body:has(.auth-page) {
 
   .checkpoint-card {
     min-height: clamp(190px, 17vh, 220px) !important;
+  }
+}
+
+@media (min-width: 1181px) and (max-height: 820px) {
+  .learning-sidebar {
+    padding-top: clamp(1.75rem, 3.2vh, 2.45rem) !important;
+    padding-bottom: clamp(1.1rem, 2vh, 1.45rem) !important;
+  }
+
+  .learning-sidebar-logo {
+    width: clamp(5.7rem, 6.1vw, 7rem) !important;
+    margin-bottom: clamp(1.35rem, 3.2vh, 2rem) !important;
+  }
+
+  .learning-nav {
+    gap: clamp(0.55rem, 1.25vh, 0.8rem) !important;
+  }
+
+  .learning-nav button {
+    height: clamp(2.65rem, 4.65vh, 2.95rem) !important;
+  }
+
+  .recent-trails {
+    margin-top: clamp(1rem, 2.9vh, 1.55rem) !important;
+  }
+
+  .recent-trails div {
+    min-height: clamp(2.18rem, 3.9vh, 2.55rem) !important;
+  }
+
+  .learner-profile {
+    margin: clamp(0.55rem, 1.4vh, 0.9rem) calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) 0 !important;
+    padding-top: clamp(0.55rem, 1.35vh, 0.85rem) !important;
+    padding-bottom: clamp(0.55rem, 1.35vh, 0.85rem) !important;
+  }
+
+  .learner-profile > div {
+    width: clamp(2.45rem, 4.35vh, 2.75rem) !important;
+    height: clamp(2.45rem, 4.35vh, 2.75rem) !important;
+  }
+
+  .learner-profile strong {
+    font-size: clamp(0.92rem, 0.92vw, 1rem) !important;
+  }
+
+  .learner-profile span,
+  .learner-profile small {
+    font-size: clamp(0.72rem, 0.72vw, 0.82rem) !important;
   }
 }
 
