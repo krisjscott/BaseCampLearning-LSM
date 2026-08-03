@@ -3,7 +3,6 @@
 import {
   ArrowRight,
   Award,
-  BadgeCheck,
   BarChart3,
   Bell,
   BookOpen,
@@ -122,7 +121,7 @@ export default function LearningHome() {
             <input aria-label="Search courses or ask BaseCamp" placeholder="Search courses or ask BaseCamp" />
           </label>
           <button type="button" className="xp-pill" aria-label="Current XP">
-            <BadgeCheck size={16} strokeWidth={2.2} />
+            <img src="/xp-star.svg" alt="" aria-hidden="true" />
             <span>2,480 XP</span>
           </button>
           <button type="button" className="notification-button" aria-label="Notifications">

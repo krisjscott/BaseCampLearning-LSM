@@ -13232,6 +13232,14 @@ body:has(.auth-page) {
   font-weight: 800 !important;
 }
 
+.xp-pill img {
+  width: clamp(0.95rem, 0.92vw, 1.08rem) !important;
+  height: clamp(0.95rem, 0.92vw, 1.08rem) !important;
+  display: block !important;
+  object-fit: contain !important;
+  filter: none !important;
+}
+
 .notification-button {
   width: clamp(3.55rem, 5vh, 4rem) !important;
   border-radius: 999px !important;
