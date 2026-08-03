@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Circle, ClipboardList, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, ClipboardList, X } from "lucide-react";
 
 const answers = [
   ["A", "A list of all people who may influence the project"],
@@ -14,6 +14,7 @@ const answered = new Set([1, 2, 3, 4, 7, 8, 10]);
 
 export default function CompulsoryQuiz() {
   const [selectedAnswer, setSelectedAnswer] = useState("B");
+  const answeredCount = answered.size + (selectedAnswer ? 1 : 0);
 
   return (
     <main className="quiz-page">
@@ -96,7 +97,7 @@ export default function CompulsoryQuiz() {
 
           <div className="quiz-legend">
             <span>
-              <Check size={16} />
+              <CheckCircle2 size={16} />
               Answered
             </span>
             <span>
@@ -126,15 +127,17 @@ export default function CompulsoryQuiz() {
 
           <section className="attempt-rules">
             <h2>Attempt rules</h2>
-            <p>
-              Passing score: 80% - Maximum attempts: 2 - Answers cannot be changed after
-              submission - Results are recorded with date and time
-            </p>
+            <ul>
+              <li>Passing score: 80%</li>
+              <li>Maximum attempts: 2</li>
+              <li>Answers cannot be changed after submission</li>
+              <li>Results are recorded with date and time</li>
+            </ul>
           </section>
 
           <section className="submit-card">
             <p>Answer all questions to submit.</p>
-            <button type="button"><ClipboardList size={16} /><span>Review &amp; submit</span></button>
+            <button type="button" disabled={answeredCount < 12}><ClipboardList size={16} /><span>Review &amp; submit</span></button>
           </section>
         </aside>
       </div>
