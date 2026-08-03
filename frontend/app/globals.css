@@ -9877,6 +9877,45 @@ button:focus-visible {
     background-position: -120% 0;
   }
 }
+
+.auth-check-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 0.8rem;
+  background: linear-gradient(100deg, #f8fafc 0%, #f5f6f4 48%, #fff4ec 100%);
+}
+
+.empty-state-card {
+  min-height: 8rem;
+}
+
+.progress-support-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 1.4vw, 1.35rem);
+  margin-top: clamp(1.4rem, 2.6vh, 2rem);
+}
+
+.progress-support-grid .weekly-goal-card,
+.progress-support-grid .recommended-path-card,
+.progress-support-grid .public-profile-card {
+  min-height: clamp(10rem, 18vh, 12rem) !important;
+  padding: clamp(1.25rem, 1.5vw, 1.55rem) !important;
+}
+
+.progress-support-grid strong {
+  color: var(--bc-system-text);
+  font-size: clamp(1.25rem, 1.4vw, 1.65rem);
+  font-weight: 850;
+  line-height: 1.12;
+}
+
+@media (max-width: 900px) {
+  .progress-support-grid {
+    grid-template-columns: 1fr;
+  }
+}
 :root {
   --ink: #14171a;
   --muted: #61666e;

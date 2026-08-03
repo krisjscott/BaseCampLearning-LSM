@@ -1,98 +1,80 @@
+"use client";
+
+import { Award, BarChart3, BookOpen, Check, Compass, Home, LockKeyhole, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton, Skeleton } from "../components/Skeleton";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Check,
-  Compass,
-  Home,
-  LockKeyhole,
-  Trophy,
-} from "lucide-react";
+  CertificateResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCertificates,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
+import { getLevelProgress, levelMilestones } from "../lib/levelProgress";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, true],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+function formatDate(value?: string | null) {
+  if (!value) return "Recently recorded";
+  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+function AchievementsContent() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const stats = [
-  ["12", "Badges"],
-  ["2,830", "Total XP"],
-  ["Builder", "Current level"],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard(), getCertificates()])
+      .then(([userResult, dashboardResult, certificateResult]) => {
+        if (!active) return;
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+        setCertificates(certificateResult.status === "fulfilled" ? certificateResult.value : []);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-const recentAchievements = [
-  ["Checkpoint Pro", "Passed 5 required quizzes"],
-  ["Two-Day Streak", "Learned on consecutive days"],
-  ["Design Explorer", "Started a design pathway"],
-] as const;
+    return () => {
+      active = false;
+    };
+  }, []);
 
-const levelLadder = [
-  { level: "Starter", xp: "0 XP", state: "done", label: "Completed" },
-  { level: "Builder", xp: "0 XP", state: "current", label: "You are here" },
-  { level: "Achiever", xp: "4,000 XP", state: "next", label: "Next stage" },
-  { level: "Champion", xp: "7,500 XP", state: "locked", label: "Final stage" },
-] as const;
+  const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
+  const level = getLevelProgress(xpPoints);
+  const activeCourses = dashboard?.continueLearning?.length || 0;
+  const recentActivities = dashboard?.recentActivities || [];
+  const stats = [
+    [certificates.length.toLocaleString(), "Certificates"],
+    [xpPoints.toLocaleString(), "Total XP"],
+    [level.current.name, "Current level"],
+  ] as const;
 
-export default function Achievements() {
+  const recentAchievements = useMemo(() => {
+    const certificateItems = certificates.slice(0, 3).map((certificate) => ({
+      title: certificate.title || certificate.courseName || "Certificate earned",
+      detail: `${certificate.certificateNumber} - ${formatDate(certificate.issuedDate)}`,
+    }));
+    const activityItems = recentActivities.slice(0, Math.max(0, 3 - certificateItems.length)).map((activity) => ({
+      title: activity.activityType || "Learning activity",
+      detail: `${activity.description} - ${formatDate(activity.activityDate)}`,
+    }));
+    return [...certificateItems, ...activityItems];
+  }, [certificates, recentActivities]);
+
   return (
     <main className="achievements-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/achievements" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="achievements-main">
         <header className="achievements-header">
           <div>
             <h1>Achievements</h1>
-            <p>Milestones, levels, badges and streaks.</p>
+            <p>Milestones, levels, certificates and recorded learning wins.</p>
           </div>
           <button type="button">
             <Trophy size={18} />
@@ -101,13 +83,23 @@ export default function Achievements() {
         </header>
 
         <section className="achievements-hero">
-          <h2>Next level: Achiever</h2>
-          <p>Earn 1,170 more XP through courses, quizzes and certificates.</p>
-          <button type="button">View level path -&gt;</button>
+          {loading ? (
+            <CardSkeleton lines={3} />
+          ) : (
+            <>
+              <h2>{level.next ? `Next level: ${level.next.name}` : "Top level reached"}</h2>
+              <p>
+                {level.next
+                  ? `Earn ${level.remaining.toLocaleString()} more XP through courses, quizzes and certificates.`
+                  : "Your latest passed assessments have taken you to the highest level."}
+              </p>
+              <button type="button">View level path -&gt;</button>
+            </>
+          )}
         </section>
 
         <section className="achievements-stats" aria-label="Achievements summary">
-          {stats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : stats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -119,34 +111,55 @@ export default function Achievements() {
 
         <div className="achievements-grid">
           <section className="achievement-list" aria-label="Recent achievements">
-            {recentAchievements.map(([title, detail]) => (
-              <article key={title}>
+            {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : recentAchievements.length ? recentAchievements.map(({ title, detail }) => (
+              <article key={`${title}-${detail}`}>
                 <div>
                   <h3>{title}</h3>
                   <p>{detail}</p>
                 </div>
                 <button type="button">Share -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article className="empty-state-card">
+                <div>
+                  <h3>No achievements recorded yet</h3>
+                  <p>Complete lessons, assessments, or certificates to populate this page from the database.</p>
+                </div>
+              </article>
+            )}
           </section>
 
           <aside className="level-ladder-card">
             <h2>Level ladder</h2>
-            <div className="level-ladder-steps" aria-label="Starter to Champion level ladder">
-              {levelLadder.map(({ level, xp, state, label }, index) => (
-                <div className={`ladder-step ${state}`} key={level}>
-                  <span className="ladder-step-number">
-                    {state === "done" ? <Check size={15} strokeWidth={2.7} /> : state === "locked" ? <LockKeyhole size={14} strokeWidth={2.3} /> : index + 1}
-                  </span>
-                  <section className="ladder-step-copy">
-                    <span>{label}</span>
-                    <strong>{level}</strong>
-                    <small>{xp}</small>
-                  </section>
-                </div>
-              ))}
-            </div>
-            <button type="button">View rules -&gt;</button>
+            {loading ? (
+              <CardSkeleton lines={5} />
+            ) : (
+              <div className="level-ladder-steps" aria-label="Starter to Champion level ladder">
+                {levelMilestones.map((milestone, index) => {
+                  const state = index < level.currentIndex
+                    ? "done"
+                    : index === level.currentIndex
+                      ? "current"
+                      : index === level.currentIndex + 1
+                        ? "next"
+                        : "locked";
+                  const label = state === "done" ? "Completed" : state === "current" ? "You are here" : state === "next" ? "Next stage" : "Locked";
+                  return (
+                    <div className={`ladder-step ${state}`} key={milestone.name}>
+                      <span className="ladder-step-number">
+                        {state === "done" ? <Check size={15} strokeWidth={2.7} /> : state === "locked" ? <LockKeyhole size={14} strokeWidth={2.3} /> : index + 1}
+                      </span>
+                      <section className="ladder-step-copy">
+                        <span>{label}</span>
+                        <strong>{milestone.name}</strong>
+                        <small>{milestone.minXp.toLocaleString()} XP</small>
+                      </section>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p>{activeCourses ? `${activeCourses} active course${activeCourses === 1 ? "" : "s"} feeding this progress.` : "Start a course to begin collecting XP."}</p>
           </aside>
         </div>
       </section>
@@ -154,3 +167,10 @@ export default function Achievements() {
   );
 }
 
+export default function AchievementsPage() {
+  return (
+    <AuthGuard>
+      <AchievementsContent />
+    </AuthGuard>
+  );
+}
