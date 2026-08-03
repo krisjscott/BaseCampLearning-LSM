@@ -163,14 +163,11 @@ export default function OnboardingScreens() {
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState(goals[0].title);
-  const [selectedInterests, setSelectedInterests] = useState([
-    "Project Management",
-    "Content Strategy",
-  ]);
-  const [profileType, setProfileType] = useState(profileTypes[0]);
-  const [role, setRole] = useState("Product Designer");
-  const [educationLevel, setEducationLevel] = useState(education[2]);
+  const [goal, setGoal] = useState("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [profileType, setProfileType] = useState("");
+  const [role, setRole] = useState("");
+  const [educationLevel, setEducationLevel] = useState("");
 
   const isReady = step === 5;
   const isLoading = step === 4;
@@ -219,9 +216,12 @@ export default function OnboardingScreens() {
   }
 
   async function completeOnboarding() {
+    const profileSummary = [goal, selectedInterests.join(", "), profileType, role, educationLevel]
+      .filter(Boolean)
+      .join(" - ");
     await updateCurrentUser({
       fullName: user?.fullName || "",
-      bio: `${goal} - ${selectedInterests.join(", ")} - ${profileType} - ${role} - ${educationLevel}`,
+      bio: profileSummary,
     }).catch(() => null);
     router.push("/learning");
   }
@@ -414,7 +414,7 @@ export default function OnboardingScreens() {
               <span />
             </div>
             <div className="loading-tags">
-              {[goal, ...selectedInterests.slice(0, 3)].map((tag) => (
+              {[goal, ...selectedInterests.slice(0, 3)].filter(Boolean).map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
             </div>
