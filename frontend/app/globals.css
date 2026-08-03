@@ -11687,6 +11687,9 @@ body:has(.auth-page) {
 .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
   --onboarding-topbar: clamp(4.75rem, 9vh, 7.5rem);
   --onboarding-footer: clamp(6rem, 13.2vh, 11rem);
+  --onboarding-content-offset: clamp(0.75rem, 5.8vh, 5.75rem);
+  --onboarding-main-gap: clamp(1rem, 3.6vh, 3.4rem);
+  --goal-card-height: clamp(12rem, 32.5vh, 26.75rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11741,8 +11744,8 @@ body:has(.auth-page) {
   align-self: center;
   width: min(85vw, 106rem);
   height: auto;
-  margin-top: clamp(2.25rem, 7vh, 5.75rem);
-  gap: clamp(2rem, 4vh, 3.4rem);
+  margin-top: var(--onboarding-content-offset);
+  gap: var(--onboarding-main-gap);
   overflow: visible;
   transform: none;
 }
@@ -11781,7 +11784,8 @@ body:has(.auth-page) {
 
 .onboarding-page.flow .goal-card {
   min-height: 0;
-  aspect-ratio: 0.94;
+  height: var(--goal-card-height);
+  aspect-ratio: auto;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -11817,7 +11821,7 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-card strong {
-  margin: clamp(2.2rem, 3.6vh, 3rem) clamp(1rem, 2vw, 1.75rem) 0;
+  margin: clamp(1.1rem, 3.6vh, 3rem) clamp(1rem, 2vw, 1.75rem) 0;
   color: #111111;
   font-size: clamp(0.95rem, 1.15vw, 1.1rem);
   font-weight: 700;
@@ -11870,9 +11874,64 @@ body:has(.auth-page) {
   font-size: clamp(0.95rem, 1.1vw, 1.1rem);
 }
 
+@media (min-width: 721px) {
+  body:has(.onboarding-page.flow) {
+    overflow: hidden;
+  }
+
+  .onboarding-page.flow {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 721px) and (max-height: 820px) {
+  .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
+    --onboarding-topbar: clamp(3.9rem, 8.5vh, 4.75rem);
+    --onboarding-footer: clamp(4.6rem, 12vh, 6.3rem);
+    --onboarding-content-offset: clamp(0.6rem, 2.4vh, 1.25rem);
+    --onboarding-main-gap: clamp(0.75rem, 2.2vh, 1.35rem);
+    --goal-card-height: clamp(8.75rem, 25vh, 15.75rem);
+  }
+
+  .onboarding-page.flow .screen-heading {
+    gap: clamp(0.35rem, 0.9vh, 0.65rem);
+  }
+
+  .onboarding-page.flow .screen-heading p {
+    font-size: clamp(0.66rem, 0.8vw, 0.75rem);
+  }
+
+  .onboarding-page.flow .screen-heading h1 {
+    font-size: clamp(1.65rem, 2.45vw, 2.15rem);
+  }
+
+  .onboarding-page.flow .screen-heading span {
+    font-size: clamp(0.86rem, 1.1vw, 1rem);
+    line-height: 1.28;
+  }
+
+  .onboarding-page.flow .goal-card strong {
+    margin-top: clamp(0.75rem, 2.3vh, 1.15rem);
+  }
+
+  .onboarding-page.flow .hint-pill {
+    padding-block: clamp(0.42rem, 0.9vh, 0.55rem);
+  }
+}
+
 @media (max-width: 1180px) {
   .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
-    overflow-y: auto;
+    --onboarding-content-offset: clamp(0.75rem, 2.4vh, 1.5rem);
+    --onboarding-main-gap: clamp(0.9rem, 2.5vh, 1.5rem);
+    --goal-card-height: clamp(8.75rem, 24vh, 13.5rem);
+    overflow: hidden;
   }
 
   .onboarding-page.flow .goal-grid {
@@ -11880,8 +11939,7 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .goal-card {
-    aspect-ratio: auto;
-    min-height: clamp(13rem, 24vw, 18rem);
+    min-height: 0;
   }
 }
 
