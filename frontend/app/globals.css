@@ -12730,3 +12730,247 @@ body:has(.auth-page) {
   }
 }
 
+/* Final loading screen reference match. */
+.onboarding-page.flow .personalising-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: clamp(6rem, 11vh, 8rem) clamp(1.5rem, 4vw, 4rem);
+  overflow: hidden;
+  background: linear-gradient(99deg, #f8fafc 0%, #f4f6f5 48%, #fff4ec 100%);
+}
+
+.onboarding-page.flow .personalising-screen .onboarding-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(5.25rem, 9vh, 7.35rem);
+  padding: clamp(1.2rem, 2.35vw, 2rem) clamp(4rem, 6vw, 7.25rem);
+  border: 0;
+  background: rgb(255 255 255 / 74%);
+  box-shadow: inset 0 -1px 0 rgb(18 28 38 / 4%);
+}
+
+.onboarding-page.flow .personalising-screen .onboarding-logo {
+  width: clamp(5rem, 6.3vw, 6.5rem);
+}
+
+.onboarding-page.flow .personalising-screen .topbar-actions {
+  color: #7b838b;
+  font-size: clamp(0.95rem, 1.12vw, 1.1rem);
+  font-weight: 700;
+}
+
+.onboarding-page.flow .personalising-card {
+  width: min(52vw, 65rem);
+  min-width: min(100%, 34rem);
+  min-height: clamp(27rem, 55vh, 45rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.35rem, 2.4vh, 2.3rem);
+  margin: calc(clamp(2rem, 4.5vh, 3.75rem) * -1) 0 0;
+  padding: clamp(3rem, 7vh, 5.2rem) clamp(3rem, 5vw, 7rem);
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: clamp(1.65rem, 2vw, 2rem);
+  background: linear-gradient(108deg, rgb(255 255 255 / 52%) 0%, rgb(255 255 255 / 34%) 62%, rgb(244 244 241 / 44%) 100%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 78%), 0 34px 90px rgb(18 28 38 / 12%);
+  backdrop-filter: blur(16px);
+  animation: loader-card-rise 520ms ease both;
+}
+
+.onboarding-page.flow .personalising-card::before {
+  inset: -35%;
+  background:
+    radial-gradient(circle at 35% 38%, rgb(255 90 31 / 10%), transparent 24%),
+    radial-gradient(circle at 68% 52%, rgb(17 24 39 / 8%), transparent 25%),
+    radial-gradient(circle at 48% 76%, rgb(255 255 255 / 30%), transparent 28%);
+  animation: loader-aura 5s ease-in-out infinite;
+}
+
+.onboarding-page.flow .personalising-card .check-badge {
+  width: clamp(5.4rem, 6.4vw, 6.55rem);
+  height: clamp(5.4rem, 6.4vw, 6.55rem);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ff5a1f;
+  color: #ffffff;
+  box-shadow: 0 20px 42px rgb(255 90 31 / 26%);
+  animation: loader-pulse 1.45s ease-in-out infinite;
+}
+
+.onboarding-page.flow .personalising-card.is-complete .check-badge {
+  animation: loader-complete-pop 420ms ease both;
+}
+
+.onboarding-page.flow .personalising-card .loader-icon {
+  width: clamp(1.35rem, 1.7vw, 1.65rem);
+  height: clamp(1.35rem, 1.7vw, 1.65rem);
+  animation: loader-spin 0.85s linear infinite;
+}
+
+.onboarding-page.flow .personalising-card .loader-check {
+  width: clamp(1.45rem, 1.8vw, 1.75rem);
+  height: clamp(1.45rem, 1.8vw, 1.75rem);
+  animation: loader-check-draw 360ms ease both;
+}
+
+.onboarding-page.flow .personalising-card .screen-heading {
+  width: min(42rem, 100%);
+  gap: clamp(0.9rem, 1.6vh, 1.25rem);
+}
+
+.onboarding-page.flow .personalising-card .screen-heading h1 {
+  max-width: none;
+  color: #111111;
+  font-size: clamp(2rem, 2.8vw, 2.7rem);
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.onboarding-page.flow .personalising-card .screen-heading span {
+  max-width: 58ch;
+  color: #858c94;
+  font-size: clamp(1.05rem, 1.42vw, 1.35rem);
+  line-height: 1.38;
+}
+
+.onboarding-page.flow .personalising-card .loading-bar {
+  width: min(100%, 51rem);
+  height: clamp(0.7rem, 1.15vh, 0.9rem);
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 58%);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 82%);
+}
+
+.onboarding-page.flow .personalising-card .loading-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #ff5a1f;
+  transform-origin: left center;
+  animation: loader-fill-reference 2.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onboarding-page.flow .personalising-card.is-complete .loading-bar span {
+  animation-play-state: paused;
+  transform: scaleX(1);
+}
+
+.onboarding-page.flow .personalising-card .loading-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.7rem, 1.2vw, 0.95rem);
+  margin: 0;
+}
+
+.onboarding-page.flow .personalising-card .loading-tags span {
+  min-height: clamp(2.4rem, 4.2vh, 2.9rem);
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 clamp(1rem, 1.5vw, 1.35rem);
+  background: rgb(244 244 241 / 72%);
+  color: #858c94;
+  font-size: clamp(0.78rem, 0.95vw, 0.9rem);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  animation: loader-tag-float 1.8s ease-in-out infinite;
+}
+
+.onboarding-page.flow .personalising-card > p {
+  margin: 0;
+  color: #858c94;
+  font-size: clamp(1rem, 1.22vw, 1.16rem);
+  line-height: 1.4;
+}
+
+@keyframes loader-fill-reference {
+  0% {
+    transform: scaleX(0.06);
+  }
+
+  70% {
+    transform: scaleX(0.72);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loader-complete-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 20px 42px rgb(255 90 31 / 26%);
+  }
+
+  55% {
+    transform: scale(1.08);
+    box-shadow: 0 24px 54px rgb(255 90 31 / 34%);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 20px 42px rgb(255 90 31 / 26%);
+  }
+}
+
+@keyframes loader-check-draw {
+  from {
+    opacity: 0;
+    transform: scale(0.72) rotate(-10deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@media (min-width: 721px) and (max-height: 820px) {
+  .onboarding-page.flow .personalising-card {
+    width: min(58vw, 55rem);
+    min-height: clamp(24rem, 58vh, 31rem);
+    gap: clamp(1rem, 2vh, 1.55rem);
+    padding: clamp(2.3rem, 5vh, 3.4rem) clamp(2.5rem, 4.5vw, 5rem);
+  }
+
+  .onboarding-page.flow .personalising-card .screen-heading h1 {
+    font-size: clamp(1.8rem, 2.45vw, 2.25rem);
+  }
+}
+
+@media (max-width: 720px) {
+  .onboarding-page.flow .personalising-screen {
+    padding: 6rem 1rem 2rem;
+  }
+
+  .onboarding-page.flow .personalising-card {
+    width: 100%;
+    min-width: 0;
+    min-height: 28rem;
+    padding: 2.5rem 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-page.flow .personalising-card,
+  .onboarding-page.flow .personalising-card::before,
+  .onboarding-page.flow .personalising-card .check-badge,
+  .onboarding-page.flow .personalising-card .loader-icon,
+  .onboarding-page.flow .personalising-card .loader-check,
+  .onboarding-page.flow .personalising-card .loading-bar span,
+  .onboarding-page.flow .personalising-card .loading-tags span {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

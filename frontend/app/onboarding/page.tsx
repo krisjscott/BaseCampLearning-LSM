@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BarChart3,
   BriefcaseBusiness,
+  CheckCircle2,
   Compass,
   Eye,
   GitBranch,
@@ -168,6 +169,7 @@ export default function OnboardingScreens() {
   const [profileType, setProfileType] = useState("");
   const [role, setRole] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
+  const [loadingDone, setLoadingDone] = useState(false);
 
   const isReady = step === 5;
   const isLoading = step === 4;
@@ -186,9 +188,17 @@ export default function OnboardingScreens() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) return;
-    const timer = window.setTimeout(() => setStep(5), 1400);
-    return () => window.clearTimeout(timer);
+    if (!isLoading) {
+      setLoadingDone(false);
+      return;
+    }
+
+    const doneTimer = window.setTimeout(() => setLoadingDone(true), 1700);
+    const timer = window.setTimeout(() => setStep(5), 3200);
+    return () => {
+      window.clearTimeout(doneTimer);
+      window.clearTimeout(timer);
+    };
   }, [isLoading]);
 
   const progress = useMemo(() => Math.min((step + 1) * 25, 100), [step]);
@@ -402,9 +412,9 @@ export default function OnboardingScreens() {
         )}
 
         {isLoading && (
-          <div className="personalising-card" role="status" aria-live="polite">
+          <div className={`personalising-card${loadingDone ? " is-complete" : ""}`} role="status" aria-live="polite">
             <div className="check-badge">
-              <Loader size={26} className="loader-icon" />
+              {loadingDone ? <CheckCircle2 size={26} className="loader-check" /> : <Loader size={26} className="loader-icon" />}
             </div>
             <div className="screen-heading">
               <h1>Building your learning plan</h1>
@@ -414,7 +424,17 @@ export default function OnboardingScreens() {
               <span />
             </div>
             <div className="loading-tags">
-              {[goal, ...selectedInterests.slice(0, 3)].filter(Boolean).map((tag) => (
+              {[
+                goal || "Job-ready skills",
+                ...selectedInterests.slice(0, 3),
+                "Project Management",
+                "Content Strategy",
+                "Product Design",
+              ]
+                .filter(Boolean)
+                .filter((tag, index, tags) => tags.indexOf(tag) === index)
+                .slice(0, 4)
+                .map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
             </div>
