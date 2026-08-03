@@ -2,8 +2,11 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { FormEvent, useRef, useState } from "react";
+import { ArrowRight, BookOpenCheck, CalendarDays, CheckCircle2 } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { login, register } from "./lib/backendApi";
+import TurnstileWidget, { TurnstileWidgetHandle } from "./components/TurnstileWidget";
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -13,22 +16,26 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("password");
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("");
     setIsSubmitting(true);
 
+    const turnstileToken = turnstileRef.current?.getToken() ?? null;
+
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(email, password, turnstileToken);
         router.push("/learning");
       } else {
-        await register(email, password, fullName);
+        await register(email, password, fullName, turnstileToken);
         router.push("/onboarding");
       }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not reach BaseCamp backend");
+      turnstileRef.current?.reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -130,6 +137,8 @@ export default function AuthScreen() {
             />
 
             {status ? <p className="auth-status">{status}</p> : null}
+
+            <TurnstileWidget ref={turnstileRef} />
 
             <button type="submit" className="primary-action" disabled={isSubmitting}>
               <span>{isSubmitting ? "Connecting..." : "Continue"}</span>

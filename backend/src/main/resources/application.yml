@@ -3,6 +3,8 @@ spring:
     name: tiesverse-basecamp-learning
   profiles:
     active: dev
+  config:
+    import: optional:file:.env[.properties]
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -47,6 +49,10 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-in-production}
   expiration: 86400000
+
+turnstile:
+  secret-key: ${TURNSTILE_SECRET:}
+  enabled: ${TURNSTILE_ENABLED:}
 
 management:
   endpoints:

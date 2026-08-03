@@ -22,7 +22,7 @@ On this machine the backend has been tested with Eclipse Temurin/Adoptium JDK 21
 Open PowerShell from the project root:
 
 ```powershell
-cd F:\basecamp\backend\backend
+cd F:\basecamp\backend
 $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 $env:SPRING_PROFILES_ACTIVE="local"
@@ -38,7 +38,7 @@ http://localhost:8081
 The local database is stored at:
 
 ```text
-F:\basecamp\backend\backend\data\basecamp-local.mv.db
+F:\basecamp\backend\data\basecamp-local.mv.db
 ```
 
 H2 console:
@@ -62,7 +62,7 @@ The local profile automatically runs Flyway migrations and seeds demo data.
 In a second PowerShell window from the project root:
 
 ```powershell
-cd F:\basecamp\backend\frontend
+cd F:\basecamp\frontend
 npm install
 copy .env.example .env.local
 npm run dev:local
@@ -96,14 +96,14 @@ New registrations are also saved to the local H2 database. After registering, th
 Frontend production build:
 
 ```powershell
-cd F:\basecamp\backend\frontend
+cd F:\basecamp\frontend
 npm run build
 ```
 
 Backend build:
 
 ```powershell
-cd F:\basecamp\backend\backend
+cd F:\basecamp\backend
 $env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"
 $env:Path="$env:JAVA_HOME\bin;$env:Path"
 .\mvnw.cmd -DskipTests package

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -41,7 +42,7 @@ function firstName(user?: UserResponse | null) {
   return user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
 }
 
-export default function LearningHome() {
+function LearningHome() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
 
@@ -225,5 +226,13 @@ export default function LearningHome() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function LearningPage() {
+  return (
+    <AuthGuard>
+      <LearningHome />
+    </AuthGuard>
   );
 }

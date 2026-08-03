@@ -128,7 +128,78 @@ const AUTH_STORAGE_KEYS = {
   fullName: "basecamp_full_name",
 };
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8081").replace(/\/$/, "");
+const SESSION_COOKIE = "basecamp_session";
+const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]);
+
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081").replace(/\/$/, "");
+
+let refreshPromise: Promise<string | null> | null = null;
+
+function getSessionCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]*)`));
+  return match ? match[1] : null;
+}
+
+function setSessionCookie(): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${SESSION_COOKIE}=1; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+}
+
+function clearSessionCookie(): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0`;
+}
+
+function redirectToLogin(): void {
+  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+    window.location.href = "/";
+  }
+}
+
+async function doRefresh(): Promise<string | null> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const refreshToken = typeof window !== "undefined"
+        ? localStorage.getItem(AUTH_STORAGE_KEYS.refreshToken)
+        : null;
+
+      if (!refreshToken) return null;
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) return null;
+
+      const body = (await response.json()) as ApiEnvelope<{
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
+      }>;
+
+      if (!body.data) return null;
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, body.data.accessToken);
+        localStorage.setItem(AUTH_STORAGE_KEYS.refreshToken, body.data.refreshToken);
+      }
+
+      setSessionCookie();
+      return body.data.accessToken;
+    } catch {
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
 
 async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   const text = await response.text();
@@ -152,7 +223,7 @@ export async function backendRequest<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  if (token && !headers.has("Authorization")) {
+  if (token && !headers.has("Authorization") && !AUTH_ROUTES.has(path)) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
@@ -161,13 +232,25 @@ export async function backendRequest<T>(
     headers,
   });
 
+  if (response.status === 401 && !AUTH_ROUTES.has(path)) {
+    const newToken = await doRefresh();
+    if (newToken) {
+      headers.set("Authorization", `Bearer ${newToken}`);
+      const retryResponse = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
+      return parseResponse<T>(retryResponse);
+    }
+    clearSessionCookie();
+    clearAuthSession();
+    redirectToLogin();
+  }
+
   return parseResponse<T>(response);
 }
 
-export async function login(email: string, password: string): Promise<AuthPayload> {
+export async function login(email: string, password: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, turnstileToken }),
   });
 
   if (!response.data) {
@@ -178,10 +261,10 @@ export async function login(email: string, password: string): Promise<AuthPayloa
   return response.data;
 }
 
-export async function register(email: string, password: string, fullName: string): Promise<AuthPayload> {
+export async function register(email: string, password: string, fullName: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, fullName }),
+    body: JSON.stringify({ email, password, fullName, turnstileToken }),
   });
 
   if (!response.data) {
@@ -190,6 +273,27 @@ export async function register(email: string, password: string, fullName: string
 
   saveAuth(response.data);
   return response.data;
+}
+
+export async function logout(): Promise<void> {
+  const email = typeof window !== "undefined"
+    ? localStorage.getItem(AUTH_STORAGE_KEYS.email)
+    : null;
+
+  clearSessionCookie();
+  clearAuthSession();
+
+  if (email) {
+    try {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout?email=${encodeURIComponent(email)}`, {
+        method: "POST",
+      });
+    } catch {
+      // best-effort backend logout
+    }
+  }
+
+  redirectToLogin();
 }
 
 export async function getCourses(size = 12): Promise<PageResponse<CourseResponse> | null> {
@@ -283,6 +387,7 @@ export function saveAuth(payload: AuthPayload): void {
   localStorage.setItem(AUTH_STORAGE_KEYS.email, payload.email);
   localStorage.setItem(AUTH_STORAGE_KEYS.role, payload.role);
   localStorage.setItem(AUTH_STORAGE_KEYS.fullName, payload.fullName || "");
+  setSessionCookie();
 }
 
 export function getAuthSession() {
@@ -306,4 +411,5 @@ export function getAuthSession() {
 
 export function clearAuthSession(): void {
   Object.values(AUTH_STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
+  clearSessionCookie();
 }
