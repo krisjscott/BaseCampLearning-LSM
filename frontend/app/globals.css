@@ -16983,14 +16983,15 @@ body:has(.auth-page) {
   gap: clamp(0.75rem, 1dvh, 0.9rem) !important;
   border-radius: clamp(0.9rem, 1vw, 1.15rem) !important;
   background: #efefec !important;
-  padding: clamp(1.35rem, 1.8vw, 1.65rem) !important;
+  padding: clamp(1.15rem, 1.4vw, 1.55rem) !important;
 }
 
 .quiz-result-page .result-stat-grid strong {
   color: #0b0e0f !important;
-  font-size: clamp(2rem, 1.92vw, 2.4rem) !important;
+  font-size: clamp(1.72rem, 1.65vw, 2.25rem) !important;
   font-weight: 850 !important;
   line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
 .quiz-result-page .result-stat-grid article.accent strong {
@@ -17119,6 +17120,559 @@ body:has(.auth-page) {
   .quiz-result-page .result-secondary,
   .quiz-result-page .result-primary {
     width: 100% !important;
+  }
+}
+
+/* Product-wide BaseCamp design system consistency layer. */
+:root {
+  --bc-system-page: linear-gradient(100deg, #f8fafc 0%, #f5f6f4 48%, #fff4ec 100%);
+  --bc-system-glass: linear-gradient(108deg, rgb(255 255 255 / 60%) 0%, rgb(255 255 255 / 38%) 58%, rgb(245 246 243 / 44%) 100%);
+  --bc-system-card-shadow: inset 0 1px 1px rgb(255 255 255 / 78%), 0 18px 38px rgb(18 28 38 / 7%);
+  --bc-system-hero-shadow: 0 26px 58px rgb(18 28 38 / 14%);
+  --bc-system-radius: 1.35rem;
+  --bc-system-radius-lg: 1.75rem;
+  --bc-system-orange: #ff5522;
+  --bc-system-black: #090b0d;
+  --bc-system-text: #111315;
+  --bc-system-muted: #7f8991;
+  --bc-system-soft: #efefec;
+  --bc-system-line: rgb(255 255 255 / 70%);
+}
+
+body {
+  color: var(--bc-system-text);
+  background: #f8fafc;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.learning-home,
+.my-learning-page,
+.explore-page,
+.search-results-page,
+.mandatory-page,
+.calendar-page,
+.notifications-page,
+.progress-dashboard-page,
+.achievements-page,
+.certificates-page,
+.certificate-detail-page,
+.course-overview {
+  min-height: 100dvh !important;
+  background:
+    radial-gradient(circle at 92% 28%, rgba(255, 85, 34, 0.07), transparent 32rem),
+    var(--bc-system-page) !important;
+  color: var(--bc-system-text) !important;
+}
+
+.learning-home,
+.my-learning-page,
+.explore-page,
+.search-results-page,
+.mandatory-page,
+.calendar-page,
+.notifications-page,
+.progress-dashboard-page,
+.achievements-page,
+.certificates-page,
+.certificate-detail-page {
+  display: grid !important;
+  grid-template-columns: clamp(18rem, 17.38vw, 22.25rem) minmax(0, 1fr) !important;
+  overflow: hidden !important;
+}
+
+.learning-main,
+.my-learning-main,
+.explore-main,
+.search-results-main,
+.mandatory-main,
+.calendar-main,
+.notifications-main,
+.progress-dashboard-main,
+.achievements-main,
+.certificates-main,
+.certificate-detail-main {
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: auto !important;
+  padding: clamp(2.75rem, 4.8vh, 4.1rem) clamp(2.6rem, 4.6vw, 5rem) clamp(3rem, 5vh, 4.25rem) !important;
+}
+
+.learning-main,
+.course-main,
+.lesson-stage,
+.quiz-main,
+.quiz-review-content,
+.quiz-submit-content,
+.quiz-result-content,
+.certificate-progress-content,
+.my-learning-main,
+.explore-main,
+.search-results-main,
+.mandatory-main,
+.calendar-main,
+.notifications-main,
+.progress-dashboard-main,
+.achievements-main,
+.certificates-main,
+.certificate-detail-main {
+  animation: bc-page-enter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.my-learning-header,
+.explore-header,
+.search-results-header,
+.mandatory-header,
+.calendar-header,
+.notifications-header,
+.progress-dashboard-header,
+.achievements-header,
+.certificates-header,
+.certificate-detail-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: clamp(1rem, 1.8vw, 1.5rem) !important;
+  align-items: start !important;
+  margin: 0 0 clamp(2rem, 4.4vh, 3.25rem) !important;
+}
+
+.my-learning-header h1,
+.explore-header h1,
+.search-results-header h1,
+.mandatory-header h1,
+.calendar-header h1,
+.notifications-header h1,
+.progress-dashboard-header h1,
+.achievements-header h1,
+.certificates-header h1,
+.certificate-detail-header h1 {
+  margin: 0 !important;
+  color: var(--bc-system-text) !important;
+  font-size: clamp(2.45rem, 2.65vw, 3.2rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.08 !important;
+}
+
+.my-learning-header p,
+.explore-header p,
+.search-results-header p,
+.mandatory-header p,
+.calendar-header p,
+.notifications-header p,
+.progress-dashboard-header p,
+.achievements-header p,
+.certificates-header p,
+.certificate-detail-header p {
+  margin: clamp(0.65rem, 1.1vh, 0.9rem) 0 0 !important;
+  color: var(--bc-system-muted) !important;
+  font-size: clamp(1.02rem, 1.05vw, 1.22rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.38 !important;
+}
+
+.my-learning-header button,
+.explore-header button,
+.search-results-header button,
+.mandatory-header button,
+.calendar-header button,
+.notifications-header button,
+.progress-dashboard-header button,
+.achievements-header button,
+.certificates-header button,
+.certificate-detail-header button {
+  min-height: clamp(3rem, 4.6vh, 3.55rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  border: 1px solid var(--bc-system-line) !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / 58%) !important;
+  color: var(--bc-system-text) !important;
+  padding: 0 clamp(1.1rem, 1.35vw, 1.55rem) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 84%), 0 14px 30px rgb(18 28 38 / 7%) !important;
+  font-size: clamp(0.9rem, 0.9vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.my-learning-hero,
+.explore-hero,
+.search-results-hero,
+.mandatory-hero,
+.calendar-hero,
+.notifications-hero,
+.progress-dashboard-hero,
+.achievements-hero,
+.certificates-hero,
+.certificate-detail-hero,
+.continue-learning-card {
+  border: 0 !important;
+  border-radius: var(--bc-system-radius-lg) !important;
+  background: var(--bc-system-black) !important;
+  color: #ffffff !important;
+  box-shadow: var(--bc-system-hero-shadow) !important;
+  overflow: hidden !important;
+}
+
+.my-learning-hero h2,
+.explore-hero h2,
+.search-results-hero h2,
+.mandatory-hero h2,
+.calendar-hero h2,
+.notifications-hero h2,
+.progress-dashboard-hero h2,
+.achievements-hero h2,
+.certificates-hero h2,
+.certificate-detail-hero h2,
+.continue-learning-card h2 {
+  color: #ffffff !important;
+  font-weight: 850 !important;
+  line-height: 1.1 !important;
+}
+
+.my-learning-hero p,
+.explore-hero p,
+.search-results-hero p,
+.mandatory-hero p,
+.calendar-hero p,
+.notifications-hero p,
+.progress-dashboard-hero p,
+.achievements-hero p,
+.certificates-hero p,
+.certificate-detail-hero p,
+.continue-learning-card p {
+  color: rgb(255 255 255 / 72%) !important;
+}
+
+.my-learning-hero button,
+.explore-hero button,
+.search-results-hero button,
+.mandatory-hero button,
+.calendar-hero button,
+.notifications-hero button,
+.progress-dashboard-hero button,
+.achievements-hero button,
+.certificates-hero button,
+.certificate-detail-hero button,
+.continue-learning-card button {
+  border: 0 !important;
+  background: var(--bc-system-orange) !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(255, 85, 34, 0.18) !important;
+}
+
+.my-learning-stats article,
+.explore-stats article,
+.search-result-stats article,
+.mandatory-stats article,
+.calendar-stats article,
+.notifications-stats article,
+.progress-dashboard-stats article,
+.achievements-stats article,
+.certificates-stats article,
+.certificate-detail-stats article,
+.my-course-list article,
+.popular-course-list article,
+.assigned-training-list article,
+.schedule-list article,
+.notification-list article,
+.achievement-list article,
+.credential-list article,
+.certificate-share-list article,
+.recommended-path-card,
+.active-filters-card,
+.category-skills-card,
+.path-progress-card,
+.compliance-status-card,
+.calendar-sync-card,
+.notification-preferences-card,
+.current-level-card,
+.level-ladder-card,
+.public-profile-card,
+.verification-card,
+.weekly-goal-card,
+.info-card,
+.review-card,
+.question-card,
+.submit-confirm-card,
+.result-card,
+.certificate-progress-card {
+  border: 1px solid var(--bc-system-line) !important;
+  border-radius: var(--bc-system-radius) !important;
+  background: var(--bc-system-glass) !important;
+  color: var(--bc-system-text) !important;
+  box-shadow: var(--bc-system-card-shadow) !important;
+}
+
+.my-course-list article,
+.popular-course-list article,
+.assigned-training-list article,
+.schedule-list article,
+.notification-list article,
+.achievement-list article,
+.credential-list article,
+.certificate-share-list article {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease !important;
+}
+
+.my-course-list article:hover,
+.popular-course-list article:hover,
+.assigned-training-list article:hover,
+.schedule-list article:hover,
+.notification-list article:hover,
+.achievement-list article:hover,
+.credential-list article:hover,
+.certificate-share-list article:hover,
+.recommended-path-card:hover,
+.active-filters-card:hover,
+.category-skills-card:hover,
+.path-progress-card:hover,
+.compliance-status-card:hover,
+.calendar-sync-card:hover,
+.notification-preferences-card:hover,
+.current-level-card:hover,
+.level-ladder-card:hover,
+.public-profile-card:hover,
+.verification-card:hover,
+.weekly-goal-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 82%), 0 22px 42px rgb(18 28 38 / 10%) !important;
+}
+
+.my-learning-stats strong,
+.explore-stats strong,
+.search-result-stats strong,
+.mandatory-stats strong,
+.calendar-stats strong,
+.notifications-stats strong,
+.progress-dashboard-stats strong,
+.achievements-stats strong,
+.certificates-stats strong,
+.certificate-detail-stats strong,
+.my-course-list h3,
+.popular-course-list h3,
+.assigned-training-list h3,
+.schedule-list h3,
+.notification-list h3,
+.achievement-list h3,
+.credential-list h3,
+.certificate-share-list h3,
+.recommended-path-card h2,
+.active-filters-card h2,
+.category-skills-card h2,
+.path-progress-card h2,
+.compliance-status-card h2,
+.calendar-sync-card h2,
+.notification-preferences-card h2,
+.current-level-card h2,
+.level-ladder-card h2,
+.public-profile-card h2,
+.verification-card h2,
+.weekly-goal-card h2 {
+  color: var(--bc-system-text) !important;
+  font-weight: 850 !important;
+}
+
+.my-learning-stats p,
+.explore-stats p,
+.search-result-stats p,
+.mandatory-stats p,
+.calendar-stats p,
+.notifications-stats p,
+.progress-dashboard-stats p,
+.achievements-stats p,
+.certificates-stats p,
+.certificate-detail-stats p,
+.my-course-list p,
+.popular-course-list p,
+.assigned-training-list p,
+.schedule-list p,
+.notification-list p,
+.achievement-list p,
+.credential-list p,
+.certificate-share-list p,
+.recommended-path-card p,
+.active-filters-card p,
+.category-skills-card p,
+.path-progress-card p,
+.compliance-status-card p,
+.calendar-sync-card p,
+.notification-preferences-card p,
+.current-level-card p,
+.level-ladder-card p,
+.public-profile-card p,
+.verification-card p,
+.weekly-goal-card p {
+  color: var(--bc-system-muted) !important;
+  font-weight: 500 !important;
+}
+
+.my-course-list button,
+.popular-course-list button,
+.assigned-training-list button,
+.schedule-list button,
+.notification-list button,
+.achievement-list button,
+.credential-list button,
+.certificate-share-list button,
+.recommended-path-card button,
+.active-filters-card button,
+.category-skills-card button,
+.path-progress-card button,
+.compliance-status-card button,
+.calendar-sync-card button,
+.notification-preferences-card button,
+.current-level-card button,
+.level-ladder-card button,
+.public-profile-card button,
+.verification-card button,
+.weekly-goal-card button {
+  min-height: clamp(2.75rem, 4.1vh, 3.25rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  border-radius: 0.9rem !important;
+  font-weight: 850 !important;
+}
+
+.my-course-list button:not(.secondary),
+.popular-course-list button:not(.secondary),
+.assigned-training-list button:not(.secondary),
+.schedule-list button:not(.secondary),
+.notification-list button:not(.secondary),
+.achievement-list button:not(.secondary),
+.credential-list button:not(.secondary),
+.certificate-share-list button:not(.secondary),
+.recommended-path-card button:not(.secondary),
+.active-filters-card button:not(.secondary),
+.category-skills-card button:not(.secondary),
+.path-progress-card button:not(.secondary),
+.compliance-status-card button:not(.secondary),
+.calendar-sync-card button:not(.secondary),
+.notification-preferences-card button:not(.secondary),
+.current-level-card button:not(.secondary),
+.level-ladder-card button:not(.secondary),
+.public-profile-card button:not(.secondary),
+.verification-card button:not(.secondary),
+.weekly-goal-card button:not(.secondary) {
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--bc-system-orange) !important;
+  box-shadow: none !important;
+}
+
+.course-tabs,
+.lesson-tabs,
+.quiz-page .question-grid,
+.quiz-review-page .review-card,
+.quiz-result-page .result-actions,
+.quiz-submit-page .submit-confirm-actions {
+  animation: bc-card-rise 360ms ease both;
+}
+
+input,
+textarea,
+select,
+.learning-search,
+.role-search div,
+.search-field,
+.quiz-page .answer-choice {
+  border-color: rgb(220 224 226 / 88%) !important;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid rgba(255, 85, 34, 0.24) !important;
+  outline-offset: 3px !important;
+}
+
+@keyframes bc-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bc-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1450px) {
+  .learning-home,
+  .my-learning-page,
+  .explore-page,
+  .search-results-page,
+  .mandatory-page,
+  .calendar-page,
+  .notifications-page,
+  .progress-dashboard-page,
+  .achievements-page,
+  .certificates-page,
+  .certificate-detail-page {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+
+  .my-learning-main,
+  .explore-main,
+  .search-results-main,
+  .mandatory-main,
+  .calendar-main,
+  .notifications-main,
+  .progress-dashboard-main,
+  .achievements-main,
+  .certificates-main,
+  .certificate-detail-main {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: clamp(2rem, 4.2vw, 3.85rem) clamp(1.25rem, 4.5vw, 3.85rem) 3rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learning-main,
+  .course-main,
+  .lesson-stage,
+  .quiz-main,
+  .quiz-review-content,
+  .quiz-submit-content,
+  .quiz-result-content,
+  .certificate-progress-content,
+  .my-learning-main,
+  .explore-main,
+  .search-results-main,
+  .mandatory-main,
+  .calendar-main,
+  .notifications-main,
+  .progress-dashboard-main,
+  .achievements-main,
+  .certificates-main,
+  .certificate-detail-main,
+  .course-tabs,
+  .lesson-tabs,
+  .quiz-page .question-grid,
+  .quiz-review-page .review-card,
+  .quiz-result-page .result-actions,
+  .quiz-submit-page .submit-confirm-actions {
+    animation: none !important;
   }
 }
 
