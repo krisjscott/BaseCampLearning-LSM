@@ -13692,8 +13692,20 @@ body:has(.auth-page) {
 
   .learner-profile {
     flex-shrink: 0 !important;
-    margin-top: auto !important;
+    margin-top: clamp(1rem, 2vh, 1.35rem) !important;
     margin-bottom: 0 !important;
+  }
+
+  .learning-nav {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    grid-template-rows: repeat(6, minmax(clamp(3.35rem, 5vh, 4rem), 1fr)) !important;
+    align-content: stretch !important;
+  }
+
+  .learning-nav button {
+    height: 100% !important;
+    min-height: clamp(3.35rem, 5vh, 4rem) !important;
   }
 
   .learning-header {
@@ -13777,10 +13789,12 @@ body:has(.auth-page) {
 
   .learning-nav {
     gap: clamp(0.55rem, 1.25vh, 0.8rem) !important;
+    grid-template-rows: repeat(6, minmax(clamp(2.65rem, 4.4vh, 2.95rem), 1fr)) !important;
   }
 
   .learning-nav button {
-    height: clamp(2.65rem, 4.65vh, 2.95rem) !important;
+    height: 100% !important;
+    min-height: clamp(2.65rem, 4.4vh, 2.95rem) !important;
   }
 
   .recent-trails {
@@ -13792,7 +13806,7 @@ body:has(.auth-page) {
   }
 
   .learner-profile {
-    margin: auto calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) 0 !important;
+    margin: clamp(0.8rem, 1.7vh, 1rem) calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) 0 !important;
     padding-top: clamp(0.55rem, 1.35vh, 0.85rem) !important;
     padding-bottom: clamp(0.55rem, 1.35vh, 0.85rem) !important;
   }
