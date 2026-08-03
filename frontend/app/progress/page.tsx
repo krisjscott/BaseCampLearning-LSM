@@ -115,7 +115,6 @@ export default function ProgressDashboard() {
 
           <aside className="current-level-card">
             <div className="current-level-card-header">
-              <span>B</span>
               <section>
                 <p>Current level</p>
                 <h2>Builder</h2>
