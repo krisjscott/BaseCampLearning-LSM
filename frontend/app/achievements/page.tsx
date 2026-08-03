@@ -6,7 +6,6 @@ import {
   Home,
   Trophy,
 } from "lucide-react";
-import type { CSSProperties } from "react";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -121,9 +120,9 @@ export default function Achievements() {
           <aside className="level-ladder-card">
             <h2>Level ladder</h2>
             <div className="level-ladder-steps" aria-label="Starter to Champion level ladder">
-              {levelLadder.map(([level, xp, state], index) => (
-                <div className={`ladder-step ${state}`} key={level} style={{ "--step-index": index } as CSSProperties}>
-                  <span>{index + 1}</span>
+              {levelLadder.map(([level, xp, state]) => (
+                <div className={`ladder-step ${state}`} key={level}>
+                  <span />
                   <section>
                     <strong>{level}</strong>
                     <small>{xp}</small>
