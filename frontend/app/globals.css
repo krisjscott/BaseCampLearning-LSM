@@ -13922,4 +13922,433 @@ body:has(.auth-page) {
   }
 }
 
+/* Course overview reference match. */
+.course-overview {
+  min-height: 100dvh !important;
+  display: grid !important;
+  grid-template-columns: clamp(18rem, 17.38vw, 22.25rem) minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  background: linear-gradient(100deg, #f8fafc 0%, #f5f6f4 48%, #fff4ec 100%) !important;
+  color: #111315 !important;
+}
+
+.course-main {
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: auto !important;
+  padding: clamp(2.75rem, 4.7vh, 3.75rem) clamp(2.7rem, 4.9vw, 5rem) clamp(3rem, 4.6vh, 4rem) !important;
+}
+
+.course-breadcrumb {
+  height: clamp(3.9rem, 5.2vh, 4.35rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 0 0 clamp(1.1rem, 1.2vw, 1.35rem) !important;
+  border: 1px solid rgb(255 255 255 / 76%) !important;
+  border-radius: 1.6rem !important;
+  background: rgb(255 255 255 / 52%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 86%), 0 14px 34px rgb(18 28 38 / 7%) !important;
+}
+
+.course-breadcrumb p {
+  margin: 0 !important;
+  color: #7c848b !important;
+  font-size: clamp(0.96rem, 0.95vw, 1.08rem) !important;
+  font-weight: 600 !important;
+}
+
+.course-breadcrumb div {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+
+.course-breadcrumb button {
+  height: clamp(3rem, 4.3vh, 3.35rem) !important;
+  min-height: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.35rem !important;
+  border: 1px solid rgb(255 255 255 / 80%) !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / 76%) !important;
+  color: #25282b !important;
+  padding: 0 clamp(1.2rem, 1.25vw, 1.45rem) !important;
+  font-size: clamp(0.92rem, 0.9vw, 1rem) !important;
+  font-weight: 800 !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 90%), 0 8px 20px rgb(18 28 38 / 7%) !important;
+}
+
+.course-hero {
+  height: clamp(24rem, 31vh, 26.8rem) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(22rem, 21vw, 25rem) !important;
+  align-items: center !important;
+  gap: clamp(2rem, 4vw, 5rem) !important;
+  margin-top: clamp(1.75rem, 2.4vh, 2rem) !important;
+  padding: clamp(3.2rem, 4vw, 4.25rem) clamp(3rem, 3.6vw, 3.6rem) !important;
+  border: 0 !important;
+  border-radius: clamp(1.65rem, 1.9vw, 2rem) !important;
+  background: #090b0d !important;
+  color: #ffffff !important;
+  box-shadow: 0 26px 58px rgb(18 28 38 / 14%) !important;
+}
+
+.course-hero-copy {
+  max-width: 58rem !important;
+}
+
+.course-hero-copy p,
+.course-progress-card > p {
+  margin: 0 !important;
+  color: #ff5a1f !important;
+  font-size: clamp(0.74rem, 0.72vw, 0.85rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.course-hero-copy h1 {
+  margin: clamp(1.45rem, 2.3vh, 1.8rem) 0 clamp(1.25rem, 2vh, 1.55rem) !important;
+  color: #ffffff !important;
+  font-size: clamp(3.15rem, 3.2vw, 4rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.08 !important;
+}
+
+.course-hero-copy > span {
+  display: block !important;
+  max-width: 78ch !important;
+  color: #b9bfc1 !important;
+  font-size: clamp(1.05rem, 1.1vw, 1.28rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+}
+
+.course-facts {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0 !important;
+  margin-top: clamp(1.55rem, 2.6vh, 2rem) !important;
+  color: #dde1e1 !important;
+}
+
+.course-facts span {
+  position: relative !important;
+  padding: 0 clamp(0.8rem, 0.85vw, 1rem) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #dde1e1 !important;
+  font-size: clamp(0.95rem, 0.95vw, 1.05rem) !important;
+  font-weight: 700 !important;
+}
+
+.course-facts span:first-child {
+  padding-left: 0 !important;
+}
+
+.course-facts span + span::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: #777f82;
+  transform: translate(-50%, -50%);
+}
+
+.course-progress-card {
+  width: auto !important;
+  height: auto !important;
+  min-height: clamp(17.5rem, 23vh, 19rem) !important;
+  flex: initial !important;
+  padding: clamp(1.9rem, 2.4vw, 2.25rem) !important;
+  border: 1px solid #343a3d !important;
+  border-radius: 1.35rem !important;
+  background: #171d1f !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%) !important;
+}
+
+.course-progress-card h2 {
+  margin: clamp(1.35rem, 2vh, 1.65rem) 0 clamp(1.1rem, 1.8vh, 1.35rem) !important;
+  color: #ffffff !important;
+  font-size: clamp(2.1rem, 2vw, 2.55rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.1 !important;
+}
+
+.course-progress-card div {
+  height: 0.6rem !important;
+  border-radius: 999px !important;
+  background: #4a5052 !important;
+}
+
+.course-progress-card div span {
+  width: 58% !important;
+  background: #ff5a1f !important;
+}
+
+.course-progress-card > span {
+  margin: clamp(1.15rem, 1.9vh, 1.45rem) 0 clamp(1.45rem, 2.25vh, 1.8rem) !important;
+  color: #e3e6e6 !important;
+  font-size: clamp(0.95rem, 0.95vw, 1.05rem) !important;
+  font-weight: 600 !important;
+}
+
+.course-progress-card button {
+  width: 100% !important;
+  height: clamp(3.65rem, 5.2vh, 4.1rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.65rem !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  background: #ff5a1f !important;
+  color: #ffffff !important;
+  font-size: clamp(0.98rem, 0.95vw, 1.08rem) !important;
+  font-weight: 800 !important;
+}
+
+.course-tabs {
+  height: clamp(3.65rem, 5.2vh, 4rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(2rem, 3vw, 3.25rem) !important;
+  margin-top: clamp(1.8rem, 2.6vh, 2.2rem) !important;
+  padding: 0 clamp(1rem, 1.15vw, 1.2rem) !important;
+  border: 1px solid rgb(255 255 255 / 76%) !important;
+  border-radius: 1.4rem !important;
+  background: rgb(255 255 255 / 52%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 86%), 0 14px 34px rgb(18 28 38 / 7%) !important;
+}
+
+.course-tabs button {
+  height: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #7c848b !important;
+  font-size: clamp(0.92rem, 0.9vw, 1rem) !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.course-tabs button.active {
+  color: #111315 !important;
+}
+
+.course-tabs button.active::after {
+  height: 0.16rem !important;
+  background: #ff5a1f !important;
+}
+
+.course-content-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(24rem, 23vw, 28.25rem) !important;
+  gap: clamp(2rem, 3vw, 3.5rem) !important;
+  margin-top: clamp(1.65rem, 2.5vh, 2rem) !important;
+}
+
+.module-panel,
+.course-side-panel {
+  min-height: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.module-panel h2,
+.info-card h2 {
+  margin: 0 !important;
+  color: #111315 !important;
+  font-size: clamp(1.45rem, 1.45vw, 1.7rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+}
+
+.module-panel > p {
+  margin: clamp(0.7rem, 1.25vh, 0.9rem) 0 clamp(1.1rem, 1.8vh, 1.35rem) !important;
+  color: #858c94 !important;
+  font-size: clamp(0.98rem, 0.95vw, 1.08rem) !important;
+  font-weight: 600 !important;
+}
+
+.module-list {
+  display: grid !important;
+  gap: clamp(0.9rem, 1.5vh, 1.1rem) !important;
+}
+
+.module-row {
+  height: clamp(5.5rem, 7.2vh, 6.1rem) !important;
+  display: grid !important;
+  grid-template-columns: clamp(3rem, 2.7vw, 3.25rem) minmax(0, 1fr) auto !important;
+  gap: clamp(1rem, 1.2vw, 1.25rem) !important;
+  align-items: center !important;
+  padding: 0 clamp(1.5rem, 1.6vw, 1.9rem) !important;
+  border: 1px solid #e4e6e6 !important;
+  border-radius: 1.1rem !important;
+  background: rgb(255 255 255 / 64%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 76%), 0 12px 28px rgb(18 28 38 / 5%) !important;
+}
+
+.module-row:has(.module-status.done) {
+  border-color: #35c67a !important;
+}
+
+.module-status {
+  width: clamp(2.75rem, 2.6vw, 3.1rem) !important;
+  height: clamp(2.75rem, 2.6vw, 3.1rem) !important;
+  border-radius: 999px !important;
+  background: #eff0ee !important;
+  color: #111315 !important;
+  font-size: clamp(0.95rem, 0.9vw, 1.05rem) !important;
+  font-weight: 800 !important;
+}
+
+.module-status.done {
+  background: #35c67a !important;
+  color: #111315 !important;
+}
+
+.module-status.locked {
+  color: #7c848b !important;
+}
+
+.module-row h3 {
+  color: #232528 !important;
+  font-size: clamp(0.95rem, 0.95vw, 1.05rem) !important;
+  font-weight: 800 !important;
+}
+
+.module-row p {
+  margin-top: 0.38rem !important;
+  color: #858c94 !important;
+  font-size: clamp(0.92rem, 0.9vw, 1rem) !important;
+  font-weight: 600 !important;
+}
+
+.module-row button {
+  border: 0 !important;
+  background: transparent !important;
+  color: #7c848b !important;
+  font-size: clamp(0.9rem, 0.88vw, 0.98rem) !important;
+  font-weight: 800 !important;
+}
+
+.module-row button.continue {
+  color: #ff5a1f !important;
+}
+
+.course-side-panel {
+  display: grid !important;
+  align-content: start !important;
+  gap: clamp(1.5rem, 2.6vh, 2rem) !important;
+}
+
+.info-card {
+  min-height: clamp(16rem, 19vh, 17.5rem) !important;
+  padding: clamp(1.75rem, 1.75vw, 2rem) !important;
+  border: 1px solid rgb(255 255 255 / 68%) !important;
+  border-radius: 1.35rem !important;
+  background: rgb(255 255 255 / 58%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 78%), 0 16px 34px rgb(18 28 38 / 7%) !important;
+}
+
+.info-card.muted {
+  background: rgb(255 255 255 / 38%) !important;
+}
+
+.info-card p {
+  margin: clamp(1rem, 1.8vh, 1.35rem) 0 0 !important;
+  color: #858c94 !important;
+  font-size: clamp(0.98rem, 0.95vw, 1.08rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+}
+
+.info-card button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  margin-top: clamp(2rem, 3.2vh, 2.6rem) !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #ff5a1f !important;
+  font-size: clamp(0.95rem, 0.92vw, 1.02rem) !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 1450px) {
+  .course-overview {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+
+  .course-main {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: clamp(2rem, 4.2vw, 3.85rem) clamp(1.25rem, 4.5vw, 3.85rem) 3rem !important;
+  }
+
+  .course-hero {
+    height: auto !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .course-content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .course-side-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .course-breadcrumb,
+  .course-tabs {
+    height: auto !important;
+    flex-wrap: wrap !important;
+    gap: 0.9rem 1.25rem !important;
+    padding: 0.9rem 1rem !important;
+  }
+
+  .course-breadcrumb {
+    align-items: flex-start !important;
+  }
+
+  .course-hero {
+    padding: 2rem 1.35rem !important;
+  }
+
+  .course-hero-copy h1 {
+    font-size: clamp(2.1rem, 10vw, 3rem) !important;
+  }
+
+  .module-row {
+    height: auto !important;
+    min-height: 6.2rem !important;
+    grid-template-columns: 3rem minmax(0, 1fr) !important;
+  }
+
+  .module-row button {
+    grid-column: 2 !important;
+    justify-self: start !important;
+  }
+
+  .course-side-panel {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 

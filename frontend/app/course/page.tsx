@@ -5,7 +5,6 @@ import {
   BookOpen,
   Check,
   Compass,
-  Download,
   Grid2X2,
   GraduationCap,
   Home,
@@ -82,24 +81,20 @@ export default function CourseOverview() {
         <header className="course-breadcrumb">
           <p>My Learning / Google Project Management</p>
           <div>
-            <button type="button">
-              <Download size={16} />
-              <span>Resources</span>
-            </button>
             <button type="button"><Share2 size={16} /><span>Share</span></button>
           </div>
         </header>
 
         <section className="course-hero">
           <div className="course-hero-copy">
-            <p>Professional certificate</p>
+            <p>BaseCamp certificate</p>
             <h1>Google Project Management</h1>
-            <span>Build practical project planning, execution, communication, and delivery skills.</span>
+            <span>Build practical project management skills through guided lessons, real workplace scenarios and assessed checkpoints.</span>
             <div className="course-facts">
               <span>6 modules</span>
-              <span>28 lessons</span>
-              <span>7 quizzes</span>
-              <span>24 hours - Certificate</span>
+              <span>Beginner</span>
+              <span>Approx. 24 hours</span>
+              <span>Certificate</span>
             </div>
           </div>
 
@@ -110,7 +105,7 @@ export default function CourseOverview() {
               <span />
             </div>
             <span>Next: Define scope &amp; deliverables</span>
-            <button type="button"><span>Continue learning -&gt;</span><ArrowRight size={16} /></button>
+            <button type="button"><span>Continue learning</span><ArrowRight size={16} /></button>
           </aside>
         </section>
 
