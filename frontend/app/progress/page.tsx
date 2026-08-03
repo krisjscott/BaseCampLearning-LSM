@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   Award,
   BarChart3,
   BookOpen,
@@ -113,9 +114,33 @@ export default function ProgressDashboard() {
           </section>
 
           <aside className="current-level-card">
-            <h2>Current level</h2>
-            <p>Builder - 2,830 XP</p>
-            <button type="button">Level details -&gt;</button>
+            <div className="current-level-card-header">
+              <span>B</span>
+              <section>
+                <p>Current level</p>
+                <h2>Builder</h2>
+              </section>
+            </div>
+            <div className="current-level-xp">
+              <strong>2,830</strong>
+              <span>/ 4,000 XP</span>
+            </div>
+            <div className="current-level-meter" aria-label="2,830 of 4,000 XP toward Achiever">
+              <span />
+            </div>
+            <div className="current-level-next">
+              <span>Next stage</span>
+              <strong>Achiever</strong>
+            </div>
+            <div className="current-level-pill-row" aria-label="Level milestones">
+              <span>Starter</span>
+              <span className="active">Builder</span>
+              <span>Achiever</span>
+            </div>
+            <button type="button">
+              <span>Level details</span>
+              <ArrowRight size={17} strokeWidth={2.3} />
+            </button>
           </aside>
         </div>
       </section>
