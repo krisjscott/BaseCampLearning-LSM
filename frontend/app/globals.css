@@ -15528,3 +15528,66 @@ body:has(.auth-page) {
   font-size: clamp(0.72rem, 0.76vw, 0.84rem) !important;
 }
 
+.lesson-player .lesson-video-media {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  background: #0b0e0f !important;
+}
+
+.lesson-player .video-surface {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(8, 11, 12, 0.06), rgba(8, 11, 12, 0.26)) !important;
+  color: #ffffff !important;
+}
+
+.lesson-player .video-surface.is-playing {
+  background: transparent !important;
+}
+
+.lesson-player .video-surface .play-badge,
+.lesson-player .video-surface strong {
+  transition: opacity 180ms ease, transform 180ms ease !important;
+}
+
+.lesson-player .video-surface.is-playing .play-badge,
+.lesson-player .video-surface.is-playing strong {
+  opacity: 0 !important;
+  transform: scale(0.96) !important;
+}
+
+.lesson-player .video-surface.is-playing:hover .play-badge,
+.lesson-player .video-surface.is-playing:hover strong {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.lesson-player .video-controls {
+  z-index: 4 !important;
+}
+
+.lesson-player .control-spacer {
+  min-width: 0 !important;
+}
+
+.lesson-player .control-icons button.active {
+  background: rgba(255, 85, 34, 0.88) !important;
+  color: #ffffff !important;
+}
+
+.lesson-player .control-icons button[aria-label="Playback speed"]::before {
+  content: none !important;
+}
+
+.lesson-player .control-icons button[aria-label="Playback speed"] span {
+  font-size: clamp(0.72rem, 0.76vw, 0.84rem) !important;
+  font-weight: 850 !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
