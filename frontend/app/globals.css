@@ -17706,3 +17706,129 @@ select:focus-visible,
   transform: none !important;
 }
 
+/* Achievements ladder should read as a real level path, not plain text. */
+.level-ladder-card {
+  overflow: hidden !important;
+}
+
+.level-ladder-card > p {
+  display: none !important;
+}
+
+.level-ladder-steps {
+  position: relative;
+  display: grid;
+  gap: clamp(0.65rem, 1.15vh, 0.9rem);
+  margin-top: clamp(1.25rem, 2vh, 1.55rem);
+  padding: 0.25rem 0 0.25rem;
+}
+
+.level-ladder-steps::before {
+  content: "";
+  position: absolute;
+  left: clamp(1.2rem, 1.35vw, 1.45rem);
+  top: 1.2rem;
+  bottom: 1.2rem;
+  width: 0.18rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #35c67a 0%, #ff5522 42%, rgba(17, 19, 21, 0.12) 100%);
+}
+
+.ladder-step {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - (var(--step-index) * clamp(0.55rem, 0.8vw, 0.9rem)));
+  min-height: clamp(3.25rem, 5.2vh, 3.85rem);
+  display: grid;
+  grid-template-columns: clamp(2.4rem, 2.55vw, 2.9rem) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(0.75rem, 0.95vw, 1rem);
+  margin-left: calc(var(--step-index) * clamp(0.55rem, 0.8vw, 0.9rem));
+  padding: clamp(0.55rem, 0.9vh, 0.7rem) clamp(0.75rem, 1vw, 1rem);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.78), 0 12px 24px rgba(18, 28, 38, 0.06);
+}
+
+.ladder-step::after {
+  content: none;
+  display: none;
+}
+
+.ladder-step:first-child::after {
+  display: none;
+}
+
+.ladder-step > span {
+  width: clamp(2.25rem, 2.45vw, 2.75rem);
+  height: clamp(2.25rem, 2.45vw, 2.75rem);
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #efefec;
+  color: #6f7880;
+  font-size: clamp(0.86rem, 0.85vw, 0.95rem);
+  font-weight: 850;
+}
+
+.ladder-step section {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.ladder-step strong {
+  color: #111315;
+  font-size: clamp(0.92rem, 0.92vw, 1.05rem);
+  font-weight: 850;
+  line-height: 1.12;
+}
+
+.ladder-step small {
+  color: #7f8991;
+  font-size: clamp(0.75rem, 0.75vw, 0.86rem);
+  font-weight: 700;
+}
+
+.ladder-step.done > span {
+  background: #35c67a;
+  color: #0b1c13;
+}
+
+.ladder-step.current {
+  border-color: rgba(255, 85, 34, 0.72);
+  background: #0b0d0e;
+  box-shadow: 0 18px 34px rgba(18, 28, 38, 0.16), 0 18px 34px rgba(255, 85, 34, 0.12);
+}
+
+.ladder-step.current > span {
+  background: #ff5522;
+  color: #ffffff;
+}
+
+.ladder-step.current strong {
+  color: #ffffff !important;
+}
+
+.ladder-step.current small {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.ladder-step.next {
+  border-color: rgba(255, 85, 34, 0.26);
+}
+
+.ladder-step.next > span {
+  background: rgba(255, 85, 34, 0.14);
+  color: #ff5522;
+}
+
+.ladder-step.locked {
+  opacity: 0.72;
+}
+
+.level-ladder-card button {
+  margin-top: clamp(1.15rem, 2vh, 1.55rem) !important;
+}
+
