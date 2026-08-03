@@ -1,14 +1,14 @@
 ﻿import {
   Captions,
   Check,
-  CheckCircle2,
   FileText,
+  Folder,
   Gauge,
   Grid2X2,
   Lock,
   Maximize,
-  MessageCircle,
   Play,
+  StickyNote,
   Volume2,
   X,
 } from "lucide-react";
@@ -47,7 +47,7 @@ export default function LessonPlayer() {
       <div className="lesson-shell">
         <section className="lesson-stage">
           <div className="lesson-heading">
-            <p>Lesson 4 of 7</p>
+            <p>LESSON 4 OF 7</p>
             <h1>Define scope and deliverables</h1>
             <span>12 min video - Required</span>
           </div>
@@ -103,28 +103,20 @@ export default function LessonPlayer() {
                 <span>Transcript</span>
               </button>
               <button type="button">
-                <MessageCircle size={16} />
-                <span>Discussion</span>
+                <Folder size={16} />
+                <span>Resources</span>
               </button>
-              <button type="button" className="locked">
-                <Lock size={16} />
-                <span>Quiz unlocks after video</span>
+              <button type="button">
+                <StickyNote size={16} />
+                <span>Notes</span>
               </button>
             </nav>
 
             <button type="button" className="mark-complete">
-              <CheckCircle2 size={16} />
-              <span>Mark complete after watch</span>
+              <Lock size={16} />
+              <span>Quiz unlocks after video</span>
             </button>
           </section>
-
-          <article className="lesson-overview-card">
-            <h2>About this lesson</h2>
-            <p>
-              Learn how to define a project&apos;s scope, translate goals into deliverables,
-              and identify the boundaries that keep a project on track.
-            </p>
-          </article>
         </section>
 
         <aside className="lesson-playlist">

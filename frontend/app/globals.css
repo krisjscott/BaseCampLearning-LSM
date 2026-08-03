@@ -14435,4 +14435,524 @@ body:has(.auth-page) {
   }
 }
 
+/* Lesson player reference match. */
+.lesson-player {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  background: linear-gradient(100deg, #f8fafb 0%, #f6f7f5 49%, #fff4ec 100%) !important;
+  color: #111416 !important;
+}
+
+.lesson-topbar {
+  height: clamp(5.2rem, 7.4dvh, 6rem) !important;
+  flex-basis: clamp(5.2rem, 7.4dvh, 6rem) !important;
+  padding: 0 clamp(2.4rem, 3.4vw, 4.35rem) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(16, 20, 22, 0.08) !important;
+  background: linear-gradient(98deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.28) 60%, rgba(245, 237, 231, 0.32) 100%) !important;
+  box-shadow: 0 10px 34px rgba(14, 18, 22, 0.08) !important;
+  animation: lesson-slide-down 380ms ease both !important;
+}
+
+.lesson-brand-block {
+  gap: clamp(1.25rem, 1.85vw, 1.95rem) !important;
+}
+
+.lesson-brand-block img {
+  width: clamp(7.2rem, 8vw, 9.1rem) !important;
+  height: clamp(3.1rem, 4.7dvh, 3.95rem) !important;
+  object-fit: contain !important;
+}
+
+.lesson-brand-block > span {
+  height: clamp(2rem, 3.2dvh, 2.35rem) !important;
+  background: rgba(18, 22, 24, 0.08) !important;
+}
+
+.lesson-brand-block strong {
+  color: #1f2428 !important;
+  font-size: clamp(0.9rem, 0.93vw, 1.05rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+}
+
+.lesson-brand-block p,
+.lesson-top-actions p {
+  margin-top: 0.4rem !important;
+  color: #808890 !important;
+  font-size: clamp(0.95rem, 1vw, 1.1rem) !important;
+  font-weight: 500 !important;
+}
+
+.lesson-top-actions {
+  gap: clamp(1.25rem, 1.8vw, 2rem) !important;
+}
+
+.lesson-top-actions button {
+  min-height: clamp(2.4rem, 3.75dvh, 2.9rem) !important;
+  padding: 0 clamp(1.1rem, 1.65vw, 1.55rem) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: 0 14px 30px rgba(12, 17, 20, 0.08) !important;
+  color: #202427 !important;
+  font-size: clamp(0.88rem, 0.92vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.lesson-shell {
+  height: calc(100dvh - clamp(5.2rem, 7.4dvh, 6rem)) !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 71.2%) minmax(24rem, 28.8%) !important;
+  overflow: hidden !important;
+}
+
+.lesson-stage {
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: clamp(2.25rem, 3.7dvh, 3rem) clamp(2.6rem, 3.55vw, 4.35rem) clamp(1.7rem, 3.3dvh, 2.6rem) !important;
+  animation: lesson-rise 440ms ease 70ms both !important;
+}
+
+.lesson-heading {
+  gap: clamp(0.45rem, 0.9dvh, 0.75rem) !important;
+}
+
+.lesson-heading p,
+.lesson-playlist header p,
+.saved-card p {
+  color: #ff5522 !important;
+  font-size: clamp(0.72rem, 0.72vw, 0.85rem) !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.04em !important;
+  line-height: 1.1 !important;
+}
+
+.lesson-heading h1 {
+  color: #111416 !important;
+  font-size: clamp(2.05rem, 2.4vw, 2.8rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.02 !important;
+  letter-spacing: 0 !important;
+}
+
+.lesson-heading span,
+.lesson-playlist header span {
+  color: #818890 !important;
+  font-size: clamp(1rem, 1.08vw, 1.2rem) !important;
+  font-weight: 500 !important;
+}
+
+.video-card {
+  height: clamp(30rem, 53.6dvh, 44rem) !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) clamp(4.9rem, 7.8dvh, 6.2rem) !important;
+  margin-top: clamp(1.8rem, 2.8dvh, 2.45rem) !important;
+  overflow: hidden !important;
+  border-radius: clamp(1.25rem, 1.4vw, 1.65rem) !important;
+  background: #0b0e0f !important;
+  box-shadow: 0 22px 50px rgba(13, 18, 20, 0.12) !important;
+}
+
+.video-surface {
+  height: auto !important;
+  gap: clamp(1.25rem, 2.3dvh, 1.8rem) !important;
+  background: radial-gradient(65% 65% at 50% 45%, #1f2527 0%, #121719 47%, #080b0c 100%) !important;
+}
+
+.play-badge {
+  width: clamp(4.25rem, 5.1vw, 5.75rem) !important;
+  height: clamp(4.25rem, 5.1vw, 5.75rem) !important;
+  background: #ff5522 !important;
+  box-shadow: 0 22px 48px rgba(255, 85, 34, 0.28) !important;
+  animation: lesson-pulse 2.2s ease-in-out infinite !important;
+}
+
+.play-badge svg {
+  width: 1.45rem !important;
+  height: 1.45rem !important;
+  stroke-width: 2.35 !important;
+}
+
+.video-surface strong {
+  color: rgba(255, 255, 255, 0.84) !important;
+  font-size: clamp(0.98rem, 1vw, 1.14rem) !important;
+  font-weight: 500 !important;
+}
+
+.video-controls {
+  height: auto !important;
+  align-content: center !important;
+  gap: clamp(0.85rem, 1.4dvh, 1.15rem) !important;
+  padding: clamp(0.85rem, 1.25dvh, 1rem) clamp(1.85rem, 2vw, 2rem) !important;
+  border: 1px solid rgba(255, 255, 255, 0.56) !important;
+  border-radius: clamp(1.4rem, 2vw, 2.15rem) !important;
+  background: linear-gradient(180deg, rgba(111, 118, 119, 0.84), rgba(77, 83, 84, 0.94)) !important;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.42), 0 -10px 28px rgba(255, 255, 255, 0.16) !important;
+}
+
+.video-progress {
+  height: 0.42rem !important;
+  background: rgba(47, 53, 55, 0.45) !important;
+}
+
+.video-progress span {
+  width: 61% !important;
+  background: #ff5522 !important;
+  border-radius: inherit !important;
+}
+
+.control-row {
+  grid-template-columns: clamp(2rem, 2.8vw, 2.6rem) 1fr auto !important;
+  gap: clamp(1rem, 2.4vw, 3.4rem) !important;
+}
+
+.control-row button,
+.control-icons button {
+  color: #151a1d !important;
+}
+
+.control-row > p {
+  justify-self: start !important;
+  color: rgba(255, 255, 255, 0.86) !important;
+  font-size: clamp(0.95rem, 0.98vw, 1.1rem) !important;
+  font-weight: 500 !important;
+}
+
+.control-icons {
+  gap: clamp(4.1rem, 8vw, 9.3rem) !important;
+}
+
+.watch-policy {
+  height: clamp(3.75rem, 5.3dvh, 4.35rem) !important;
+  grid-template-columns: clamp(1.3rem, 1.7vw, 1.65rem) 1fr auto !important;
+  margin-top: clamp(1.6rem, 2.5dvh, 2rem) !important;
+  padding: 0 clamp(1.25rem, 1.7vw, 1.55rem) !important;
+  border-radius: clamp(0.8rem, 1vw, 1.1rem) !important;
+  background: #efefec !important;
+  color: #222629 !important;
+}
+
+.watch-policy p {
+  justify-self: center !important;
+  color: #222629 !important;
+  font-size: clamp(0.92rem, 0.98vw, 1.05rem) !important;
+  font-weight: 600 !important;
+}
+
+.watch-policy strong {
+  color: #ff5522 !important;
+  font-size: clamp(0.9rem, 0.95vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.lesson-lower {
+  height: clamp(3.75rem, 6.1dvh, 4.35rem) !important;
+  margin-top: clamp(2.6rem, 4.2dvh, 3.9rem) !important;
+  align-items: center !important;
+}
+
+.lesson-tabs {
+  min-height: clamp(2.85rem, 4.2dvh, 3.2rem) !important;
+  gap: clamp(1.6rem, 2.65vw, 3rem) !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lesson-tabs button {
+  height: clamp(2.8rem, 4.1dvh, 3.15rem) !important;
+  gap: 0.5rem !important;
+  color: #7b848b !important;
+  font-size: clamp(0.9rem, 0.94vw, 1.05rem) !important;
+  font-weight: 750 !important;
+}
+
+.lesson-tabs button.active {
+  color: #111416 !important;
+}
+
+.lesson-tabs button.active::after {
+  height: 0.12rem !important;
+  background: #ff5522 !important;
+}
+
+.mark-complete {
+  height: clamp(2.85rem, 4.2dvh, 3.35rem) !important;
+  min-width: clamp(13rem, 14vw, 16rem) !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: clamp(0.75rem, 0.9vw, 1rem) !important;
+  background: #efefec !important;
+  color: #7b848b !important;
+  box-shadow: none !important;
+  font-size: clamp(0.9rem, 0.94vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.lesson-overview-card {
+  display: none !important;
+}
+
+.lesson-playlist {
+  height: calc(100dvh - clamp(5.2rem, 7.4dvh, 6rem)) !important;
+  min-height: 0 !important;
+  padding: clamp(2.3rem, 3.3dvh, 2.85rem) clamp(1.85rem, 2.5vw, 3.05rem) !important;
+  border-left: 1px solid rgba(19, 23, 25, 0.08) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  overflow: hidden !important;
+  animation: lesson-rail-enter 480ms ease 130ms both !important;
+}
+
+.lesson-playlist header h2 {
+  margin: clamp(0.7rem, 1.3dvh, 0.95rem) 0 clamp(0.65rem, 1.1dvh, 0.8rem) !important;
+  color: #111416 !important;
+  font-size: clamp(1.55rem, 1.7vw, 2rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.08 !important;
+}
+
+.playlist-progress {
+  height: 0.42rem !important;
+  margin: clamp(1.45rem, 2.15dvh, 1.8rem) 0 clamp(1.25rem, 2.2dvh, 1.6rem) !important;
+  background: #ececea !important;
+}
+
+.playlist-progress span {
+  width: 58% !important;
+  background: #ff5522 !important;
+}
+
+.playlist-list {
+  gap: clamp(1rem, 2.25dvh, 1.9rem) !important;
+  border-top: 1px solid rgba(17, 22, 24, 0.08) !important;
+  padding-top: clamp(1.35rem, 2.7dvh, 2.3rem) !important;
+}
+
+.playlist-row {
+  height: clamp(4.6rem, 8.2dvh, 6.2rem) !important;
+  grid-template-columns: clamp(3rem, 3.6vw, 3.75rem) minmax(0, 1fr) !important;
+  gap: clamp(0.9rem, 1.25vw, 1.2rem) !important;
+  padding: 0 clamp(0.85rem, 1.1vw, 1.15rem) !important;
+  border: 1px solid transparent !important;
+  border-radius: clamp(0.9rem, 1vw, 1.15rem) !important;
+  background: transparent !important;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease !important;
+}
+
+.playlist-row:hover {
+  transform: translateX(-2px) !important;
+}
+
+.playlist-row.playing {
+  border-color: #ff5522 !important;
+  background: #f1f1ee !important;
+}
+
+.playlist-row > div {
+  width: clamp(2.8rem, 3vw, 3.35rem) !important;
+  height: clamp(2.8rem, 3vw, 3.35rem) !important;
+  background: #efefec !important;
+  color: #7e878d !important;
+  font-size: clamp(0.9rem, 0.96vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.playlist-row.done > div {
+  background: #35c27a !important;
+  color: #0d1913 !important;
+}
+
+.playlist-row.playing > div {
+  background: #ff5522 !important;
+  color: #ffffff !important;
+}
+
+.playlist-row h3 {
+  color: #202427 !important;
+  font-size: clamp(0.86rem, 0.92vw, 1rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+}
+
+.playlist-row p {
+  margin-top: 0.45rem !important;
+  color: #818990 !important;
+  font-size: clamp(0.9rem, 0.98vw, 1.1rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+}
+
+.playlist-row.playing p {
+  color: #ff5522 !important;
+}
+
+.playlist-row.locked h3 {
+  color: #7f878d !important;
+}
+
+.saved-card {
+  height: clamp(5.3rem, 8.8dvh, 7.1rem) !important;
+  gap: clamp(0.45rem, 0.8dvh, 0.65rem) !important;
+  margin-top: clamp(1.4rem, 2.5dvh, 2.1rem) !important;
+  padding: 0 clamp(1.25rem, 1.55vw, 1.55rem) !important;
+  border-radius: clamp(0.9rem, 1vw, 1.2rem) !important;
+  background: #efefec !important;
+}
+
+.saved-card span {
+  color: #818990 !important;
+  font-size: clamp(0.88rem, 0.94vw, 1rem) !important;
+  font-weight: 500 !important;
+}
+
+.saved-card strong {
+  color: #15191b !important;
+  font-size: clamp(0.9rem, 0.95vw, 1.05rem) !important;
+  font-weight: 650 !important;
+}
+
+@keyframes lesson-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lesson-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lesson-rail-enter {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes lesson-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@media (max-width: 1180px) {
+  .lesson-player {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: auto !important;
+  }
+
+  .lesson-shell {
+    height: auto !important;
+    min-height: calc(100dvh - clamp(5.2rem, 7.4dvh, 6rem)) !important;
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+  }
+
+  .lesson-stage,
+  .lesson-playlist {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .lesson-playlist {
+    border-left: 0 !important;
+    border-top: 1px solid rgba(19, 23, 25, 0.08) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .lesson-topbar {
+    height: auto !important;
+    flex-basis: auto !important;
+    padding: 1rem 1.2rem !important;
+  }
+
+  .lesson-brand-block {
+    flex-wrap: wrap !important;
+  }
+
+  .lesson-shell {
+    min-height: auto !important;
+  }
+
+  .lesson-stage,
+  .lesson-playlist {
+    padding: 1.35rem 1rem !important;
+  }
+
+  .video-card {
+    height: auto !important;
+    grid-template-rows: minmax(17rem, 1fr) auto !important;
+  }
+
+  .control-row {
+    grid-template-columns: 2rem 1fr !important;
+  }
+
+  .control-icons {
+    grid-column: 1 / -1 !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+  }
+
+  .watch-policy {
+    height: auto !important;
+    grid-template-columns: 1.4rem 1fr !important;
+    padding: 1rem !important;
+  }
+
+  .watch-policy p {
+    justify-self: start !important;
+  }
+
+  .watch-policy strong {
+    grid-column: 2 !important;
+  }
+
+  .lesson-lower {
+    height: auto !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 1rem !important;
+  }
+
+  .lesson-tabs {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 0.7rem 1.35rem !important;
+  }
+
+  .mark-complete {
+    width: 100% !important;
+  }
+}
 
