@@ -55,7 +55,7 @@ function getActivePath(pathname: string) {
 export default function MobileHamburgerMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [activeCourses, setActiveCourses] = useState(0);
+  const [xpPoints, setXpPoints] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
   const shouldShow = learningRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -75,7 +75,7 @@ export default function MobileHamburgerMenu() {
     setLoadingStatus(true);
     getPublicDashboard()
       .then((dashboard) => {
-        if (active) setActiveCourses(dashboard?.continueLearning?.length || 0);
+        if (active) setXpPoints(Math.max(0, Math.round(dashboard?.xpPoints || 0)));
       })
       .catch(() => undefined)
       .finally(() => {
@@ -106,7 +106,7 @@ export default function MobileHamburgerMenu() {
         <div className="mobile-hamburger-actions" aria-label="Learning status">
           <button type="button" className="mobile-xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            {loadingStatus ? <Skeleton className="skeleton-pill" /> : <span>{activeCourses} active</span>}
+            {loadingStatus ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()}</span>}
           </button>
           <Link href="/notifications" className="mobile-notification-button" aria-label="Notifications">
             <Bell size={19} strokeWidth={1.95} />

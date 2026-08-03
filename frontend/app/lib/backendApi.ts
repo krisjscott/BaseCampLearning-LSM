@@ -145,6 +145,7 @@ export type UserSettingsResponse = {
 };
 
 export type PublicDashboardResponse = {
+  xpPoints?: number | null;
   continueLearning?: Array<{
     courseId: string;
     courseTitle: string;

@@ -27,6 +27,7 @@ import {
 } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
 import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
+import { getLocalGreeting } from "../lib/greeting";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -77,6 +78,7 @@ function LearningHome() {
   const featured = dashboard?.continueLearning?.[0];
   const recommendations = dashboard?.recommendedCourses || [];
   const activeCourses = dashboard?.continueLearning?.length || 0;
+  const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
   const unreadNotifications = notifications.filter((item) => !item.read).length;
   const progress = Math.round(featured?.completionPercentage ?? 0);
   const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
@@ -149,7 +151,7 @@ function LearningHome() {
               </>
             ) : (
               <>
-                <h1>Good morning, {learnerName}.</h1>
+                <h1>{getLocalGreeting()}, {learnerName}.</h1>
                 <p>Ready for the next checkpoint?</p>
               </>
             )}
@@ -160,7 +162,7 @@ function LearningHome() {
           </label>
           <button type="button" className="xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            {loading ? <Skeleton className="skeleton-pill" /> : <span>{activeCourses} active</span>}
+            {loading ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()}</span>}
           </button>
           <button type="button" className="notification-button" aria-label="Notifications">
             <Bell size={22} strokeWidth={1.9} />

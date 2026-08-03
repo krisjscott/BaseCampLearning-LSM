@@ -18745,7 +18745,7 @@ select:focus-visible,
   .mobile-hamburger-bar {
     min-height: 4.7rem;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
     gap: 1rem;
     padding: 0.85rem clamp(1rem, 4vw, 1.45rem);
@@ -18813,7 +18813,7 @@ select:focus-visible,
 
   .mobile-xp-pill {
     gap: 0.38rem;
-    padding: 0 0.85rem;
+    padding: 0 0.92rem;
     font-size: clamp(0.78rem, 2.5vw, 0.92rem);
     font-weight: 850;
     white-space: nowrap;
@@ -18968,7 +18968,7 @@ select:focus-visible,
 @media (max-width: 520px) {
   .mobile-hamburger-bar {
     min-height: 4.25rem;
-    grid-template-columns: 2.75rem minmax(3.9rem, 1fr) auto;
+    grid-template-columns: 2.75rem auto minmax(0, 1fr);
     gap: 0.58rem;
   }
 
@@ -18993,7 +18993,7 @@ select:focus-visible,
     min-height: 2.55rem;
     width: auto !important;
     flex: 0 0 auto !important;
-    padding: 0 0.58rem;
+    padding: 0 0.72rem;
     font-size: 0.74rem;
   }
 
