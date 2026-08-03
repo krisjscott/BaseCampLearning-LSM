@@ -11808,7 +11808,7 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-icon {
-  flex: 0 0 51.5%;
+  flex: 0 0 clamp(5.25rem, 45%, 13.75rem);
   min-height: 0;
   display: grid;
   place-items: center;
@@ -11821,11 +11821,11 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-card strong {
-  margin: clamp(1.1rem, 3.6vh, 3rem) clamp(1rem, 2vw, 1.75rem) 0;
+  margin: clamp(0.65rem, 2.2vh, 2.25rem) clamp(0.85rem, 1.8vw, 1.75rem) 0;
   color: #111111;
-  font-size: clamp(0.95rem, 1.15vw, 1.1rem);
+  font-size: clamp(0.88rem, 1.05vw, 1.1rem);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.18;
 }
 
 .onboarding-page.flow .goal-card.selected strong {
@@ -11834,10 +11834,10 @@ body:has(.auth-page) {
 
 .onboarding-page.flow .goal-card span {
   width: auto;
-  margin: clamp(0.55rem, 1vh, 0.85rem) clamp(1rem, 2vw, 1.75rem) 0;
+  margin: clamp(0.35rem, 0.9vh, 0.75rem) clamp(0.85rem, 1.8vw, 1.75rem) clamp(0.65rem, 1.8vh, 1.25rem);
   color: #858c94;
-  font-size: clamp(0.92rem, 1.16vw, 1.12rem);
-  line-height: 1.35;
+  font-size: clamp(0.78rem, 0.98vw, 1.08rem);
+  line-height: 1.18;
 }
 
 .onboarding-page.flow .hint-pill {
@@ -11918,7 +11918,14 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .goal-card strong {
-    margin-top: clamp(0.75rem, 2.3vh, 1.15rem);
+    margin-top: clamp(0.45rem, 1.35vh, 0.75rem);
+    font-size: clamp(0.76rem, 0.92vw, 0.9rem);
+  }
+
+  .onboarding-page.flow .goal-card span {
+    margin-top: clamp(0.25rem, 0.65vh, 0.45rem);
+    font-size: clamp(0.7rem, 0.86vw, 0.82rem);
+    line-height: 1.12;
   }
 
   .onboarding-page.flow .hint-pill {
