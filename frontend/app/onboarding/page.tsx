@@ -297,7 +297,7 @@ export default function OnboardingScreens() {
               <div className="selected-tags">
                 {selectedInterests.map((item) => (
                   <button type="button" key={item} onClick={() => toggleInterest(item)}>
-                    {item} <span>x</span>
+                    {item} <span aria-hidden="true">&times;</span>
                   </button>
                 ))}
               </div>
@@ -312,7 +312,7 @@ export default function OnboardingScreens() {
                       onClick={() => toggleInterest(item)}
                     >
                       <span>{item}</span>
-                      <span>{selected ? "x" : "+"}</span>
+                      <span aria-hidden="true">{selected ? "\u00d7" : "+"}</span>
                     </button>
                   );
                 })}

@@ -12118,6 +12118,10 @@ body:has(.auth-page) {
   .onboarding-page.flow .interests-content .selected-tags span {
     color: #ffffff;
     opacity: 0.82;
+    margin-left: 0.32rem;
+    font-size: 1.04em;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .onboarding-page.flow .interests-content .interest-grid {
@@ -12159,6 +12163,8 @@ body:has(.auth-page) {
 
   .onboarding-page.flow .interests-content .interest-grid button.selected span:last-child {
     color: #ffffff;
+    font-size: 1.08em;
+    line-height: 1;
   }
 
   .onboarding-page.flow .interests-content .hint-pill {
