@@ -12283,15 +12283,15 @@ body:has(.auth-page) {
 /* Step 3 reference match: profile context screen. */
 @media (min-width: 721px) {
   .onboarding-page.flow .context-content {
-    width: min(70vw, 71rem);
-    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1rem, 3vh, 2rem)) !important;
-    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1rem, 3vh, 2rem)) !important;
-    margin-top: calc(var(--onboarding-content-offset) + clamp(1rem, 1.8vh, 1.45rem)) !important;
+    width: min(78vw, 88rem);
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(2.75rem, 6vh, 5rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(2.75rem, 6vh, 5rem)) !important;
+    margin-top: calc(var(--onboarding-content-offset) + clamp(0.7rem, 1.45vh, 1.25rem)) !important;
     display: grid;
-    grid-template-rows: auto auto auto auto;
+    grid-template-rows: auto auto auto minmax(0, 1fr);
     justify-items: center;
     align-content: start;
-    gap: clamp(1.5rem, 3.15vh, 2.55rem);
+    gap: clamp(1rem, 2.55vh, 2.1rem);
   }
 
   .onboarding-page.flow .context-content .screen-heading {
@@ -12311,7 +12311,7 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .context-content .profile-pills {
-    width: min(100%, 71rem);
+    width: min(100%, 88rem);
     display: flex;
     flex-wrap: nowrap;
     justify-content: center;
@@ -12348,7 +12348,7 @@ body:has(.auth-page) {
 
   .onboarding-page.flow .context-content .role-search,
   .onboarding-page.flow .context-content .suggestions {
-    width: min(100%, 59rem);
+    width: min(100%, 62vw, 74rem);
   }
 
   .onboarding-page.flow .context-content .role-search {
@@ -12366,7 +12366,7 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .context-content .role-search div {
-    height: clamp(4.75rem, 7.6vh, 5.2rem);
+    height: clamp(4.15rem, 7.6vh, 5.2rem);
     gap: clamp(1rem, 1.6vw, 1.35rem);
     border: 1.5px solid #69727a;
     border-radius: 1rem;
@@ -12396,7 +12396,14 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .context-content .suggestions {
-    min-height: clamp(16.5rem, 24.5vh, 20.25rem);
+    height: 100%;
+    min-height: 0;
+    max-height: clamp(13.6rem, 29vh, 20.25rem);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto repeat(4, minmax(0, 1fr));
+    align-content: stretch;
+    gap: clamp(0.2rem, 0.7vh, 0.5rem);
     padding: clamp(1rem, 1.6vh, 1.25rem);
     border: 1px solid rgb(211 214 216 / 78%);
     border-radius: 1rem;
@@ -12405,7 +12412,8 @@ body:has(.auth-page) {
   }
 
   .onboarding-page.flow .context-content .suggestions button {
-    min-height: clamp(3.25rem, 5.1vh, 3.6rem);
+    min-height: 0;
+    height: 100%;
     border-radius: 0.5rem;
     padding: 0 clamp(1rem, 1.35vw, 1.2rem);
     color: #25282b;
@@ -12416,10 +12424,12 @@ body:has(.auth-page) {
 
   .onboarding-page.flow .context-content .suggestions button:hover {
     background: #f4f4f1;
+    transform: translateX(0.18rem);
   }
 
   .onboarding-page.flow .context-content .suggestions button.selected {
     background: #eeeee9;
+    animation: context-row-select 220ms ease both;
   }
 
   .onboarding-page.flow .context-content .suggestions strong {
@@ -12436,6 +12446,20 @@ body:has(.auth-page) {
     border-radius: 0.75rem;
     font-size: clamp(1rem, 1.15vw, 1.12rem);
     font-weight: 700;
+  }
+}
+
+@keyframes context-row-select {
+  from {
+    box-shadow: inset 0 0 0 1px rgb(255 90 31 / 0%);
+  }
+
+  55% {
+    box-shadow: inset 0 0 0 1px rgb(255 90 31 / 16%);
+  }
+
+  to {
+    box-shadow: inset 0 0 0 1px rgb(255 90 31 / 0%);
   }
 }
 
