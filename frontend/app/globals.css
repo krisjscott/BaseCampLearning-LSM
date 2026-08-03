@@ -13562,7 +13562,7 @@ body:has(.auth-page) {
   }
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1450px) {
   .learning-home {
     grid-template-columns: 1fr !important;
     overflow: auto !important;
@@ -13729,4 +13729,101 @@ body:has(.auth-page) {
     min-height: clamp(190px, 17vh, 220px) !important;
   }
 }
+
+@media (min-width: 1181px) and (max-width: 1700px) {
+  .learning-main {
+    padding-left: clamp(3rem, 4.5vw, 4.25rem) !important;
+    padding-right: clamp(3rem, 4.5vw, 4.25rem) !important;
+  }
+
+  .learning-header {
+    grid-template-columns: minmax(31rem, 1fr) minmax(18rem, 23rem) auto auto !important;
+    gap: clamp(0.8rem, 1vw, 1rem) !important;
+  }
+
+  .learning-header h1 {
+    max-width: none !important;
+    white-space: nowrap !important;
+    font-size: clamp(2.35rem, 3vw, 2.7rem) !important;
+  }
+
+  .learning-header p {
+    font-size: clamp(1rem, 1.4vw, 1.16rem) !important;
+  }
+
+  .learning-search {
+    height: clamp(3.2rem, 4.6vh, 3.55rem) !important;
+    padding-inline: clamp(1rem, 1.2vw, 1.2rem) !important;
+  }
+
+  .xp-pill,
+  .notification-button {
+    height: clamp(3.2rem, 4.6vh, 3.55rem) !important;
+  }
+
+  .xp-pill {
+    min-width: clamp(7.65rem, 8.3vw, 8.8rem) !important;
+    padding-inline: clamp(0.95rem, 1vw, 1.15rem) !important;
+  }
+
+  .notification-button {
+    width: clamp(3.2rem, 4.6vh, 3.55rem) !important;
+  }
+}
+
+@media (max-width: 1450px) {
+  .learning-home {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+
+  .learning-sidebar {
+    display: none !important;
+  }
+
+  .learning-main {
+    max-height: none !important;
+    min-height: 100dvh !important;
+    overflow: visible !important;
+    padding: clamp(2rem, 4.2vw, 3.85rem) clamp(1.25rem, 4.5vw, 3.85rem) 3rem !important;
+  }
+
+  .learning-header {
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    gap: clamp(0.8rem, 1.7vw, 1rem) !important;
+  }
+
+  .learning-header > div {
+    grid-column: 1 / -1 !important;
+  }
+
+  .learning-header h1 {
+    white-space: normal !important;
+    font-size: clamp(2.4rem, 4vw, 3.15rem) !important;
+  }
+
+  .learning-search {
+    grid-column: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .learning-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .featured-course {
+    width: 100% !important;
+  }
+
+  .featured-course button {
+    right: clamp(1.5rem, 4vw, 3rem) !important;
+  }
+
+  .learning-right-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+  }
+}
+
 
