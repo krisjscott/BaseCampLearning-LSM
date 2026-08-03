@@ -1,8 +1,10 @@
 spring:
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/tiesverse_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+
+    url: ${DB_URL:jdbc:postgresql://ep-wispy-wind-az0pqand-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_BeEZX7syJdK6}
+    driver-class-name: org.postgresql.Driver
 
   security:
     oauth2:
