@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
 import { ArrowRight, BookOpenCheck, CalendarDays, CheckCircle2 } from "lucide-react";
-import { FormEvent, useState } from "react";
 import { login, register } from "./lib/backendApi";
 import TurnstileWidget, { TurnstileWidgetHandle } from "./components/TurnstileWidget";
 

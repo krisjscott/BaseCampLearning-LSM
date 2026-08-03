@@ -9,7 +9,9 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   Compass,
+  Eye,
   GitBranch,
+  LayoutDashboard,
   Loader,
   Rocket,
   Search,
@@ -149,6 +151,19 @@ function Footer({
 
 function OnboardingScreens() {
   const router = useRouter();
+
+  const pathItems = [
+    ["1", "Project management essentials", "In progress", true],
+    ["2", "Communication foundations", "Next up", false],
+    ["3", "Design specialisation", "Suggested", false],
+  ] as const;
+
+  const courses = [
+    ["Google Project Management", "Foundations of project management", "Recommended"],
+    ["Effective Communication", "Collaboration for the workplace", "Popular"],
+    ["Introduction to UX Design", "Design thinking fundamentals", "New"],
+  ] as const;
+
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState("");
@@ -429,7 +444,7 @@ function OnboardingScreens() {
           </div>
         )}
 
-        {isReady && (
+        {loadingDone && (
           <>
             <div className="ready-hero">
               <div>

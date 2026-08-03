@@ -53,6 +53,16 @@ export type SearchResponse = {
   size: number;
 };
 
+export type LessonResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  contentUrl?: string | null;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  orderIndex?: number | null;
+};
+
 export type CertificateResponse = {
   id: string;
   certificateNumber: string;
@@ -203,7 +213,16 @@ async function doRefresh(): Promise<string | null> {
 
 async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   const text = await response.text();
-  const body = text ? JSON.parse(text) : null;
+  let body: any = null;
+  
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON response:", text.substring(0, 200));
+      throw new Error(`Invalid response from server: ${response.status} ${response.statusText}`);
+    }
+  }
 
   if (!response.ok) {
     throw new Error(body?.message || response.statusText || "Backend request failed");
@@ -362,6 +381,13 @@ export async function updateCurrentUserSettings(payload: {
 
 export async function getPublicDashboard(): Promise<PublicDashboardResponse | null> {
   const response = await backendRequest<PublicDashboardResponse>("/api/v1/dashboard/public", {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function getLesson(lessonId: string): Promise<LessonResponse | null> {
+  const response = await backendRequest<LessonResponse>(`/api/v1/courses/lessons/${lessonId}`, {
     headers: { Accept: "application/json" },
   });
   return response.data || null;
