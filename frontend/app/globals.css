@@ -16622,3 +16622,212 @@ body:has(.auth-page) {
   }
 }
 
+/* Quiz submit confirmation final pass. */
+.quiz-submit-page {
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 92% 30%, rgba(255, 85, 34, 0.08), transparent 32rem),
+    linear-gradient(99deg, #f8fafc 0%, #f5f7f6 47%, #fff5ed 100%) !important;
+}
+
+.quiz-submit-page .lesson-topbar {
+  height: clamp(4.85rem, 7.35dvh, 6rem) !important;
+  flex-basis: clamp(4.85rem, 7.35dvh, 6rem) !important;
+  padding-inline: clamp(3rem, 4.8vw, 5.15rem) !important;
+}
+
+.quiz-submit-page .lesson-brand-block img {
+  width: clamp(5.5rem, 6.4vw, 6.8rem) !important;
+}
+
+.quiz-submit-page .lesson-brand-block span {
+  height: 2.55rem !important;
+  opacity: 0.56 !important;
+}
+
+.quiz-submit-page .lesson-brand-block strong,
+.quiz-submit-page .lesson-top-actions p,
+.quiz-submit-page .lesson-top-actions span {
+  font-size: clamp(0.92rem, 1vw, 1.05rem) !important;
+}
+
+.quiz-submit-page .lesson-brand-block p {
+  font-size: clamp(0.9rem, 1vw, 1.05rem) !important;
+}
+
+.quiz-submit-page .lesson-top-actions button {
+  height: clamp(2.35rem, 3.5dvh, 2.9rem) !important;
+  padding-inline: clamp(1rem, 1.5vw, 1.35rem) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 14px 28px rgba(25, 28, 30, 0.08) !important;
+}
+
+.quiz-submit-content {
+  min-height: calc(100dvh - clamp(4.85rem, 7.35dvh, 6rem)) !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: clamp(1.5rem, 3dvh, 2.5rem) clamp(1.5rem, 4vw, 4rem) clamp(3rem, 5.5dvh, 5.25rem) !important;
+  overflow: visible !important;
+}
+
+.submit-confirm-card {
+  width: min(100%, clamp(40rem, 42vw, 54rem)) !important;
+  height: clamp(30rem, 47dvh, 40rem) !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto auto auto !important;
+  justify-items: center !important;
+  align-content: start !important;
+  gap: clamp(1.15rem, 2.05dvh, 1.8rem) !important;
+  padding: clamp(3.15rem, 4.2dvh, 3.55rem) clamp(3rem, 4.2vw, 5rem) !important;
+  border: 1px solid rgba(225, 227, 225, 0.95) !important;
+  border-radius: clamp(1.4rem, 1.65vw, 2rem) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 26px 70px rgba(28, 32, 36, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+  text-align: center !important;
+  animation: quizSubmitIn 360ms ease both !important;
+}
+
+.submit-check {
+  width: clamp(4.6rem, 4.9vw, 5.8rem) !important;
+  height: clamp(4.6rem, 4.9vw, 5.8rem) !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  background: #ff5522 !important;
+  color: #ffffff !important;
+  box-shadow: 0 20px 38px rgba(255, 85, 34, 0.18) !important;
+}
+
+.submit-check svg {
+  width: clamp(1.25rem, 1.45vw, 1.7rem) !important;
+  height: clamp(1.25rem, 1.45vw, 1.7rem) !important;
+  stroke-width: 2.7 !important;
+}
+
+.submit-confirm-card h1 {
+  margin: clamp(0.35rem, 0.7dvh, 0.65rem) 0 0 !important;
+  color: #0b0e0f !important;
+  font-size: clamp(2rem, 2.1vw, 2.65rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.08 !important;
+}
+
+.submit-confirm-card p {
+  width: min(100%, 34rem) !important;
+  margin: 0 !important;
+  color: #7f8991 !important;
+  font-size: clamp(1.05rem, 1.13vw, 1.32rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.36 !important;
+}
+
+.submit-confirm-card > span {
+  margin-top: clamp(0.8rem, 1.7dvh, 1.45rem) !important;
+  color: #7f8991 !important;
+  font-size: clamp(0.98rem, 1.03vw, 1.18rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.3 !important;
+}
+
+.submit-confirm-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(0.75rem, 1.15vw, 1rem) !important;
+  margin-top: clamp(0.15rem, 0.45dvh, 0.4rem) !important;
+}
+
+.keep-reviewing,
+.submit-now {
+  min-height: clamp(3.05rem, 4.55dvh, 3.65rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.45rem !important;
+  border-radius: 0.85rem !important;
+  padding-inline: clamp(1.2rem, 1.65vw, 1.7rem) !important;
+  font-size: clamp(0.95rem, 1vw, 1.1rem) !important;
+  font-weight: 850 !important;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease !important;
+}
+
+.keep-reviewing {
+  border: 1.4px solid #dfe3e5 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #161a1d !important;
+  box-shadow: 0 12px 26px rgba(22, 28, 34, 0.06) !important;
+}
+
+.submit-now {
+  min-width: clamp(9.5rem, 9vw, 12rem) !important;
+  border: 0 !important;
+  background: #ff5522 !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(255, 85, 34, 0.18) !important;
+}
+
+.keep-reviewing:hover,
+.submit-now:hover {
+  transform: translateY(-2px) !important;
+}
+
+.keep-reviewing svg,
+.submit-now svg {
+  width: 1rem !important;
+  height: 1rem !important;
+  stroke-width: 2.6 !important;
+}
+
+@keyframes quizSubmitIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1181px) and (max-height: 800px) {
+  .quiz-submit-page {
+    overflow: auto !important;
+  }
+
+  .quiz-submit-content {
+    min-height: calc(100dvh - 4.85rem) !important;
+    padding-block: clamp(2.2rem, 5dvh, 3.5rem) !important;
+  }
+
+  .submit-confirm-card {
+    height: auto !important;
+    min-height: 31rem !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .quiz-submit-content {
+    padding: 2rem 1rem !important;
+  }
+
+  .submit-confirm-card {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 31rem !important;
+    padding: 2.4rem 1.25rem !important;
+  }
+
+  .submit-confirm-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+
+  .keep-reviewing,
+  .submit-now {
+    width: 100% !important;
+  }
+}
+
