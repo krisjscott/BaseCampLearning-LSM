@@ -59,7 +59,7 @@ export default function AuthScreen() {
 
         <section className="form-panel">
           <Image
-            src="/BasecampLogoExact.png"
+            src="/basecamp-logo.png"
             alt="BaseCamp"
             width={148}
             height={91}

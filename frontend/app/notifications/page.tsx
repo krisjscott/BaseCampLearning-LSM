@@ -88,7 +88,7 @@ export default function Notifications() {
   return (
     <main className="notifications-page">
       <aside className="learning-sidebar">
-        <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
+        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
 
         <nav className="learning-nav" aria-label="Learning sections">
           {navItems.map(([label, Icon, active]) => (

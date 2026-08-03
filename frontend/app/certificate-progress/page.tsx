@@ -1,11 +1,11 @@
-﻿import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 
 export default function CertificateProgressUnlocked() {
   return (
     <main className="certificate-progress-page">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
             <strong>Google Project Management</strong>

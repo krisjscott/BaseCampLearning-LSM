@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Circle, ClipboardList, X } from "lucide-react";
@@ -19,7 +19,7 @@ export default function CompulsoryQuiz() {
     <main className="quiz-page">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
             <strong>Google Project Management</strong>

@@ -1,11 +1,11 @@
-﻿import { Check, ClipboardCheck, Eye, X } from "lucide-react";
+import { Check, ClipboardCheck, Eye, X } from "lucide-react";
 
 export default function QuizSubmissionConfirmation() {
   return (
     <main className="quiz-submit-page">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
             <strong>Google Project Management</strong>

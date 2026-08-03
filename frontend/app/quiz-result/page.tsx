@@ -1,4 +1,4 @@
-﻿import { ArrowRight, Eye, X } from "lucide-react";
+import { ArrowRight, Eye, X } from "lucide-react";
 
 const resultStats = [
   ["+350", "XP earned", "accent"],
@@ -12,7 +12,7 @@ export default function QuizResultPassed() {
     <main className="quiz-result-page">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
             <strong>Google Project Management</strong>

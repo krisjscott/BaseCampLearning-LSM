@@ -1,4 +1,4 @@
-﻿import {
+import {
   Captions,
   Check,
   FileText,
@@ -28,7 +28,7 @@ export default function LessonPlayer() {
     <main className="lesson-player">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
             <strong>Google Project Management</strong>

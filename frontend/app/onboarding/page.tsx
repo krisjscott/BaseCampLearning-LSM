@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -89,7 +89,7 @@ function OnboardingTopbar({
   return (
     <>
       <header className={`onboarding-topbar${simpleLabel ? " simple" : ""}`}>
-        <img src="/BasecampExactLogo.png" alt="BaseCamp" className="onboarding-logo" />
+        <img src="/basecamp-logo.png" alt="BaseCamp" className="onboarding-logo" />
         {dashboard ? (
           <nav className="dashboard-nav" aria-label="Learning navigation">
             <a href="/explore">Browse</a>
