@@ -12472,3 +12472,192 @@ body:has(.auth-page) {
   }
 }
 
+/* Final onboarding footer contract: identical sizing on every step. */
+.onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
+  --onboarding-footer: clamp(6rem, 9.2vh, 7.5rem);
+}
+
+.onboarding-page.flow .onboarding-footer {
+  height: var(--onboarding-footer) !important;
+  min-height: var(--onboarding-footer) !important;
+  padding: clamp(1rem, 1.8vh, 1.35rem) clamp(3rem, 5vw, 5rem) !important;
+}
+
+.onboarding-page.flow .onboarding-footer .secondary-button,
+.onboarding-page.flow .onboarding-footer .inverse-button,
+.onboarding-page.flow .onboarding-footer .accent-button {
+  min-height: clamp(3.75rem, 5.8vh, 4rem) !important;
+  border-radius: 0.75rem !important;
+  font-size: clamp(1rem, 1.15vw, 1.12rem) !important;
+  font-weight: 700 !important;
+}
+
+.onboarding-page.flow .onboarding-footer .secondary-button,
+.onboarding-page.flow .onboarding-footer .inverse-button {
+  min-width: clamp(7.5rem, 7.2vw, 8rem) !important;
+}
+
+.onboarding-page.flow .onboarding-footer .accent-button {
+  min-width: clamp(16rem, 15vw, 18rem) !important;
+  background: #ff5a1f;
+  box-shadow: 0 16px 32px rgb(255 90 31 / 18%);
+  transition: transform 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.onboarding-page.flow .onboarding-footer .accent-button:hover {
+  background: #ff642d;
+  box-shadow: 0 18px 36px rgb(255 90 31 / 24%);
+  transform: translateY(-1px);
+}
+
+.onboarding-page.flow .onboarding-footer .accent-button:active {
+  transform: translateY(0) scale(0.985);
+}
+
+/* Step 4 reference match: education screen. */
+@media (min-width: 721px) {
+  .onboarding-page.flow .education-content {
+    width: min(78vw, 88rem);
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1.2rem, 3vh, 2.25rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(1.2rem, 3vh, 2.25rem)) !important;
+    margin-top: calc(var(--onboarding-content-offset) + clamp(0.85rem, 1.8vh, 1.6rem)) !important;
+    display: grid;
+    grid-template-rows: auto minmax(0, auto) auto;
+    justify-items: center;
+    align-content: start;
+    gap: clamp(1.25rem, 2.55vh, 2rem);
+  }
+
+  .onboarding-page.flow .education-content .screen-heading {
+    width: min(68rem, 100%);
+    gap: clamp(0.75rem, 1.25vh, 0.95rem);
+  }
+
+  .onboarding-page.flow .education-content .screen-heading h1 {
+    max-width: none;
+    font-size: clamp(2rem, 2.65vw, 2.68rem);
+    line-height: 1.08;
+    white-space: nowrap;
+  }
+
+  .onboarding-page.flow .education-content .screen-heading span {
+    max-width: 68ch;
+    font-size: clamp(1.05rem, 1.45vw, 1.32rem);
+  }
+
+  .onboarding-page.flow .education-content .education-list {
+    width: min(100%, 62vw, 74rem);
+    display: grid;
+    gap: clamp(0.85rem, 1.65vh, 1.12rem);
+  }
+
+  .onboarding-page.flow .education-content .education-list button {
+    height: clamp(3.8rem, 6.2vh, 4.6rem);
+    min-height: 0;
+    gap: clamp(1rem, 1.5vw, 1.25rem);
+    border: 1px solid rgb(225 226 225 / 78%);
+    border-radius: 0.75rem;
+    padding: 0 clamp(1.35rem, 1.9vw, 1.6rem);
+    background: #ffffff;
+    box-shadow: 0 10px 22px rgb(18 28 38 / 3%);
+    color: #858c94;
+    font-size: clamp(1.05rem, 1.32vw, 1.32rem);
+    font-weight: 500;
+    transition: transform 170ms ease, border-color 170ms ease, box-shadow 170ms ease, background-color 170ms ease, color 170ms ease;
+  }
+
+  .onboarding-page.flow .education-content .education-list button:hover {
+    border-color: rgb(177 181 184 / 80%);
+    box-shadow: 0 14px 28px rgb(18 28 38 / 7%);
+    transform: translateY(-1px);
+  }
+
+  .onboarding-page.flow .education-content .education-list button.selected {
+    border: 2px solid #ff5a1f;
+    background: #f6f6f2;
+    color: #25282b;
+    box-shadow: 0 14px 30px rgb(255 90 31 / 9%);
+    animation: education-select-pop 220ms ease both;
+  }
+
+  .onboarding-page.flow .education-content .radio-dot {
+    width: clamp(1.35rem, 1.6vw, 1.6rem);
+    height: clamp(1.35rem, 1.6vw, 1.6rem);
+    flex: 0 0 clamp(1.35rem, 1.6vw, 1.6rem);
+    border: 2px solid #4f5961;
+    background: transparent;
+    transition: border-color 170ms ease, background-color 170ms ease, transform 170ms ease;
+  }
+
+  .onboarding-page.flow .education-content .education-list .selected .radio-dot {
+    border-color: #ff5a1f;
+    background: #ff5a1f;
+    transform: scale(1.02);
+  }
+
+  .onboarding-page.flow .education-content .hint-pill {
+    margin-top: clamp(4rem, 10vh, 8.2rem);
+    padding: clamp(0.75rem, 1.35vh, 0.95rem) clamp(1.2rem, 1.7vw, 1.55rem);
+    font-size: clamp(0.95rem, 1.18vw, 1.1rem);
+  }
+}
+
+@keyframes education-select-pop {
+  0% {
+    transform: scale(0.992);
+  }
+
+  60% {
+    transform: scale(1.006);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (min-width: 721px) and (max-height: 820px) {
+  .onboarding-page.flow .education-content {
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - clamp(1rem, 2.5vh, 1.5rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - clamp(1rem, 2.5vh, 1.5rem)) !important;
+    margin-top: clamp(0.9rem, 2.6vh, 1.4rem) !important;
+    gap: clamp(0.8rem, 1.6vh, 1rem);
+  }
+
+  .onboarding-page.flow .education-content .screen-heading {
+    gap: 0.38rem;
+  }
+
+  .onboarding-page.flow .education-content .screen-heading h1 {
+    font-size: clamp(1.75rem, 2.45vw, 2.05rem);
+  }
+
+  .onboarding-page.flow .education-content .screen-heading span {
+    font-size: clamp(0.86rem, 1.1vw, 0.98rem);
+  }
+
+  .onboarding-page.flow .education-content .education-list {
+    gap: clamp(0.5rem, 1.05vh, 0.62rem);
+  }
+
+  .onboarding-page.flow .education-content .education-list button {
+    height: clamp(2.85rem, 6.3vh, 3.35rem);
+    font-size: clamp(0.96rem, 1.25vw, 1.08rem);
+  }
+
+  .onboarding-page.flow .education-content .hint-pill {
+    margin-top: clamp(0.8rem, 2.4vh, 1.4rem);
+    padding: clamp(0.55rem, 1.1vh, 0.7rem) clamp(1rem, 1.6vw, 1.35rem);
+    font-size: clamp(0.86rem, 1.1vw, 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onboarding-page.flow .education-content .education-list button,
+  .onboarding-page.flow .education-content .radio-dot,
+  .onboarding-page.flow .onboarding-footer .accent-button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

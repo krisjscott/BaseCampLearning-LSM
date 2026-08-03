@@ -7,9 +7,9 @@ import {
   ArrowRight,
   BarChart3,
   BriefcaseBusiness,
-  Check,
   Compass,
   Eye,
+  GitBranch,
   LayoutDashboard,
   Loader,
   Rocket,
@@ -152,7 +152,7 @@ function Footer({
         )}
         <button type="button" className={final ? "accent-button" : "inverse-button"} onClick={onNext}>
           <span>{final ? "Build my learning plan" : "Next"}</span>
-          {final ? <Loader size={16} /> : <ArrowRight size={16} />}
+          {final ? <GitBranch size={16} /> : <ArrowRight size={16} />}
         </button>
       </div>
     </footer>
@@ -390,7 +390,7 @@ export default function OnboardingScreens() {
                     key={level}
                     onClick={() => setEducationLevel(level)}
                   >
-                    <span className="radio-dot">{educationLevel === level && <Check size={12} />}</span>
+                    <span className="radio-dot" aria-hidden="true" />
                     <span>{level}</span>
                   </button>
                 ))}
