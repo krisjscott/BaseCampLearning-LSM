@@ -9,9 +9,7 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   Compass,
-  Eye,
   GitBranch,
-  LayoutDashboard,
   Loader,
   Rocket,
   Search,
@@ -72,18 +70,6 @@ const education = [
   "Learning through work experience",
   "Prefer not to say",
 ];
-
-const pathItems = [
-  ["Starter", "Project Management Foundations", "Start here", true],
-  ["Builder", "Content Strategy Essentials", "Next", false],
-  ["Achiever", "Product Design Basics", "Later", false],
-] as const;
-
-const courses = [
-  ["Google Project Management", "6 modules - Beginner", "Certificate"],
-  ["Content Writing Foundations", "4 modules - Beginner", "Popular"],
-  ["Graphic Design Essentials", "5 modules - Beginner", "New"],
-] as const;
 
 function OnboardingTopbar({
   learnerName,
@@ -171,7 +157,6 @@ export default function OnboardingScreens() {
   const [educationLevel, setEducationLevel] = useState("");
   const [loadingDone, setLoadingDone] = useState(false);
 
-  const isReady = step === 5;
   const isLoading = step === 4;
   const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
@@ -194,7 +179,9 @@ export default function OnboardingScreens() {
     }
 
     const doneTimer = window.setTimeout(() => setLoadingDone(true), 1700);
-    const timer = window.setTimeout(() => setStep(5), 3200);
+    const timer = window.setTimeout(() => {
+      void completeOnboarding();
+    }, 3200);
     return () => {
       window.clearTimeout(doneTimer);
       window.clearTimeout(timer);
@@ -225,20 +212,20 @@ export default function OnboardingScreens() {
     });
   }
 
-  async function completeOnboarding() {
+  function completeOnboarding() {
     const profileSummary = [goal, selectedInterests.join(", "), profileType, role, educationLevel]
       .filter(Boolean)
       .join(" - ");
-    await updateCurrentUser({
+    void updateCurrentUser({
       fullName: user?.fullName || "",
       bio: profileSummary,
     }).catch(() => null);
-    router.push("/learning");
+    window.location.assign("/learning");
   }
 
   return (
     <main className="onboarding-page flow">
-      <section className={`onboarding-screen${isLoading ? " personalising-screen" : ""}${isReady ? " ready-screen" : ""}`}>
+      <section className={`onboarding-screen${isLoading ? " personalising-screen" : ""}`}>
         {step < 4 && (
           <OnboardingTopbar
             learnerName={learnerName}
@@ -249,7 +236,6 @@ export default function OnboardingScreens() {
         )}
 
         {isLoading && <OnboardingTopbar learnerName={learnerName} simpleLabel="Preparing your BaseCamp" />}
-        {isReady && <OnboardingTopbar learnerName={learnerName} dashboard />}
 
         {step === 0 && (
           <>
@@ -442,63 +428,6 @@ export default function OnboardingScreens() {
           </div>
         )}
 
-        {isReady && (
-          <>
-            <div className="ready-hero">
-              <div>
-                <p>Your learning plan is ready</p>
-                <h1>A focused path, built around your goals.</h1>
-                <span>Start with project management, strengthen communication, then add a design specialisation.</span>
-              </div>
-              <button type="button" onClick={completeOnboarding}>
-                <LayoutDashboard size={16} />
-                <span>Open my dashboard</span>
-              </button>
-            </div>
-            <div className="ready-layout">
-              <aside className="path-card">
-                <h2>Recommended path</h2>
-                <p>Based on your onboarding answers</p>
-                <div className="path-list">
-                  {pathItems.map(([level, title, status, active]) => (
-                    <div className="path-row" key={title}>
-                      <span className={active ? "active" : ""}>{level[0]}</span>
-                      <div>
-                        <p>{level}</p>
-                        <strong>{title}</strong>
-                      </div>
-                      <em>{status}</em>
-                    </div>
-                  ))}
-                </div>
-              </aside>
-              <section className="course-panel">
-                <div className="course-heading">
-                  <h2>Recommended for you</h2>
-                  <a href="/explore">View all courses</a>
-                </div>
-                <div className="course-grid">
-                  {courses.map(([title, meta, badge]) => (
-                    <article className="course-card" key={title}>
-                      <div>
-                        <span>BaseCamp course</span>
-                        <strong>{badge}</strong>
-                      </div>
-                      <section>
-                        <h3>{title}</h3>
-                        <p>{meta}</p>
-                        <button type="button" onClick={() => router.push("/course")}>
-                          <Eye size={16} />
-                          <span>View course</span>
-                        </button>
-                      </section>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </div>
-          </>
-        )}
       </section>
     </main>
   );
