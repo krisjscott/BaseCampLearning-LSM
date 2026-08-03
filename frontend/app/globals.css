@@ -17743,21 +17743,6 @@ select:focus-visible,
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
-.ladder-step::after {
-  content: "";
-  position: absolute;
-  left: clamp(1.8rem, 1.9vw, 2.05rem);
-  bottom: calc(clamp(0.55rem, 0.9vh, 0.7rem) * -1 - 0.48rem);
-  width: 0.11rem;
-  height: clamp(0.65rem, 1vh, 0.85rem);
-  border-radius: 999px;
-  background: rgba(17, 19, 21, 0.16);
-}
-
-.ladder-step:last-child::after {
-  display: none;
-}
-
 .ladder-step:nth-child(2) {
   width: calc(100% - clamp(0.8rem, 1.05vw, 1.1rem));
   margin-left: clamp(0.8rem, 1.05vw, 1.1rem);
@@ -17829,10 +17814,6 @@ select:focus-visible,
   color: #ffffff;
 }
 
-.ladder-step.done::after {
-  background: #35c67a;
-}
-
 .ladder-step.current {
   border-color: rgba(255, 85, 34, 0.72);
   background: rgba(255, 85, 34, 0.08);
@@ -17843,10 +17824,6 @@ select:focus-visible,
   background: #ff5522;
   color: #ffffff;
   box-shadow: 0 0 0 0.28rem rgba(255, 85, 34, 0.13), 0 10px 22px rgba(255, 85, 34, 0.16);
-}
-
-.ladder-step.current::after {
-  background: linear-gradient(180deg, #ff5522, rgba(17, 19, 21, 0.16));
 }
 
 .ladder-step.current strong {
