@@ -11057,6 +11057,11 @@ body {
 }
 
 .onboarding-page.flow .goal-content {
+  height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.75rem, 2vh, 1.25rem));
+  max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.75rem, 2vh, 1.25rem));
+}
+
+.onboarding-page.flow .goal-content {
   gap: clamp(18px, 3vw, 28px);
 }
 
@@ -11778,13 +11783,15 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-grid {
+  flex: 1 1 auto;
+  min-height: 0;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(1.35rem, 2vw, 1.8rem);
 }
 
 .onboarding-page.flow .goal-card {
   min-height: 0;
-  height: var(--goal-card-height);
+  height: 100%;
   aspect-ratio: auto;
   display: flex;
   flex-direction: column;
@@ -11894,7 +11901,7 @@ body:has(.auth-page) {
 @media (min-width: 721px) and (max-height: 820px) {
   .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
     --onboarding-topbar: clamp(3.9rem, 8.5vh, 4.75rem);
-    --onboarding-footer: clamp(4.6rem, 12vh, 6.3rem);
+    --onboarding-footer: clamp(6rem, 12vh, 6.3rem);
     --onboarding-content-offset: clamp(0.6rem, 2.4vh, 1.25rem);
     --onboarding-main-gap: clamp(0.75rem, 2.2vh, 1.35rem);
     --goal-card-height: clamp(11.5rem, 31vh, 20rem);
@@ -11943,6 +11950,7 @@ body:has(.auth-page) {
 
   .onboarding-page.flow .goal-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 
   .onboarding-page.flow .goal-card {
@@ -11974,8 +11982,14 @@ body:has(.auth-page) {
     padding: clamp(1.25rem, 5vw, 1.5rem);
   }
 
+  .onboarding-page.flow .goal-content {
+    height: auto;
+    max-height: none;
+  }
+
   .onboarding-page.flow .goal-grid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
   }
 
   .onboarding-page.flow .onboarding-footer {
@@ -11987,6 +12001,27 @@ body:has(.auth-page) {
   .onboarding-page.flow .footer-actions,
   .onboarding-page.flow .footer-actions button {
     width: 100%;
+  }
+}
+
+@media (min-width: 721px) {
+  .onboarding-page.flow .goal-content {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    justify-items: center;
+    height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.75rem, 2vh, 1.25rem)) !important;
+    max-height: calc(100dvh - var(--onboarding-topbar) - var(--onboarding-footer) - var(--onboarding-content-offset) - clamp(0.75rem, 2vh, 1.25rem)) !important;
+    gap: var(--onboarding-main-gap);
+  }
+
+  .onboarding-page.flow .goal-grid {
+    justify-self: stretch;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .onboarding-page.flow .goal-card {
+    height: 100%;
   }
 }
 
