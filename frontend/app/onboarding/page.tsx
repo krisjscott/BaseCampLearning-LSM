@@ -7,10 +7,9 @@ import {
   ArrowRight,
   BarChart3,
   BriefcaseBusiness,
-  Check,
+  CheckCircle2,
   Compass,
-  Eye,
-  LayoutDashboard,
+  GitBranch,
   Loader,
   Rocket,
   Search,
@@ -73,18 +72,6 @@ const education = [
   "Prefer not to say",
 ];
 
-const pathItems = [
-  ["Starter", "Project Management Foundations", "Start here", true],
-  ["Builder", "Content Strategy Essentials", "Next", false],
-  ["Achiever", "Product Design Basics", "Later", false],
-] as const;
-
-const courses = [
-  ["Google Project Management", "6 modules - Beginner", "Certificate"],
-  ["Content Writing Foundations", "4 modules - Beginner", "Popular"],
-  ["Graphic Design Essentials", "5 modules - Beginner", "New"],
-] as const;
-
 function OnboardingTopbar({
   learnerName,
   step,
@@ -142,16 +129,18 @@ function Footer({
   disableBack?: boolean;
 }) {
   return (
-    <footer className="onboarding-footer">
+    <footer className={`onboarding-footer ${note ? "has-note" : "split-actions"}`}>
       {note ? <p>{note}</p> : <span />}
       <div className="footer-actions">
-        <button type="button" className="secondary-button" onClick={onBack} disabled={disableBack}>
-          <ArrowLeft size={16} />
-          <span>Back</span>
-        </button>
+        {!disableBack && (
+          <button type="button" className="secondary-button" onClick={onBack}>
+            <ArrowLeft size={16} />
+            <span>Back</span>
+          </button>
+        )}
         <button type="button" className={final ? "accent-button" : "inverse-button"} onClick={onNext}>
-          {final ? <Loader size={16} /> : <ArrowRight size={16} />}
           <span>{final ? "Build my learning plan" : "Next"}</span>
+          {final ? <GitBranch size={16} /> : <ArrowRight size={16} />}
         </button>
       </div>
     </footer>
@@ -162,16 +151,13 @@ function OnboardingScreens() {
   const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
-  const [goal, setGoal] = useState(goals[0].title);
-  const [selectedInterests, setSelectedInterests] = useState([
-    "Project Management",
-    "Content Strategy",
-  ]);
-  const [profileType, setProfileType] = useState(profileTypes[0]);
-  const [role, setRole] = useState("Product Designer");
-  const [educationLevel, setEducationLevel] = useState(education[2]);
+  const [goal, setGoal] = useState("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [profileType, setProfileType] = useState("");
+  const [role, setRole] = useState("");
+  const [educationLevel, setEducationLevel] = useState("");
+  const [loadingDone, setLoadingDone] = useState(false);
 
-  const isReady = step === 5;
   const isLoading = step === 4;
   const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
@@ -188,9 +174,19 @@ function OnboardingScreens() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) return;
-    const timer = window.setTimeout(() => setStep(5), 1400);
-    return () => window.clearTimeout(timer);
+    if (!isLoading) {
+      setLoadingDone(false);
+      return;
+    }
+
+    const doneTimer = window.setTimeout(() => setLoadingDone(true), 1700);
+    const timer = window.setTimeout(() => {
+      void completeOnboarding();
+    }, 3200);
+    return () => {
+      window.clearTimeout(doneTimer);
+      window.clearTimeout(timer);
+    };
   }, [isLoading]);
 
   const progress = useMemo(() => Math.min((step + 1) * 25, 100), [step]);
@@ -217,17 +213,20 @@ function OnboardingScreens() {
     });
   }
 
-  async function completeOnboarding() {
-    await updateCurrentUser({
+  function completeOnboarding() {
+    const profileSummary = [goal, selectedInterests.join(", "), profileType, role, educationLevel]
+      .filter(Boolean)
+      .join(" - ");
+    void updateCurrentUser({
       fullName: user?.fullName || "",
-      bio: `${goal} - ${selectedInterests.join(", ")} - ${profileType} - ${role} - ${educationLevel}`,
+      bio: profileSummary,
     }).catch(() => null);
-    router.push("/learning");
+    window.location.assign("/learning");
   }
 
   return (
     <main className="onboarding-page flow">
-      <section className={`onboarding-screen${isLoading ? " personalising-screen" : ""}${isReady ? " ready-screen" : ""}`}>
+      <section className={`onboarding-screen${isLoading ? " personalising-screen" : ""}`}>
         {step < 4 && (
           <OnboardingTopbar
             learnerName={learnerName}
@@ -238,7 +237,6 @@ function OnboardingScreens() {
         )}
 
         {isLoading && <OnboardingTopbar learnerName={learnerName} simpleLabel="Preparing your BaseCamp" />}
-        {isReady && <OnboardingTopbar learnerName={learnerName} dashboard />}
 
         {step === 0 && (
           <>
@@ -296,7 +294,7 @@ function OnboardingScreens() {
               <div className="selected-tags">
                 {selectedInterests.map((item) => (
                   <button type="button" key={item} onClick={() => toggleInterest(item)}>
-                    {item} <span>x</span>
+                    {item} <span aria-hidden="true">&times;</span>
                   </button>
                 ))}
               </div>
@@ -311,7 +309,7 @@ function OnboardingScreens() {
                       onClick={() => toggleInterest(item)}
                     >
                       <span>{item}</span>
-                      <span>{selected ? "x" : "+"}</span>
+                      <span aria-hidden="true">{selected ? "\u00d7" : "+"}</span>
                     </button>
                   );
                 })}
@@ -389,7 +387,7 @@ function OnboardingScreens() {
                     key={level}
                     onClick={() => setEducationLevel(level)}
                   >
-                    <span className="radio-dot">{educationLevel === level && <Check size={12} />}</span>
+                    <span className="radio-dot" aria-hidden="true" />
                     <span>{level}</span>
                   </button>
                 ))}
@@ -401,9 +399,9 @@ function OnboardingScreens() {
         )}
 
         {isLoading && (
-          <div className="personalising-card" role="status" aria-live="polite">
+          <div className={`personalising-card${loadingDone ? " is-complete" : ""}`} role="status" aria-live="polite">
             <div className="check-badge">
-              <Loader size={26} className="loader-icon" />
+              {loadingDone ? <CheckCircle2 size={26} className="loader-check" /> : <Loader size={26} className="loader-icon" />}
             </div>
             <div className="screen-heading">
               <h1>Building your learning plan</h1>
@@ -413,7 +411,17 @@ function OnboardingScreens() {
               <span />
             </div>
             <div className="loading-tags">
-              {[goal, ...selectedInterests.slice(0, 3)].map((tag) => (
+              {[
+                goal || "Job-ready skills",
+                ...selectedInterests.slice(0, 3),
+                "Project Management",
+                "Content Strategy",
+                "Product Design",
+              ]
+                .filter(Boolean)
+                .filter((tag, index, tags) => tags.indexOf(tag) === index)
+                .slice(0, 4)
+                .map((tag) => (
                 <span key={tag}>{tag}</span>
               ))}
             </div>

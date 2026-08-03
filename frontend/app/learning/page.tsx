@@ -4,14 +4,13 @@ import {
   ArrowRight,
   Award,
   BarChart3,
+  Bell,
   BookOpen,
   CalendarClock,
   ChevronRight,
   Compass,
-  Route,
   Home,
   Search,
-  ShieldCheck,
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -34,9 +33,9 @@ const trails = [
 ] as const;
 
 const actionRows = [
-  ["Mandatory learning", "Required company and role training.", "3 items - Next due Jul 30", ShieldCheck],
+  ["Mandatory learning", "Required company and role training.", "3 items - Next due Jul 30", BookOpen],
   ["Upcoming checkpoints", "Scheduled assessments and module dates.", "2 upcoming - Jul 28", CalendarClock],
-  ["Recommended paths", "Personalized courses based on your goals.", "4 curated paths", Route],
+  ["Recommended paths", "Personalized courses based on your goals.", "4 curated paths", Compass],
 ] as const;
 
 function firstName(user?: UserResponse | null) {
@@ -74,7 +73,7 @@ function LearningHome() {
         "Recommended paths",
         "Personalized courses based on your goals.",
         `${recommendations.length} curated paths`,
-        Route,
+        Compass,
       ] as const;
     });
   }, [recommendations]);
@@ -122,8 +121,12 @@ function LearningHome() {
             <Search size={20} />
             <input aria-label="Search courses or ask BaseCamp" placeholder="Search courses or ask BaseCamp" />
           </label>
-          <button type="button" className="header-profile" aria-label={`${learnerName} profile`}>
-            {learnerName.charAt(0).toUpperCase()}
+          <button type="button" className="xp-pill" aria-label="Current XP">
+            <img src="/xp-star.svg" alt="" aria-hidden="true" />
+            <span>2,480 XP</span>
+          </button>
+          <button type="button" className="notification-button" aria-label="Notifications">
+            <Bell size={22} strokeWidth={1.9} />
           </button>
         </header>
 
