@@ -13569,7 +13569,7 @@ body:has(.auth-page) {
   }
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 900px) {
   .learning-home {
     grid-template-columns: 1fr !important;
     overflow: auto !important;
@@ -13866,7 +13866,7 @@ body:has(.auth-page) {
   }
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 900px) {
   .learning-home {
     grid-template-columns: 1fr !important;
     overflow: auto !important;
@@ -14308,7 +14308,7 @@ body:has(.auth-page) {
   font-weight: 800 !important;
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 900px) {
   .course-overview {
     grid-template-columns: 1fr !important;
     overflow: auto !important;
@@ -17615,7 +17615,7 @@ select:focus-visible,
   }
 }
 
-@media (max-width: 1450px) {
+@media (max-width: 900px) {
   .learning-home,
   .my-learning-page,
   .explore-page,
@@ -17677,8 +17677,19 @@ select:focus-visible,
 }
 
 /* User preference: no bottom hero progress strip and no route-enter motion. */
-.achievements-hero::after,
-.progress-dashboard-hero::after {
+.featured-course::after,
+.continue-learning-card::after,
+.explore-hero::after,
+.search-best-match::after,
+.notifications-hero::after,
+.certificates-hero::after,
+.certificate-detail-hero::after,
+.category-hero::after,
+.path-hero::after,
+.mandatory-hero::after,
+.calendar-hero::after,
+.progress-dashboard-hero::after,
+.achievements-hero::after {
   content: none !important;
   display: none !important;
 }
@@ -17956,6 +17967,94 @@ select:focus-visible,
 .public-profile-card button {
   justify-self: start;
   margin-top: auto !important;
+}
+
+/* Keep the sidebar menu usable on laptop-width screens. */
+@media (min-width: 901px) and (max-width: 1450px) {
+  .learning-home,
+  .my-learning-page,
+  .explore-page,
+  .search-results-page,
+  .mandatory-page,
+  .calendar-page,
+  .notifications-page,
+  .progress-dashboard-page,
+  .achievements-page,
+  .certificates-page,
+  .certificate-detail-page,
+  .course-overview {
+    grid-template-columns: clamp(16.5rem, 21vw, 18rem) minmax(0, 1fr) !important;
+    overflow: hidden !important;
+  }
+
+  .learning-sidebar {
+    padding: clamp(1.5rem, 3.1vh, 2.2rem) clamp(0.95rem, 1vw, 1.15rem) clamp(1rem, 1.8vh, 1.25rem) !important;
+    overflow-y: auto !important;
+  }
+
+  .learning-sidebar-logo {
+    width: clamp(6.4rem, 7vw, 7.6rem) !important;
+    margin-bottom: clamp(1.45rem, 3vh, 2.1rem) !important;
+  }
+
+  .learning-nav {
+    flex: 0 0 auto !important;
+    gap: clamp(0.55rem, 1vh, 0.75rem) !important;
+    grid-template-rows: none !important;
+  }
+
+  .learning-nav button {
+    height: clamp(2.85rem, 4.7vh, 3.25rem) !important;
+    min-height: clamp(2.85rem, 4.7vh, 3.25rem) !important;
+    padding-inline: clamp(0.85rem, 1vw, 1.05rem) !important;
+    font-size: clamp(0.9rem, 1vw, 1rem) !important;
+  }
+
+  .learning-nav button svg {
+    width: clamp(1.05rem, 1.2vw, 1.28rem) !important;
+    height: clamp(1.05rem, 1.2vw, 1.28rem) !important;
+  }
+
+  .recent-trails {
+    margin: clamp(1.15rem, 2.4vh, 1.55rem) clamp(0.35rem, 0.65vw, 0.7rem) 0 !important;
+  }
+
+  .recent-trails > p {
+    margin-bottom: clamp(0.45rem, 0.85vh, 0.65rem) !important;
+    font-size: clamp(0.66rem, 0.78vw, 0.74rem) !important;
+  }
+
+  .recent-trails div {
+    min-height: clamp(2.35rem, 4vh, 2.75rem) !important;
+  }
+
+  .recent-trails span {
+    font-size: clamp(0.84rem, 1vw, 0.95rem) !important;
+  }
+
+  .recent-trails strong {
+    font-size: clamp(0.75rem, 0.9vw, 0.84rem) !important;
+  }
+
+  .learner-profile {
+    margin-top: clamp(1rem, 2vh, 1.35rem) !important;
+    padding: clamp(1rem, 2.2vh, 1.35rem) clamp(0.95rem, 1vw, 1.15rem) 0 !important;
+    grid-template-columns: clamp(2.5rem, 3vw, 3rem) 1fr !important;
+  }
+
+  .learner-profile > div {
+    width: clamp(2.5rem, 3vw, 3rem) !important;
+    height: clamp(2.5rem, 3vw, 3rem) !important;
+  }
+
+  .learner-profile strong {
+    font-size: clamp(0.88rem, 1vw, 1rem) !important;
+  }
+
+  .learner-profile span,
+  .learner-profile small {
+    font-size: clamp(0.72rem, 0.85vw, 0.82rem) !important;
+  }
 }
 
 /* Achievements level ladder: staged steps toward the next level. */
