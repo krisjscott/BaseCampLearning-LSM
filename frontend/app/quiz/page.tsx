@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, ClipboardList, X } from "lucide-react";
 import { AssessmentResponse, getAssessment, submitAssessment } from "../lib/backendApi";
+import { CardSkeleton, Skeleton } from "../components/Skeleton";
 
 export default function CompulsoryQuiz() {
   const [assessment, setAssessment] = useState<AssessmentResponse | null>(null);
@@ -72,8 +73,17 @@ export default function CompulsoryQuiz() {
           <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>{assessment?.title || "Assessment"}</strong>
-            <p>{assessment?.type ? `${assessment.type} - Required assessment` : "Required assessment"}</p>
+            {loading ? (
+              <>
+                <Skeleton className="skeleton-copy" />
+                <Skeleton className="skeleton-copy" />
+              </>
+            ) : (
+              <>
+                <strong>{assessment?.title || "Assessment"}</strong>
+                <p>{assessment?.type ? `${assessment.type} - Required assessment` : "Required assessment"}</p>
+              </>
+            )}
           </section>
         </div>
         <div className="lesson-top-actions">
@@ -89,49 +99,69 @@ export default function CompulsoryQuiz() {
         <section className="quiz-main">
           <header className="quiz-heading-row">
             <div>
-              <p>{assessment?.type || "Assessment"}</p>
-              <h1>{assessment?.title || (loading ? "Loading assessment" : "No assessment selected")}</h1>
-              <span>{totalQuestions || 0} questions - Pass score: {assessment?.passingScore ?? 0}%</span>
+              {loading ? (
+                <>
+                  <Skeleton className="skeleton-pill" />
+                  <Skeleton className="skeleton-title" />
+                  <Skeleton className="skeleton-copy" />
+                </>
+              ) : (
+                <>
+                  <p>{assessment?.type || "Assessment"}</p>
+                  <h1>{assessment?.title || "No assessment selected"}</h1>
+                  <span>{totalQuestions || 0} questions - Pass score: {assessment?.passingScore ?? 0}%</span>
+                </>
+              )}
             </div>
             <section className="autosave-status">
-              <Check size={16} />
-              <strong>{saving ? "Saving answers" : "Answers autosaved"}</strong>
-              <span>{assessment?.maxAttempts ? `Maximum attempts: ${assessment.maxAttempts}` : "Assessment records save to the backend"}</span>
+              {loading ? <CardSkeleton lines={2} /> : (
+                <>
+                  <Check size={16} />
+                  <strong>{saving ? "Saving answers" : "Answers autosaved"}</strong>
+                  <span>{assessment?.maxAttempts ? `Maximum attempts: ${assessment.maxAttempts}` : "Assessment records save to the backend"}</span>
+                </>
+              )}
             </section>
           </header>
 
           <section className="question-card">
-            <div className="question-meta">
-              <p>Question {currentQuestion ? currentIndex + 1 : 0} of {totalQuestions}</p>
-              <span>{currentQuestion?.points || 0} point</span>
-            </div>
-            <h2>{currentQuestion?.questionText || "Open an assessment from a course to answer questions."}</h2>
-            <p>{error || "Select one answer."}</p>
+            {loading ? (
+              <CardSkeleton lines={7} />
+            ) : (
+              <>
+                <div className="question-meta">
+                  <p>Question {currentQuestion ? currentIndex + 1 : 0} of {totalQuestions}</p>
+                  <span>{currentQuestion?.points || 0} point</span>
+                </div>
+                <h2>{currentQuestion?.questionText || "Open an assessment from a course to answer questions."}</h2>
+                <p>{error || "Select one answer."}</p>
 
-            <div className="answer-list" role="radiogroup" aria-label="Answer choices">
-              {options.length ? options.map((option, index) => {
-                const selected = selectedAnswer === option.id;
-                const letter = String.fromCharCode(65 + index);
-                return (
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    className={`answer-choice${selected ? " selected" : ""}`}
-                    key={option.id}
-                    onClick={() => currentQuestion && setSelectedAnswers((current) => ({ ...current, [currentQuestion.id]: option.id }))}
-                  >
-                    <span>{selected ? <Check size={18} /> : letter}</span>
-                    <p>{option.optionText}</p>
-                  </button>
-                );
-              }) : (
-                <article className="answer-choice">
-                  <span>-</span>
-                  <p>No answer options were returned by the backend for this question.</p>
-                </article>
-              )}
-            </div>
+                <div className="answer-list" role="radiogroup" aria-label="Answer choices">
+                  {options.length ? options.map((option, index) => {
+                    const selected = selectedAnswer === option.id;
+                    const letter = String.fromCharCode(65 + index);
+                    return (
+                      <button
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`answer-choice${selected ? " selected" : ""}`}
+                        key={option.id}
+                        onClick={() => currentQuestion && setSelectedAnswers((current) => ({ ...current, [currentQuestion.id]: option.id }))}
+                      >
+                        <span>{selected ? <Check size={18} /> : letter}</span>
+                        <p>{option.optionText}</p>
+                      </button>
+                    );
+                  }) : (
+                    <article className="answer-choice">
+                      <span>-</span>
+                      <p>No answer options were returned by the backend for this question.</p>
+                    </article>
+                  )}
+                </div>
+              </>
+            )}
           </section>
 
           <footer className="quiz-actions">
@@ -141,62 +171,66 @@ export default function CompulsoryQuiz() {
         </section>
 
         <aside className="quiz-sidebar">
-          <header>
-            <h2>Quiz progress</h2>
-            <p>{answeredCount} of {totalQuestions} answered</p>
-          </header>
+          {loading ? <CardSkeleton lines={8} /> : (
+            <>
+              <header>
+                <h2>Quiz progress</h2>
+                <p>{answeredCount} of {totalQuestions} answered</p>
+              </header>
 
-          <div className="quiz-progress">
-            <span style={{ width: `${progress}%` }} />
-          </div>
+              <div className="quiz-progress">
+                <span style={{ width: `${progress}%` }} />
+              </div>
 
-          <div className="quiz-legend">
-            <span>
-              <CheckCircle2 size={16} />
-              Answered
-            </span>
-            <span>
-              <Circle size={16} />
-              Unanswered
-            </span>
-          </div>
+              <div className="quiz-legend">
+                <span>
+                  <CheckCircle2 size={16} />
+                  Answered
+                </span>
+                <span>
+                  <Circle size={16} />
+                  Unanswered
+                </span>
+              </div>
 
-          <div className="question-grid" aria-label="Question navigation">
-            {Array.from({ length: Math.max(totalQuestions, 1) }, (_, index) => {
-              const number = index + 1;
-              const question = questions[index];
-              const current = index === currentIndex;
-              const isAnswered = question ? Boolean(selectedAnswers[question.id]) : false;
-              return (
-                <button
-                  type="button"
-                  className={`${current ? "current" : ""}${isAnswered ? " answered" : ""}`}
-                  key={number}
-                  onClick={() => question && setCurrentIndex(index)}
-                  disabled={!question}
-                >
-                  {number}
-                </button>
-              );
-            })}
-          </div>
+              <div className="question-grid" aria-label="Question navigation">
+                {Array.from({ length: Math.max(totalQuestions, 1) }, (_, index) => {
+                  const number = index + 1;
+                  const question = questions[index];
+                  const current = index === currentIndex;
+                  const isAnswered = question ? Boolean(selectedAnswers[question.id]) : false;
+                  return (
+                    <button
+                      type="button"
+                      className={`${current ? "current" : ""}${isAnswered ? " answered" : ""}`}
+                      key={number}
+                      onClick={() => question && setCurrentIndex(index)}
+                      disabled={!question}
+                    >
+                      {number}
+                    </button>
+                  );
+                })}
+              </div>
 
-          <hr />
+              <hr />
 
-          <section className="attempt-rules">
-            <h2>Attempt rules</h2>
-            <ul>
-              <li>Passing score: {assessment?.passingScore ?? 0}%</li>
-              <li>Maximum attempts: {assessment?.maxAttempts || 0}</li>
-              <li>Answers cannot be changed after submission</li>
-              <li>Results are recorded with date and time</li>
-            </ul>
-          </section>
+              <section className="attempt-rules">
+                <h2>Attempt rules</h2>
+                <ul>
+                  <li>Passing score: {assessment?.passingScore ?? 0}%</li>
+                  <li>Maximum attempts: {assessment?.maxAttempts || 0}</li>
+                  <li>Answers cannot be changed after submission</li>
+                  <li>Results are recorded with date and time</li>
+                </ul>
+              </section>
 
-          <section className="submit-card">
-            <p>Answer all questions to submit.</p>
-            <button type="button" disabled={!totalQuestions || answeredCount < totalQuestions}><ClipboardList size={16} /><span>Review &amp; submit</span></button>
-          </section>
+              <section className="submit-card">
+                <p>Answer all questions to submit.</p>
+                <button type="button" disabled={!totalQuestions || answeredCount < totalQuestions}><ClipboardList size={16} /><span>Review &amp; submit</span></button>
+              </section>
+            </>
+          )}
         </aside>
       </div>
     </main>

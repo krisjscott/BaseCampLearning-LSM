@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { NotificationResponse, UserResponse, getCurrentUser, getNotifications } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -25,6 +26,7 @@ const navItems = [
 function Notifications() {
   const [backendNotifications, setBackendNotifications] = useState<NotificationResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -38,7 +40,10 @@ function Notifications() {
           setUser(userResult.value);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -82,7 +87,7 @@ function Notifications() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          <small>No course progress yet</small>
+          {loading ? <SidebarSkeleton /> : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
@@ -107,13 +112,21 @@ function Notifications() {
         </header>
 
         <section className="notifications-hero">
-          <h2>{heroNotification?.title || "No notifications yet"}</h2>
-          <p>{heroNotification?.message || "Course updates and reminders will appear here."}</p>
-          <button type="button">{heroNotification ? "Review notification ->" : "Manage preferences ->"}</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{heroNotification?.title || "No notifications yet"}</h2>
+              <p>{heroNotification?.message || "Course updates and reminders will appear here."}</p>
+              <button type="button">{heroNotification ? "Review notification ->" : "Manage preferences ->"}</button>
+            </>
+          )}
         </section>
 
         <section className="notifications-stats" aria-label="Notifications summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -125,7 +138,9 @@ function Notifications() {
 
         <div className="notifications-content-grid">
           <section className="notification-list" aria-label="Recent notifications">
-            {notificationRows.length ? notificationRows.map(([title, detail, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : notificationRows.length ? notificationRows.map(([title, detail, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -145,9 +160,13 @@ function Notifications() {
           </section>
 
           <aside className="notification-preferences-card">
-            <h2>Preferences</h2>
-            <p>Choose email and in-product notification types.</p>
-            <button type="button">Manage preferences -&gt;</button>
+            {loading ? <CardSkeleton lines={3} /> : (
+              <>
+                <h2>Preferences</h2>
+                <p>Choose email and in-product notification types.</p>
+                <button type="button">Manage preferences -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

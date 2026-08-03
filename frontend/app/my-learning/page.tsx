@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -24,16 +25,20 @@ const navItems = [
 function MyLearning() {
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     Promise.allSettled([getPublicDashboard(), getCurrentUser()])
       .then(([dashboardResult, userResult]) => {
         if (!active) return;
-        if (dashboardResult.status === "fulfilled" && dashboardResult.value) setDashboard(dashboardResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
         if (userResult.status === "fulfilled" && userResult.value) setUser(userResult.value);
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -53,7 +58,7 @@ function MyLearning() {
     return [
       [String(continueLearning.length), "Active courses"],
       [`${primary}%`, "Primary path"],
-      ["2h 18m", "This week"],
+      [String(continueLearning.filter((item) => (item.completionPercentage || 0) >= 100).length), "Completed"],
     ] as const;
   }, [continueLearning]);
 
@@ -80,7 +85,7 @@ function MyLearning() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.length ? trails.map(([name, progress]) => (
+          {loading ? <SidebarSkeleton /> : trails.length ? trails.map(([name, progress]) => (
             <div key={name}>
               <span>{name}</span>
               <strong>{progress}</strong>
@@ -110,13 +115,21 @@ function MyLearning() {
         </header>
 
         <section className="continue-learning-card">
-          <h2>{featured ? `Continue ${featured.courseTitle}` : "No active courses yet"}</h2>
-          <p>{featured ? "Progress loaded from your account." : "Browse the catalogue and enroll to start learning."}</p>
-          <button type="button">{featured ? "Continue learning ->" : "Browse courses ->"}</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{featured ? `Continue ${featured.courseTitle}` : "No active courses yet"}</h2>
+              <p>{featured ? "Progress loaded from your account." : "Browse the catalogue and enroll to start learning."}</p>
+              <button type="button">{featured ? "Continue learning ->" : "Browse courses ->"}</button>
+            </>
+          )}
         </section>
 
         <section className="my-learning-stats" aria-label="Learning summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -128,7 +141,9 @@ function MyLearning() {
 
         <div className="my-learning-content-grid">
           <section className="my-course-list">
-            {courseRows.length ? courseRows.map(([title, meta, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : courseRows.length ? courseRows.map(([title, meta, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -148,20 +163,24 @@ function MyLearning() {
           </section>
 
           <aside className="weekly-goal-card">
-            <div className="side-card-kicker">Weekly goal</div>
-            <h2>{continueLearning.length} active</h2>
-            <p>Weekly goals will update from your course progress.</p>
-            <div className="side-card-meter" aria-label="3 of 5 learning goals completed">
-              <span style={{ width: `${Math.min(continueLearning.length * 20, 100)}%` }} />
-            </div>
-            <div className="weekly-goal-list" aria-label="Weekly goal checklist">
-              <span className="done">Course lesson</span>
-              <span className="done">Checkpoint prep</span>
-              <span className="done">Practice notes</span>
-              <span>Quiz review</span>
-              <span>Certificate task</span>
-            </div>
-            <button type="button">View progress -&gt;</button>
+            {loading ? <CardSkeleton lines={6} /> : (
+              <>
+                <div className="side-card-kicker">Weekly goal</div>
+                <h2>{continueLearning.length} active</h2>
+                <p>Weekly goals will update from your course progress.</p>
+                <div className="side-card-meter" aria-label={`${continueLearning.length} active learning items`}>
+                  <span style={{ width: `${Math.min(continueLearning.length * 20, 100)}%` }} />
+                </div>
+                <div className="weekly-goal-list" aria-label="Active learning items">
+                  {continueLearning.length ? continueLearning.slice(0, 5).map((item) => (
+                    <span key={item.courseId} className={(item.completionPercentage || 0) >= 100 ? "done" : ""}>
+                      {item.courseTitle}
+                    </span>
+                  )) : <span>No active goals yet</span>}
+                </div>
+                <button type="button">View progress -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

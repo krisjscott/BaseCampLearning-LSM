@@ -9782,6 +9782,93 @@ button:focus-visible {
 }
 
 /* Re-assert design tokens at cascade end for the generated screens. */
+
+.skeleton {
+  display: block;
+  width: 100%;
+  min-height: 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(238, 239, 236, 0.86), rgba(255, 255, 255, 0.96), rgba(238, 239, 236, 0.86));
+  background-size: 220% 100%;
+  animation: skeleton-shimmer 1.15s ease-in-out infinite;
+}
+
+.featured-course .skeleton,
+.notifications-hero .skeleton,
+.certificates-hero .skeleton,
+.continue-learning-card .skeleton,
+.explore-hero .skeleton {
+  background: linear-gradient(90deg, rgba(44, 50, 51, 0.72), rgba(77, 85, 86, 0.86), rgba(44, 50, 51, 0.72));
+  background-size: 220% 100%;
+}
+
+.sidebar-skeleton,
+.card-skeleton {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.sidebar-skeleton .skeleton {
+  height: 1rem;
+}
+
+.sidebar-skeleton .skeleton:first-child {
+  width: 78%;
+}
+
+.sidebar-skeleton .skeleton:nth-child(2) {
+  width: 100%;
+}
+
+.sidebar-skeleton .skeleton:nth-child(3) {
+  width: 62%;
+}
+
+.card-skeleton {
+  width: 100%;
+}
+
+.card-skeleton .skeleton {
+  height: 1rem;
+}
+
+.card-skeleton .skeleton:first-child {
+  height: 1.4rem;
+  width: 62%;
+}
+
+.card-skeleton .skeleton:last-child {
+  width: 44%;
+}
+
+.skeleton-title {
+  height: 2.2rem;
+  max-width: 28rem;
+}
+
+.skeleton-copy {
+  height: 1.15rem;
+  max-width: 36rem;
+}
+
+.skeleton-pill {
+  width: 6.5rem;
+  height: 2.2rem;
+}
+
+.skeleton-stat {
+  height: 5.8rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 120% 0;
+  }
+
+  100% {
+    background-position: -120% 0;
+  }
+}
 :root {
   --ink: #14171a;
   --muted: #61666e;

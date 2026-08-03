@@ -11,6 +11,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { CertificateResponse, UserResponse, getCertificates, getCurrentUser } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -34,6 +35,7 @@ function longDate(value?: string | null) {
 function CertificatesWallet() {
   const [backendCertificates, setBackendCertificates] = useState<CertificateResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -47,7 +49,10 @@ function CertificatesWallet() {
           setUser(userResult.value);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -89,7 +94,7 @@ function CertificatesWallet() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          <small>No course progress yet</small>
+          {loading ? <SidebarSkeleton /> : <small>No course progress yet</small>}
         </section>
         <section className="learner-profile" aria-label="Learner profile">
           <div>{learnerName.charAt(0).toUpperCase()}</div>
@@ -114,16 +119,24 @@ function CertificatesWallet() {
         </header>
 
         <section className="certificates-hero">
-          <h2>{heroCertificate?.title || "No certificates yet"}</h2>
-          <p>
-            {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Completed course certificates will appear here."}{" "}
-            {heroCertificate?.certificateNumber ? `- Credential ${heroCertificate.certificateNumber}` : ""}
-          </p>
-          <button type="button">{heroCertificate ? "Download certificate ->" : "Explore courses ->"}</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{heroCertificate?.title || "No certificates yet"}</h2>
+              <p>
+                {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Completed course certificates will appear here."}{" "}
+                {heroCertificate?.certificateNumber ? `- Credential ${heroCertificate.certificateNumber}` : ""}
+              </p>
+              <button type="button">{heroCertificate ? "Download certificate ->" : "Explore courses ->"}</button>
+            </>
+          )}
         </section>
 
         <section className="certificates-stats" aria-label="Certificates summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -135,7 +148,9 @@ function CertificatesWallet() {
 
         <div className="certificates-grid">
           <section className="credential-list" aria-label="Your credentials">
-            {credentialRows.length ? credentialRows.map(([title, meta, status, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : credentialRows.length ? credentialRows.map(([title, meta, status, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -155,16 +170,20 @@ function CertificatesWallet() {
           </section>
 
           <aside className="public-profile-card">
-            <div className="side-card-kicker">Public profile</div>
-            <h2>{backendCertificates.length} credentials visible</h2>
-            <p>Only certificates stored in the database appear on your profile.</p>
-            <div className="profile-visibility-list" aria-label="Public profile visibility">
-              <span>
-                <strong>{backendCertificates[0]?.courseName || "No public certificates"}</strong>
-                <small>{backendCertificates.length ? "Visible" : "Hidden"}</small>
-              </span>
-            </div>
-            <button type="button">Manage visibility -&gt;</button>
+            {loading ? <CardSkeleton lines={5} /> : (
+              <>
+                <div className="side-card-kicker">Public profile</div>
+                <h2>{backendCertificates.length} credentials visible</h2>
+                <p>Only certificates stored in the database appear on your profile.</p>
+                <div className="profile-visibility-list" aria-label="Public profile visibility">
+                  <span>
+                    <strong>{backendCertificates[0]?.courseName || "No public certificates"}</strong>
+                    <small>{backendCertificates.length ? "Visible" : "Hidden"}</small>
+                  </span>
+                </div>
+                <button type="button">Manage visibility -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

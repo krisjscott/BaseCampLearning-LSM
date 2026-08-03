@@ -21,6 +21,7 @@ import {
   updateCurrentUserSettings,
 } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -45,6 +46,7 @@ function ProfilePreferencesDesktop() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [settingsState, setSettingsState] = useState<UserSettingsResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -73,9 +75,7 @@ function ProfilePreferencesDesktop() {
         if (nextSettings) {
           setSettingsState(nextSettings);
         }
-        if (nextDashboard) {
-          setDashboard(nextDashboard);
-        }
+        setDashboard(nextDashboard);
 
         setForm((current) => ({
           ...current,
@@ -89,7 +89,10 @@ function ProfilePreferencesDesktop() {
           pushNotifications: nextSettings?.pushNotifications ?? true,
         }));
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -163,7 +166,7 @@ function ProfilePreferencesDesktop() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {progressRows.length ? progressRows.map(([trailName, progress]) => (
+          {loading ? <SidebarSkeleton /> : progressRows.length ? progressRows.map(([trailName, progress]) => (
             <div key={trailName}>
               <span>{trailName}</span>
               <strong>{progress}</strong>
@@ -193,13 +196,21 @@ function ProfilePreferencesDesktop() {
         </header>
 
         <section className="certificate-detail-hero">
-          <h2>{name}</h2>
-          <p>{user?.email || "Account email unavailable"} - {form.phone || "Phone not added"} - {form.address || "Address not added"}</p>
-          <button type="button">View public profile -&gt;</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{name}</h2>
+              <p>{user?.email || "Account email unavailable"} - {form.phone || "Phone not added"} - {form.address || "Address not added"}</p>
+              <button type="button">View public profile -&gt;</button>
+            </>
+          )}
         </section>
 
         <section className="certificate-detail-stats" aria-label="Profile summary">
-          {statRows.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : statRows.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -212,79 +223,85 @@ function ProfilePreferencesDesktop() {
         <div className="certificate-detail-grid">
           <section className="certificate-share-list" aria-label="Profile settings">
             <article className="profile-form-card">
-              <div>
-                <h3>Profile details</h3>
-                <p>These fields load from and save to the production backend.</p>
-              </div>
-              <label>
-                Full name
-                <input
-                  value={form.fullName}
-                  onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
-                />
-              </label>
-              <label>
-                Phone
-                <input
-                  value={form.phone}
-                  onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-                />
-              </label>
-              <label>
-                Address
-                <input
-                  value={form.address}
-                  onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))}
-                />
-              </label>
-              <label>
-                Learning focus
-                <textarea
-                  value={form.bio}
-                  onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
-                />
-              </label>
-              <label>
-                Language
-                <select
-                  value={form.language}
-                  onChange={(event) => setForm((current) => ({ ...current, language: event.target.value }))}
-                >
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
-                  <option value="bn">Bengali</option>
-                </select>
-              </label>
-              <label>
-                Timezone
-                <select
-                  value={form.timezone}
-                  onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
-                >
-                  <option value="Asia/Kolkata">Asia/Kolkata</option>
-                  <option value="UTC">UTC</option>
-                  <option value="America/New_York">America/New_York</option>
-                </select>
-              </label>
-              <label className="profile-toggle-row">
-                <input
-                  type="checkbox"
-                  checked={form.emailNotifications}
-                  onChange={(event) => setForm((current) => ({ ...current, emailNotifications: event.target.checked }))}
-                />
-                Email notifications
-              </label>
-              <label className="profile-toggle-row">
-                <input
-                  type="checkbox"
-                  checked={form.pushNotifications}
-                  onChange={(event) => setForm((current) => ({ ...current, pushNotifications: event.target.checked }))}
-                />
-                Push notifications
-              </label>
-              {status ? <p className="profile-save-status">{status}</p> : null}
+              {loading ? <CardSkeleton lines={8} /> : (
+                <>
+                  <div>
+                    <h3>Profile details</h3>
+                    <p>These fields load from and save to the production backend.</p>
+                  </div>
+                  <label>
+                    Full name
+                    <input
+                      value={form.fullName}
+                      onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Phone
+                    <input
+                      value={form.phone}
+                      onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Address
+                    <input
+                      value={form.address}
+                      onChange={(event) => setForm((current) => ({ ...current, address: event.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Learning focus
+                    <textarea
+                      value={form.bio}
+                      onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
+                    />
+                  </label>
+                  <label>
+                    Language
+                    <select
+                      value={form.language}
+                      onChange={(event) => setForm((current) => ({ ...current, language: event.target.value }))}
+                    >
+                      <option value="en">English</option>
+                      <option value="hi">Hindi</option>
+                      <option value="bn">Bengali</option>
+                    </select>
+                  </label>
+                  <label>
+                    Timezone
+                    <select
+                      value={form.timezone}
+                      onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
+                    >
+                      <option value="Asia/Kolkata">Asia/Kolkata</option>
+                      <option value="UTC">UTC</option>
+                      <option value="America/New_York">America/New_York</option>
+                    </select>
+                  </label>
+                  <label className="profile-toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={form.emailNotifications}
+                      onChange={(event) => setForm((current) => ({ ...current, emailNotifications: event.target.checked }))}
+                    />
+                    Email notifications
+                  </label>
+                  <label className="profile-toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={form.pushNotifications}
+                      onChange={(event) => setForm((current) => ({ ...current, pushNotifications: event.target.checked }))}
+                    />
+                    Push notifications
+                  </label>
+                  {status ? <p className="profile-save-status">{status}</p> : null}
+                </>
+              )}
             </article>
-            {settingsRows.map(([title, description, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : settingsRows.map(([title, description, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -302,9 +319,13 @@ function ProfilePreferencesDesktop() {
           </section>
 
           <aside className="verification-card">
-            <h2>Account security</h2>
-            <p>Email sign-in and Crew ID access are active.</p>
-            <button type="button">Security settings -&gt;</button>
+            {loading ? <CardSkeleton lines={3} /> : (
+              <>
+                <h2>Account security</h2>
+                <p>Email sign-in and Crew ID access are active.</p>
+                <button type="button">Security settings -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

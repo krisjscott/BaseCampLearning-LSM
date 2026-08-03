@@ -18,6 +18,7 @@ import {
   getCurrentUser,
   getPublicDashboard,
 } from "../lib/backendApi";
+import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -32,6 +33,7 @@ export default function ExploreCourses() {
   const [backendCourses, setBackendCourses] = useState<CourseResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
@@ -48,7 +50,10 @@ export default function ExploreCourses() {
           setDashboard(dashboardResult.value);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -93,7 +98,7 @@ export default function ExploreCourses() {
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.length ? trails.map(([name, progress]) => (
+          {loading ? <SidebarSkeleton /> : trails.length ? trails.map(([name, progress]) => (
             <div key={name}>
               <span>{name}</span>
               <strong>{progress}</strong>
@@ -129,7 +134,11 @@ export default function ExploreCourses() {
         </section>
 
         <section className="explore-stats" aria-label="Explore summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -141,7 +150,9 @@ export default function ExploreCourses() {
 
         <div className="explore-content-grid">
           <section className="popular-course-list" aria-label="Popular courses">
-            {courseRows.length ? courseRows.map(([title, level, duration]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : courseRows.length ? courseRows.map(([title, level, duration]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -163,26 +174,30 @@ export default function ExploreCourses() {
           </section>
 
           <aside className="recommended-path-card">
-            <div className="side-card-kicker">Recommended path</div>
-            <h2>{dashboard?.recommendedCourses?.[0]?.courseTitle || "No path selected"}</h2>
-            <p>{dashboard?.recommendedCourses?.length ? "Recommendations loaded from your learning profile." : "Complete onboarding and enrollments to generate recommendations."}</p>
-            <div className="path-card-summary" aria-label="Recommended path summary">
-              <section>
-                <strong>{dashboard?.recommendedCourses?.length || 0}</strong>
-                <span>courses</span>
-              </section>
-              <section>
-                <strong>{backendCourses.reduce((total, course) => total + (course.durationHours || 0), 0)}</strong>
-                <span>hours listed</span>
-              </section>
-            </div>
-            <div className="path-card-stack" aria-label="Path sequence">
-              {(dashboard?.recommendedCourses || []).slice(0, 3).map((course) => (
-                <span key={course.courseId}>{course.courseTitle}</span>
-              ))}
-              {!dashboard?.recommendedCourses?.length ? <span>No recommendations yet</span> : null}
-            </div>
-            <button type="button">Open path -&gt;</button>
+            {loading ? <CardSkeleton lines={6} /> : (
+              <>
+                <div className="side-card-kicker">Recommended path</div>
+                <h2>{dashboard?.recommendedCourses?.[0]?.courseTitle || "No path selected"}</h2>
+                <p>{dashboard?.recommendedCourses?.length ? "Recommendations loaded from your learning profile." : "Complete onboarding and enrollments to generate recommendations."}</p>
+                <div className="path-card-summary" aria-label="Recommended path summary">
+                  <section>
+                    <strong>{dashboard?.recommendedCourses?.length || 0}</strong>
+                    <span>courses</span>
+                  </section>
+                  <section>
+                    <strong>{backendCourses.reduce((total, course) => total + (course.durationHours || 0), 0)}</strong>
+                    <span>hours listed</span>
+                  </section>
+                </div>
+                <div className="path-card-stack" aria-label="Path sequence">
+                  {(dashboard?.recommendedCourses || []).slice(0, 3).map((course) => (
+                    <span key={course.courseId}>{course.courseTitle}</span>
+                  ))}
+                  {!dashboard?.recommendedCourses?.length ? <span>No recommendations yet</span> : null}
+                </div>
+                <button type="button">Open path -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

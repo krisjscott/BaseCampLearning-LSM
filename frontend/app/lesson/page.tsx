@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { getLesson, LessonResponse } from "../lib/backendApi";
+import { CardSkeleton, Skeleton } from "../components/Skeleton";
 
 const lessons = [
   ["Project goals and stakeholders", "8 min video", "done"],
@@ -221,8 +222,17 @@ export default function LessonPlayer() {
           <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>{lesson?.title || "Lesson player"}</strong>
-            <p>{lesson?.contentType || "Course lesson"}</p>
+            {loadingLesson ? (
+              <>
+                <Skeleton className="skeleton-copy" />
+                <Skeleton className="skeleton-copy" />
+              </>
+            ) : (
+              <>
+                <strong>{lesson?.title || "Lesson player"}</strong>
+                <p>{lesson?.contentType || "Course lesson"}</p>
+              </>
+            )}
           </section>
         </div>
         <div className="lesson-top-actions">
@@ -237,9 +247,15 @@ export default function LessonPlayer() {
       <div className="lesson-shell">
         <section className="lesson-stage">
           <div className="lesson-heading">
-            <p>LESSON 4 OF 7</p>
-            <h1>{lessonTitle}</h1>
-            <span>{lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "24 sec video - Required"}</span>
+            {loadingLesson ? (
+              <CardSkeleton lines={3} />
+            ) : (
+              <>
+                <p>LESSON 4 OF 7</p>
+                <h1>{lessonTitle}</h1>
+                <span>{lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "24 sec video - Required"}</span>
+              </>
+            )}
           </div>
 
           <section className="video-card" aria-label="Video lesson player" ref={cardRef}>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getPublicDashboard } from "../lib/backendApi";
+import { Skeleton } from "./Skeleton";
 
 const navItems = [
   { label: "Learning Home", href: "/learning", icon: Home },
@@ -55,6 +56,7 @@ export default function MobileHamburgerMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [activeCourses, setActiveCourses] = useState(0);
+  const [loadingStatus, setLoadingStatus] = useState(true);
   const shouldShow = learningRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const activePath = getActivePath(pathname);
 
@@ -69,11 +71,15 @@ export default function MobileHamburgerMenu() {
 
   useEffect(() => {
     let active = true;
+    setLoadingStatus(true);
     getPublicDashboard()
       .then((dashboard) => {
         if (active) setActiveCourses(dashboard?.continueLearning?.length || 0);
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoadingStatus(false);
+      });
     return () => {
       active = false;
     };
@@ -94,7 +100,7 @@ export default function MobileHamburgerMenu() {
         <div className="mobile-hamburger-actions" aria-label="Learning status">
           <button type="button" className="mobile-xp-pill" aria-label="Current XP">
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
-            <span>{activeCourses} active</span>
+            {loadingStatus ? <Skeleton className="skeleton-pill" /> : <span>{activeCourses} active</span>}
           </button>
           <Link href="/notifications" className="mobile-notification-button" aria-label="Notifications">
             <Bell size={19} strokeWidth={1.95} />
