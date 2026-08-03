@@ -15184,3 +15184,98 @@ body:has(.auth-page) {
   background: #ff5522 !important;
 }
 
+/* Lesson spacious scroll correction: keep proportions roomy and let pages scroll. */
+@media (min-width: 1181px) {
+  .lesson-player {
+    height: auto !important;
+    min-height: 100dvh !important;
+    overflow: auto !important;
+  }
+
+  .lesson-topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    height: clamp(5.1rem, 7.4dvh, 6rem) !important;
+    flex-basis: clamp(5.1rem, 7.4dvh, 6rem) !important;
+  }
+
+  .lesson-shell {
+    height: auto !important;
+    min-height: calc(100dvh - clamp(5.1rem, 7.4dvh, 6rem)) !important;
+    grid-template-columns: minmax(0, 71%) minmax(25rem, 29%) !important;
+    overflow: visible !important;
+  }
+
+  .lesson-stage {
+    height: auto !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: clamp(2.5rem, 4dvh, 3.3rem) clamp(2.8rem, 3.5vw, 4.35rem) clamp(2.2rem, 4dvh, 3.4rem) !important;
+  }
+
+  .lesson-heading {
+    margin-bottom: clamp(1.65rem, 2.8dvh, 2.45rem) !important;
+  }
+
+  .lesson-heading h1 {
+    font-size: clamp(2.1rem, 2.45vw, 2.85rem) !important;
+  }
+
+  .video-card {
+    height: clamp(34rem, 61dvh, 45rem) !important;
+    min-height: 34rem !important;
+    grid-template-rows: minmax(0, 1fr) clamp(4.9rem, 7.6dvh, 6.15rem) !important;
+  }
+
+  .watch-policy {
+    height: clamp(3.7rem, 5.4dvh, 4.35rem) !important;
+    margin-top: clamp(1.55rem, 2.5dvh, 2.05rem) !important;
+  }
+
+  .lesson-lower {
+    height: clamp(3.4rem, 5.3dvh, 4.2rem) !important;
+    margin-top: clamp(2rem, 3.8dvh, 3.2rem) !important;
+  }
+
+  .lesson-tabs {
+    min-height: 100% !important;
+    gap: clamp(1.65rem, 2.7vw, 3rem) !important;
+  }
+
+  .mark-complete {
+    height: clamp(2.85rem, 4.3dvh, 3.35rem) !important;
+  }
+
+  .lesson-playlist {
+    position: sticky !important;
+    top: clamp(5.1rem, 7.4dvh, 6rem) !important;
+    height: calc(100dvh - clamp(5.1rem, 7.4dvh, 6rem)) !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow: auto !important;
+    padding: clamp(2.35rem, 3.5dvh, 3rem) clamp(1.8rem, 2.55vw, 3rem) !important;
+  }
+
+  .playlist-list {
+    flex: none !important;
+    display: grid !important;
+    grid-template-rows: none !important;
+    gap: clamp(1rem, 2dvh, 1.7rem) !important;
+    padding-top: clamp(1.25rem, 2.25dvh, 1.9rem) !important;
+  }
+
+  .playlist-row {
+    height: clamp(4.75rem, 8.2dvh, 6.1rem) !important;
+    min-height: 4.75rem !important;
+  }
+
+  .saved-card {
+    position: relative !important;
+    z-index: 0 !important;
+    height: clamp(5.6rem, 9dvh, 7rem) !important;
+    flex-basis: auto !important;
+    margin-top: clamp(1.35rem, 2.4dvh, 2rem) !important;
+  }
+}
+
