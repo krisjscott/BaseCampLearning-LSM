@@ -155,8 +155,19 @@ export default function MyLearning() {
           </section>
 
           <aside className="weekly-goal-card">
-            <h2>Weekly goal</h2>
-            <p>3 of 5 learning goals completed.</p>
+            <div className="side-card-kicker">Weekly goal</div>
+            <h2>3 of 5 complete</h2>
+            <p>Two goals left to keep your Builder streak alive.</p>
+            <div className="side-card-meter" aria-label="3 of 5 learning goals completed">
+              <span style={{ width: "60%" }} />
+            </div>
+            <div className="weekly-goal-list" aria-label="Weekly goal checklist">
+              <span className="done">Course lesson</span>
+              <span className="done">Checkpoint prep</span>
+              <span className="done">Practice notes</span>
+              <span>Quiz review</span>
+              <span>Certificate task</span>
+            </div>
             <button type="button">View progress -&gt;</button>
           </aside>
         </div>

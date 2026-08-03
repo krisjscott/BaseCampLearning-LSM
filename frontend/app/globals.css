@@ -17822,6 +17822,142 @@ select:focus-visible,
   margin-top: auto !important;
 }
 
+/* Shared side cards: make compact support cards feel useful, not blank. */
+.weekly-goal-card,
+.recommended-path-card,
+.public-profile-card {
+  display: grid !important;
+  align-content: start !important;
+  gap: clamp(0.85rem, 1.2vh, 1.05rem) !important;
+  min-height: clamp(16rem, 29vh, 20rem) !important;
+}
+
+.side-card-kicker {
+  color: #ff5522;
+  font-size: clamp(0.68rem, 0.68vw, 0.78rem);
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.weekly-goal-card h2,
+.recommended-path-card h2,
+.public-profile-card h2 {
+  margin: 0 !important;
+  font-size: clamp(1.45rem, 1.55vw, 1.85rem) !important;
+  line-height: 1.05 !important;
+}
+
+.weekly-goal-card > p,
+.recommended-path-card > p,
+.public-profile-card > p {
+  margin: 0 !important;
+  line-height: 1.35 !important;
+}
+
+.side-card-meter {
+  height: 0.48rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(17, 19, 21, 0.1);
+}
+
+.side-card-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ff5522;
+}
+
+.weekly-goal-list,
+.path-card-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.weekly-goal-list span,
+.path-card-stack span {
+  padding: 0.43rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(239, 240, 237, 0.82);
+  color: #7f8991;
+  font-size: clamp(0.72rem, 0.72vw, 0.82rem);
+  font-weight: 800;
+}
+
+.weekly-goal-list .done,
+.path-card-stack span:first-child {
+  background: rgba(255, 85, 34, 0.12);
+  color: #ff5522;
+}
+
+.path-card-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.path-card-summary section {
+  padding: clamp(0.75rem, 1vh, 0.9rem);
+  border-radius: 0.95rem;
+  background: rgba(239, 240, 237, 0.78);
+}
+
+.path-card-summary strong {
+  display: block;
+  color: #111315;
+  font-size: clamp(1.35rem, 1.45vw, 1.7rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.path-card-summary span {
+  display: block;
+  margin-top: 0.28rem;
+  color: #7f8991;
+  font-size: clamp(0.74rem, 0.74vw, 0.84rem);
+  font-weight: 750;
+}
+
+.profile-visibility-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.profile-visibility-list > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: clamp(0.72rem, 0.95vh, 0.86rem);
+  border-radius: 0.95rem;
+  background: rgba(239, 240, 237, 0.78);
+}
+
+.profile-visibility-list strong {
+  min-width: 0;
+  color: #111315;
+  font-size: clamp(0.82rem, 0.82vw, 0.94rem);
+  font-weight: 850;
+  line-height: 1.1;
+}
+
+.profile-visibility-list small {
+  color: #ff5522;
+  font-size: clamp(0.72rem, 0.72vw, 0.82rem);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.weekly-goal-card button,
+.recommended-path-card button,
+.public-profile-card button {
+  justify-self: start;
+  margin-top: auto !important;
+}
+
 /* Achievements level ladder: staged steps toward the next level. */
 .level-ladder-card {
   overflow: hidden !important;

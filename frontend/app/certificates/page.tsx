@@ -171,8 +171,23 @@ export default function CertificatesWallet() {
           </section>
 
           <aside className="public-profile-card">
-            <h2>Public profile</h2>
-            <p>Show selected credentials publicly.</p>
+            <div className="side-card-kicker">Public profile</div>
+            <h2>2 credentials visible</h2>
+            <p>Share a focused BaseCamp profile with verified progress.</p>
+            <div className="profile-visibility-list" aria-label="Public profile visibility">
+              <span>
+                <strong>Google Project Management</strong>
+                <small>Visible</small>
+              </span>
+              <span>
+                <strong>Content Strategy</strong>
+                <small>Visible</small>
+              </span>
+              <span>
+                <strong>Profile views</strong>
+                <small>18 this month</small>
+              </span>
+            </div>
             <button type="button">Manage visibility -&gt;</button>
           </aside>
         </div>

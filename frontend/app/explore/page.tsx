@@ -160,8 +160,24 @@ export default function ExploreCourses() {
           </section>
 
           <aside className="recommended-path-card">
-            <h2>Recommended path</h2>
-            <p>Project Management - 4-course pathway.</p>
+            <div className="side-card-kicker">Recommended path</div>
+            <h2>Project Management</h2>
+            <p>Four-course pathway matched to your onboarding goals.</p>
+            <div className="path-card-summary" aria-label="Recommended path summary">
+              <section>
+                <strong>4</strong>
+                <span>courses</span>
+              </section>
+              <section>
+                <strong>24h</strong>
+                <span>guided work</span>
+              </section>
+            </div>
+            <div className="path-card-stack" aria-label="Path sequence">
+              <span>Foundations</span>
+              <span>Planning</span>
+              <span>Delivery</span>
+            </div>
             <button type="button">Open path -&gt;</button>
           </aside>
         </div>
