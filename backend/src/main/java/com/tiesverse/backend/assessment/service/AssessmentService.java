@@ -6,6 +6,7 @@ import com.tiesverse.backend.assessment.dto.request.SubmitAssessmentRequest;
 import com.tiesverse.backend.assessment.dto.response.AssessmentResponse;
 import com.tiesverse.backend.assessment.dto.response.AssessmentResultResponse;
 import com.tiesverse.backend.assessment.dto.response.QuestionResponse;
+import com.tiesverse.backend.auth.entity.Account;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ public interface AssessmentService {
 
     AssessmentResultResponse submitAssessment(UUID userId, SubmitAssessmentRequest request);
 
-    AssessmentResultResponse getResult(UUID resultId);
+    AssessmentResultResponse getResult(UUID resultId, Account requester);
 
     List<AssessmentResultResponse> getResultHistory(UUID userId, UUID assessmentId);
 }

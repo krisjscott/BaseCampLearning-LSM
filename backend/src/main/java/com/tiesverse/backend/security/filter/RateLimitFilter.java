@@ -48,6 +48,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private boolean isRateLimited(String clientIp) {
         long now = System.currentTimeMillis();
+        cleanupExpiredWindows(now);
         RequestWindow window = requestCounts.compute(clientIp, (key, current) -> {
             if (current == null || now - current.startedAt >= WINDOW_MILLIS) {
                 return new RequestWindow(now, 1);
@@ -56,6 +57,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return current;
         });
         return window.count > MAX_REQUESTS_PER_MINUTE;
+    }
+
+    private void cleanupExpiredWindows(long now) {
+        requestCounts.entrySet().removeIf(entry -> now - entry.getValue().startedAt >= WINDOW_MILLIS);
     }
 
     private static class RequestWindow {

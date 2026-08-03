@@ -341,23 +341,21 @@ export async function register(email: string, password: string, fullName: string
 }
 
 export async function logout(): Promise<void> {
-  const email = typeof window !== "undefined"
-    ? localStorage.getItem(AUTH_STORAGE_KEYS.email)
-    : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_STORAGE_KEYS.accessToken) : null;
 
-  clearSessionCookie();
-  clearAuthSession();
-
-  if (email) {
+  if (token) {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout?email=${encodeURIComponent(email)}`, {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       // best-effort backend logout
     }
   }
 
+  clearSessionCookie();
+  clearAuthSession();
   redirectToLogin();
 }
 

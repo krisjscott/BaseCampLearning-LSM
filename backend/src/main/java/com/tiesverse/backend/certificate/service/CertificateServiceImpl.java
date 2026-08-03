@@ -4,17 +4,23 @@ import com.tiesverse.backend.certificate.dto.response.CertificateResponse;
 import com.tiesverse.backend.certificate.entity.Certificate;
 import com.tiesverse.backend.certificate.mapper.CertificateMapper;
 import com.tiesverse.backend.certificate.repository.CertificateRepository;
+import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.common.enums.Role;
+import com.tiesverse.backend.common.exception.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
+
+    private static final Set<Role> ADMIN_ROLES = Set.of(Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
 
     private final CertificateRepository certificateRepository;
     private final CertificateMapper certificateMapper;
@@ -55,9 +61,14 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public String downloadCertificate(UUID certificateId) {
+    public String downloadCertificate(UUID certificateId, Account requester) {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new RuntimeException("Certificate not found"));
+        boolean canRead = requester != null
+                && (certificate.getUserId().equals(requester.getUserId()) || ADMIN_ROLES.contains(requester.getRole()));
+        if (!canRead) {
+            throw new ForbiddenException("You can only access your own certificates");
+        }
         return certificate.getFileUrl();
     }
 }

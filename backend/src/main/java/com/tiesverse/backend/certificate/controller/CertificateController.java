@@ -3,7 +3,7 @@ package com.tiesverse.backend.certificate.controller;
 import com.tiesverse.backend.certificate.dto.response.CertificateResponse;
 import com.tiesverse.backend.certificate.service.CertificateService;
 import com.tiesverse.backend.common.response.ApiResponse;
-import com.tiesverse.backend.auth.repository.AccountRepository;
+import com.tiesverse.backend.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,17 +21,17 @@ import java.util.UUID;
 public class CertificateController {
 
     private final CertificateService certificateService;
-    private final AccountRepository accountRepository;
+    private final AuthContext authContext;
 
     @GetMapping("/my-certificates")
     public ResponseEntity<ApiResponse<List<CertificateResponse>>> getMyCertificates(Principal principal) {
-        List<CertificateResponse> certificates = certificateService.getUserCertificates(currentUserId(principal));
+        List<CertificateResponse> certificates = certificateService.getUserCertificates(authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(certificates));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CertificateResponse>> getCertificate(@PathVariable UUID id) {
-        String fileUrl = certificateService.downloadCertificate(id);
+    public ResponseEntity<ApiResponse<CertificateResponse>> getCertificate(Principal principal, @PathVariable UUID id) {
+        String fileUrl = certificateService.downloadCertificate(id, authContext.currentAccount(principal));
         CertificateResponse response = CertificateResponse.builder().fileUrl(fileUrl).build();
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -43,14 +43,8 @@ public class CertificateController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<ApiResponse<String>> downloadCertificate(@PathVariable UUID id) {
-        String fileUrl = certificateService.downloadCertificate(id);
+    public ResponseEntity<ApiResponse<String>> downloadCertificate(Principal principal, @PathVariable UUID id) {
+        String fileUrl = certificateService.downloadCertificate(id, authContext.currentAccount(principal));
         return ResponseEntity.ok(ApiResponse.success(fileUrl));
-    }
-
-    private UUID currentUserId(Principal principal) {
-        return accountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Account not found"))
-                .getUserId();
     }
 }

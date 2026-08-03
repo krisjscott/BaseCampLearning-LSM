@@ -112,6 +112,11 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         Account account = accountRepository.findByRefreshToken(request.getRefreshToken())
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+        if (!jwtProvider.isTokenValid(request.getRefreshToken(), account.getEmail())) {
+            account.setRefreshToken(null);
+            accountRepository.save(account);
+            throw new UnauthorizedException("Invalid refresh token");
+        }
 
         String accessToken = jwtProvider.generateToken(
                 account.getEmail(),
@@ -141,8 +146,7 @@ public class AuthServiceImpl implements AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         turnstileService.verify(request.getTurnstileToken());
 
-        accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+        accountRepository.findByEmail(request.getEmail());
     }
 
     @Override

@@ -1,9 +1,9 @@
 package com.tiesverse.backend.notification.controller;
 
 import com.tiesverse.backend.common.response.ApiResponse;
-import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.notification.dto.response.NotificationResponse;
 import com.tiesverse.backend.notification.service.NotificationService;
+import com.tiesverse.backend.security.AuthContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,41 +23,35 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationService notificationService;
-    private final AccountRepository accountRepository;
+    private final AuthContext authContext;
 
     @GetMapping("/my-notifications")
     public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications(Principal principal) {
-        List<NotificationResponse> notifications = notificationService.getUserNotifications(currentUserId(principal));
+        List<NotificationResponse> notifications = notificationService.getUserNotifications(authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(notifications));
     }
 
     @GetMapping("/unread-count")
     public ResponseEntity<ApiResponse<Long>> getUnreadCount(Principal principal) {
-        long count = notificationService.getUnreadCount(currentUserId(principal));
+        long count = notificationService.getUnreadCount(authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
     @PutMapping("/{id}/read")
-    public ResponseEntity<ApiResponse<NotificationResponse>> markAsRead(@PathVariable UUID id) {
-        NotificationResponse response = notificationService.markAsRead(id);
+    public ResponseEntity<ApiResponse<NotificationResponse>> markAsRead(Principal principal, @PathVariable UUID id) {
+        NotificationResponse response = notificationService.markAsRead(id, authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PutMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(Principal principal) {
-        notificationService.markAllAsRead(currentUserId(principal));
+        notificationService.markAllAsRead(authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable UUID id) {
-        notificationService.deleteNotification(id);
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(Principal principal, @PathVariable UUID id) {
+        notificationService.deleteNotification(id, authContext.currentUserId(principal));
         return ResponseEntity.ok(ApiResponse.success("Notification deleted", null));
-    }
-
-    private UUID currentUserId(Principal principal) {
-        return accountRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new RuntimeException("Account not found"))
-                .getUserId();
     }
 }

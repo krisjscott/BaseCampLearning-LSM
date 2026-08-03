@@ -1,6 +1,7 @@
 package com.tiesverse.backend.certificate.service;
 
 import com.tiesverse.backend.certificate.dto.response.CertificateResponse;
+import com.tiesverse.backend.auth.entity.Account;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,5 +14,5 @@ public interface CertificateService {
 
     CertificateResponse getCertificateByNumber(String number);
 
-    String downloadCertificate(UUID certificateId);
+    String downloadCertificate(UUID certificateId, Account requester);
 }

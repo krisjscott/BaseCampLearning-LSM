@@ -8,6 +8,7 @@ import com.tiesverse.backend.enrollment.dto.request.EnrollRequest;
 import com.tiesverse.backend.enrollment.dto.response.EnrollmentResponse;
 import com.tiesverse.backend.enrollment.dto.response.LearningPathResponse;
 import com.tiesverse.backend.enrollment.service.EnrollmentService;
+import com.tiesverse.backend.security.AuthContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,9 +30,11 @@ import java.util.UUID;
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
+    private final AuthContext authContext;
 
     @PostMapping
-    public ApiResponse<EnrollmentResponse> enroll(@Valid @RequestBody EnrollRequest request) {
+    public ApiResponse<EnrollmentResponse> enroll(Principal principal, @Valid @RequestBody EnrollRequest request) {
+        request.setUserId(authContext.currentUserId(principal));
         return ApiResponse.success("Enrolled successfully", enrollmentService.enroll(request));
     }
 
@@ -40,7 +44,8 @@ public class EnrollmentController {
     }
 
     @GetMapping("/user/{userId}")
-    public ApiResponse<List<EnrollmentResponse>> getEnrollmentsByUser(@PathVariable UUID userId) {
+    public ApiResponse<List<EnrollmentResponse>> getEnrollmentsByUser(Principal principal, @PathVariable UUID userId) {
+        authContext.requireSelfOrAdmin(principal, userId);
         return ApiResponse.success(enrollmentService.getEnrollmentsByUser(userId));
     }
 

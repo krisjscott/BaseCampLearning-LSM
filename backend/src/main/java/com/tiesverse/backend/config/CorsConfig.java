@@ -17,14 +17,21 @@ public class CorsConfig {
     @Value("${app.cors.allowed-origins:}")
     private String configuredAllowedOrigins;
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        List<String> allowedOrigins = new ArrayList<>(List.of(
-                "http://localhost:*",
-                "http://127.0.0.1:*",
-                "http://[::1]:*"
-        ));
+        List<String> allowedOrigins = new ArrayList<>();
+
+        if (allowsLocalDevelopmentOrigins()) {
+            allowedOrigins.addAll(List.of(
+                    "http://localhost:*",
+                    "http://127.0.0.1:*",
+                    "http://[::1]:*"
+            ));
+        }
 
         if (configuredAllowedOrigins != null && !configuredAllowedOrigins.isBlank()) {
             allowedOrigins.addAll(Arrays.stream(configuredAllowedOrigins.split(","))
@@ -42,5 +49,10 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    private boolean allowsLocalDevelopmentOrigins() {
+        String profiles = activeProfiles == null ? "" : activeProfiles.toLowerCase();
+        return profiles.contains("local") || profiles.contains("dev");
     }
 }
