@@ -11459,6 +11459,12 @@ body:has(.auth-page) {
   flex-direction: column !important;
   justify-content: flex-start !important;
   padding: clamp(3rem, 10vh, 5.25rem) clamp(1.25rem, 4vw, 3.25rem) clamp(1.25rem, 5vh, 3.5rem) !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+}
+
+.form-panel::-webkit-scrollbar {
+  display: none !important;
 }
 
 .form-panel > * {
@@ -11497,6 +11503,21 @@ body:has(.auth-page) {
   block-size: clamp(2.75rem, 6vh, 3.375rem) !important;
   margin-bottom: clamp(0.65rem, 1.6vh, 1rem) !important;
   padding-inline: clamp(1rem, 2vw, 1.5rem) !important;
+}
+
+.turnstile-slot {
+  align-items: center !important;
+  display: flex !important;
+  justify-content: center !important;
+  margin: clamp(0.45rem, 1.2vh, 0.75rem) auto clamp(0.65rem, 1.5vh, 0.95rem) !important;
+  min-block-size: 4.25rem !important;
+  overflow: visible !important;
+}
+
+.turnstile-slot:empty {
+  display: none !important;
+  min-block-size: 0 !important;
+  margin: 0 !important;
 }
 
 .primary-action,
