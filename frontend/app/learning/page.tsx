@@ -44,8 +44,37 @@ const actionRows = [
   ["Recommended paths", "Personalized courses based on your goals.", "Browse courses", Compass],
 ] as const;
 
+const levelMilestones = [
+  { name: "Starter", minXp: 0, nextXp: 100 },
+  { name: "Builder", minXp: 100, nextXp: 4000 },
+  { name: "Achiever", minXp: 4000, nextXp: 7500 },
+  { name: "Champion", minXp: 7500, nextXp: null },
+] as const;
+
 function firstName(user?: UserResponse | null) {
   return user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+}
+
+function getLevelProgress(xpPoints: number) {
+  let currentIndex = 0;
+  levelMilestones.forEach((level, index) => {
+    if (xpPoints >= level.minXp) currentIndex = index;
+  });
+  const current = levelMilestones[Math.max(currentIndex, 0)];
+  const next = current.nextXp == null ? null : levelMilestones[currentIndex + 1] || null;
+  const target = current.nextXp ?? current.minXp;
+  const span = Math.max(target - current.minXp, 1);
+  const earnedInLevel = Math.max(xpPoints - current.minXp, 0);
+  const percentage = current.nextXp == null ? 100 : Math.min(Math.round((earnedInLevel / span) * 100), 100);
+  const remaining = current.nextXp == null ? 0 : Math.max(current.nextXp - xpPoints, 0);
+
+  return {
+    current,
+    next,
+    target,
+    percentage,
+    remaining,
+  };
 }
 
 function LearningHome() {
@@ -79,6 +108,7 @@ function LearningHome() {
   const recommendations = dashboard?.recommendedCourses || [];
   const activeCourses = dashboard?.continueLearning?.length || 0;
   const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
+  const levelProgress = getLevelProgress(xpPoints);
   const unreadNotifications = notifications.filter((item) => !item.read).length;
   const progress = Math.round(featured?.completionPercentage ?? 0);
   const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
@@ -252,12 +282,20 @@ function LearningHome() {
               {loading ? <CardSkeleton lines={4} /> : (
                 <>
                   <p>Current level</p>
-                  <h3>Learner</h3>
-                  <span>{activeCourses} active courses</span>
-                  <div>
-                    <span style={{ width: `${Math.min(activeCourses * 20, 100)}%` }} />
+                  <h3>{levelProgress.current.name}</h3>
+                  <span>
+                    {levelProgress.current.nextXp == null
+                      ? `${xpPoints.toLocaleString()} XP`
+                      : `${xpPoints.toLocaleString()} / ${levelProgress.target.toLocaleString()} XP`}
+                  </span>
+                  <div aria-label={`${levelProgress.percentage} percent toward ${levelProgress.next?.name || "top level"}`}>
+                    <span style={{ width: `${levelProgress.percentage}%` }} />
                   </div>
-                  <small>Progress is calculated from completed learning activity.</small>
+                  <small>
+                    {levelProgress.next
+                      ? `Next: ${levelProgress.next.name} - ${levelProgress.remaining.toLocaleString()} XP to go`
+                      : "Top level reached"}
+                  </small>
                 </>
               )}
             </section>
