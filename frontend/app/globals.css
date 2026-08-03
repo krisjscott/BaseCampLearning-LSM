@@ -15321,3 +15321,44 @@ body:has(.auth-page) {
   }
 }
 
+/* Lesson rail final: one page scroll, no clipped internal column. */
+@media (min-width: 1181px) {
+  .lesson-shell {
+    align-items: stretch !important;
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0%,
+        transparent 71%,
+        rgba(255, 255, 255, 0.78) 71%,
+        rgba(255, 255, 255, 0.78) 100%
+      ) !important;
+  }
+
+  .lesson-playlist {
+    position: static !important;
+    top: auto !important;
+    min-height: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+    background: rgba(255, 255, 255, 0.78) !important;
+    padding-bottom: clamp(2.6rem, 4dvh, 3.4rem) !important;
+  }
+
+  .playlist-list {
+    display: grid !important;
+    grid-template-rows: none !important;
+    gap: clamp(1rem, 2dvh, 1.7rem) !important;
+  }
+
+  .playlist-row {
+    height: clamp(4.75rem, 8.2dvh, 6.1rem) !important;
+    min-height: 4.75rem !important;
+  }
+
+  .saved-card {
+    margin-top: clamp(1.35rem, 2.5dvh, 2rem) !important;
+  }
+}
+
