@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-export SPRING_PROFILES_ACTIVE=cloud
+export SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
 
 : "${JWT_SECRET:?JWT_SECRET must be set}"
 : "${DB_URL:?DB_URL must be set}"
@@ -10,7 +10,7 @@ export SPRING_PROFILES_ACTIVE=cloud
 
 echo "Starting backend server..."
 echo "Profile: $SPRING_PROFILES_ACTIVE"
-echo "Database: configured cloud datasource"
+echo "Database: configured production datasource"
 echo "---------------------------------"
 
 java -Djava.net.preferIPv4Stack=true -Djava.net.preferIPv4Addresses=true -jar target/tiesverse-basecamp-learning-0.0.1-SNAPSHOT.jar

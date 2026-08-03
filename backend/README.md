@@ -1,78 +1,33 @@
 # BaseCamp Spring Boot Backend
 
-Spring Boot API for the BaseCamp learning demo.
+Spring Boot API for the BaseCamp learning platform.
 
-## Local Profile
+## Runtime Profile
 
-The `local` profile is the recommended demo mode. It uses file-based H2 and does not require PostgreSQL, Redis, RabbitMQ, mail, or OAuth credentials.
+The default profile is `prod`. It expects production services through environment variables and uses the configured PostgreSQL-compatible database.
 
-Optional local env:
+Create an ignored `.env` file:
 
 ```powershell
 copy .env.example .env
 ```
 
-The backend imports `.env` automatically when present. Store real cloud database, JWT, OAuth, mail, Redis, RabbitMQ, and Turnstile values there; `.env` is ignored by Git.
-
-```powershell
-cd F:\basecamp\backend\backend
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-21.0.8.9-hotspot"
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-$env:SPRING_PROFILES_ACTIVE="local"
-.\mvnw.cmd spring-boot:run
-```
-
-Service URL:
+Required production values:
 
 ```text
-http://localhost:8081
+SPRING_PROFILES_ACTIVE=prod
+SERVER_PORT=8081
+JWT_SECRET=<strong-base64-secret>
+DB_URL=<production-jdbc-url>
+DB_USERNAME=<production-db-user>
+DB_PASSWORD=<production-db-password>
+REDIS_HOST=<redis-host>
+RABBITMQ_HOST=<rabbitmq-host>
+RABBITMQ_USERNAME=<rabbitmq-user>
+RABBITMQ_PASSWORD=<rabbitmq-password>
+TURNSTILE_ENABLED=true
+TURNSTILE_SECRET=<cloudflare-turnstile-secret>
 ```
-
-Health check:
-
-```text
-http://localhost:8081/actuator/health
-```
-
-H2 console:
-
-```text
-http://localhost:8081/h2-console
-```
-
-H2 console values:
-
-```text
-JDBC URL: jdbc:h2:file:./data/basecamp-local;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
-User: sa
-Password: leave blank
-```
-
-Generated DB file:
-
-```text
-F:\basecamp\backend\backend\data\basecamp-local.mv.db
-```
-
-## Demo Account
-
-```text
-Email: demo@basecamp.local
-Password: password
-```
-
-## What The Local DB Seeds
-
-- Demo user account and profile.
-- User settings.
-- Demo organization.
-- Course catalogue.
-- Enrollments and progress.
-- Certificate record.
-- Notifications.
-- Recent activity.
-
-Fresh registrations are also persisted. The registration flow creates account, profile, settings, and starter demo experience rows so the frontend can immediately show a complete learning journey after onboarding.
 
 ## Build
 
@@ -82,12 +37,14 @@ $env:Path="$env:JAVA_HOME\bin;$env:Path"
 .\mvnw.cmd -DskipTests package
 ```
 
-## Reset Local DB
-
-Stop the backend, then delete:
+## Start
 
 ```powershell
-Remove-Item F:\basecamp\backend\backend\data\basecamp-local* -Force
+java -jar target\tiesverse-basecamp-learning-0.0.1-SNAPSHOT.jar
 ```
 
-Start the local profile again and Flyway will recreate the schema and seed data.
+Health check:
+
+```text
+http://localhost:8081/actuator/health
+```

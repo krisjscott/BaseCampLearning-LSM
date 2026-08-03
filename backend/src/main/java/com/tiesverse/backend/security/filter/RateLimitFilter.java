@@ -43,8 +43,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         return "OPTIONS".equalsIgnoreCase(request.getMethod())
                 || path.startsWith("/actuator")
                 || path.startsWith("/api-docs")
-                || path.startsWith("/swagger-ui")
-                || path.startsWith("/h2-console");
+                || path.startsWith("/swagger-ui");
     }
 
     private boolean isRateLimited(String clientIp) {

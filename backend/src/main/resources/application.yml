@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:local}
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
   jpa:
     properties:

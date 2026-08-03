@@ -121,7 +121,7 @@ function ProfilePreferencesDesktop() {
       ]);
       if (updatedUser) setUser(updatedUser);
       if (updatedSettings) setSettingsState(updatedSettings);
-      setStatus("Saved to local DB");
+      setStatus("Saved to backend");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not save profile");
     } finally {
@@ -206,8 +206,8 @@ function ProfilePreferencesDesktop() {
           <section className="certificate-share-list" aria-label="Profile settings">
             <article className="profile-form-card">
               <div>
-                <h3>Local DB profile</h3>
-                <p>These fields load from and save to the backend H2 database.</p>
+                <h3>Profile details</h3>
+                <p>These fields load from and save to the production backend.</p>
               </div>
               <label>
                 Full name
