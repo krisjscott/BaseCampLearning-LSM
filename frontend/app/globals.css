@@ -13692,6 +13692,8 @@ body:has(.auth-page) {
 
   .learner-profile {
     flex-shrink: 0 !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
   }
 
   .learning-header {
@@ -13765,7 +13767,7 @@ body:has(.auth-page) {
 @media (min-width: 1181px) and (max-height: 820px) {
   .learning-sidebar {
     padding-top: clamp(1.75rem, 3.2vh, 2.45rem) !important;
-    padding-bottom: clamp(1.1rem, 2vh, 1.45rem) !important;
+    padding-bottom: 0 !important;
   }
 
   .learning-sidebar-logo {
@@ -13790,7 +13792,7 @@ body:has(.auth-page) {
   }
 
   .learner-profile {
-    margin: clamp(0.55rem, 1.4vh, 0.9rem) calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) 0 !important;
+    margin: auto calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) 0 !important;
     padding-top: clamp(0.55rem, 1.35vh, 0.85rem) !important;
     padding-bottom: clamp(0.55rem, 1.35vh, 0.85rem) !important;
   }
