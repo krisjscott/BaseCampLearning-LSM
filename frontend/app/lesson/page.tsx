@@ -1,4 +1,7 @@
-﻿import {
+﻿"use client";
+
+import { useEffect, useState } from "react";
+import {
   Captions,
   Check,
   CheckCircle2,
@@ -12,6 +15,7 @@
   Volume2,
   X,
 } from "lucide-react";
+import { getLesson, LessonResponse } from "../lib/backendApi";
 
 const lessons = [
   ["Project goals and stakeholders", "8 min video", "done"],
@@ -24,6 +28,23 @@ const lessons = [
 ] as const;
 
 export default function LessonPlayer() {
+  const [lesson, setLesson] = useState<LessonResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const lessonId = new URLSearchParams(window.location.search).get("lessonId");
+    if (!lessonId) {
+      setLoading(false);
+      return;
+    }
+    getLesson(lessonId)
+      .then(setLesson)
+      .catch(() => setLesson(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const videoUrl = lesson?.contentUrl || null;
+
   return (
     <main className="lesson-player">
       <header className="lesson-topbar">
@@ -48,17 +69,23 @@ export default function LessonPlayer() {
         <section className="lesson-stage">
           <div className="lesson-heading">
             <p>Lesson 4 of 7</p>
-            <h1>Define scope and deliverables</h1>
-            <span>12 min video - Required</span>
+            <h1>{lesson?.title ?? "Define scope and deliverables"}</h1>
+            <span>
+              {lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "12 min video - Required"}
+            </span>
           </div>
 
           <section className="video-card" aria-label="Video lesson player">
-            <button type="button" className="video-surface">
-              <span className="play-badge">
-                <Play size={24} fill="none" />
-              </span>
-              <strong>Resume from 07:18</strong>
-            </button>
+            {videoUrl ? (
+              <video className="lesson-video" controls preload="metadata" src={videoUrl} />
+            ) : (
+              <button type="button" className="video-surface">
+                <span className="play-badge">
+                  <Play size={24} fill="none" />
+                </span>
+                <strong>{loading ? "Loading lesson…" : "Resume from 07:18"}</strong>
+              </button>
+            )}
             <div className="video-controls">
               <div className="video-progress">
                 <span />
