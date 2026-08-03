@@ -16346,3 +16346,279 @@ body:has(.auth-page) {
   border-color: rgba(225, 227, 225, 0.96) !important;
 }
 
+/* Quiz review and submit final pass. */
+.quiz-review-page {
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 92% 30%, rgba(255, 85, 34, 0.08), transparent 32rem),
+    linear-gradient(99deg, #f8fafc 0%, #f5f7f6 47%, #fff5ed 100%) !important;
+}
+
+.quiz-review-page .lesson-topbar {
+  height: clamp(4.85rem, 7.35dvh, 6rem) !important;
+  flex-basis: clamp(4.85rem, 7.35dvh, 6rem) !important;
+  padding-inline: clamp(3rem, 4.8vw, 5.15rem) !important;
+}
+
+.quiz-review-page .lesson-brand-block img {
+  width: clamp(5.5rem, 6.4vw, 6.8rem) !important;
+}
+
+.quiz-review-page .lesson-brand-block span {
+  height: 2.55rem !important;
+  opacity: 0.56 !important;
+}
+
+.quiz-review-page .lesson-brand-block strong,
+.quiz-review-page .lesson-top-actions p,
+.quiz-review-page .lesson-top-actions span {
+  font-size: clamp(0.92rem, 1vw, 1.05rem) !important;
+}
+
+.quiz-review-page .lesson-brand-block p {
+  font-size: clamp(0.9rem, 1vw, 1.05rem) !important;
+}
+
+.quiz-review-page .lesson-top-actions button {
+  height: clamp(2.35rem, 3.5dvh, 2.9rem) !important;
+  padding-inline: clamp(1rem, 1.5vw, 1.35rem) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 14px 28px rgba(25, 28, 30, 0.08) !important;
+}
+
+.quiz-review-content {
+  min-height: calc(100dvh - clamp(4.85rem, 7.35dvh, 6rem)) !important;
+  width: min(100%, 100rem) !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-rows: auto auto auto !important;
+  justify-items: center !important;
+  align-content: start !important;
+  gap: clamp(1.65rem, 3.1dvh, 2.25rem) !important;
+  padding: clamp(4rem, 7.5dvh, 5.4rem) clamp(1.75rem, 5vw, 4.25rem) clamp(2.3rem, 4dvh, 3.4rem) !important;
+  overflow: visible !important;
+  animation: quizReviewIn 360ms ease both !important;
+}
+
+.quiz-review-heading {
+  display: grid !important;
+  justify-items: center !important;
+  gap: clamp(1.25rem, 2.3dvh, 1.8rem) !important;
+  text-align: center !important;
+}
+
+.quiz-review-heading h1 {
+  margin: 0 !important;
+  color: #0b0e0f !important;
+  font-size: clamp(3.25rem, 3.55vw, 4.4rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.04 !important;
+}
+
+.quiz-review-heading p {
+  margin: 0 !important;
+  color: #7f8991 !important;
+  font-size: clamp(1.05rem, 1.15vw, 1.35rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+}
+
+.review-card {
+  width: min(100%, 62.5rem) !important;
+  height: clamp(31rem, 56dvh, 40rem) !important;
+  display: grid !important;
+  grid-template-rows: auto auto 1fr !important;
+  gap: clamp(1.1rem, 1.9dvh, 1.4rem) !important;
+  padding: clamp(1.65rem, 2.6dvh, 2rem) clamp(1.75rem, 2.6vw, 2.15rem) !important;
+  border: 1px solid rgba(225, 227, 225, 0.95) !important;
+  border-radius: clamp(1.25rem, 1.55vw, 1.9rem) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 26px 70px rgba(28, 32, 36, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  overflow: hidden !important;
+}
+
+.review-card h2 {
+  margin: 0 !important;
+  color: #111416 !important;
+  font-size: clamp(1.28rem, 1.4vw, 1.6rem) !important;
+  font-weight: 850 !important;
+  line-height: 1.2 !important;
+}
+
+.review-group-list {
+  display: grid !important;
+  gap: clamp(0.9rem, 1.65dvh, 1.15rem) !important;
+}
+
+.review-group-row,
+.submit-note {
+  min-height: clamp(4.9rem, 7.8dvh, 6.25rem) !important;
+  border-radius: clamp(0.78rem, 0.95vw, 1.1rem) !important;
+  background: rgba(241, 241, 238, 0.82) !important;
+}
+
+.review-group-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: clamp(1.2rem, 2vw, 2rem) !important;
+  padding: 0 clamp(1.3rem, 1.9vw, 1.7rem) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease !important;
+}
+
+.review-group-row:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 16px 34px rgba(25, 29, 34, 0.05) !important;
+}
+
+.review-group-row strong {
+  color: #171b1f !important;
+  font-size: clamp(0.95rem, 1vw, 1.08rem) !important;
+  font-weight: 800 !important;
+}
+
+.review-group-row > svg {
+  color: #59636b !important;
+  stroke-width: 2.4 !important;
+}
+
+.review-group-row button {
+  min-height: 2.3rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  color: #35bf78 !important;
+  font-size: clamp(0.95rem, 1vw, 1.08rem) !important;
+  font-weight: 850 !important;
+}
+
+.review-group-row button svg {
+  width: 1rem !important;
+  height: 1rem !important;
+  stroke-width: 2.6 !important;
+}
+
+.submit-note {
+  align-self: start !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 clamp(1.3rem, 1.9vw, 1.7rem) !important;
+}
+
+.submit-note p {
+  margin: 0 !important;
+  color: #7f8991 !important;
+  font-size: clamp(1rem, 1.04vw, 1.16rem) !important;
+  font-weight: 500 !important;
+}
+
+.review-actions {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: clamp(0.85rem, 1.3vw, 1.15rem) !important;
+}
+
+.review-back,
+.review-submit {
+  min-height: clamp(3.15rem, 4.6dvh, 3.55rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  border-radius: 0.85rem !important;
+  padding-inline: clamp(1.25rem, 1.7vw, 1.75rem) !important;
+  font-size: clamp(0.92rem, 1vw, 1.08rem) !important;
+  font-weight: 850 !important;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease !important;
+}
+
+.review-back {
+  border: 1.4px solid #dfe3e5 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #161a1d !important;
+  box-shadow: 0 12px 26px rgba(22, 28, 34, 0.06) !important;
+}
+
+.review-submit {
+  min-width: clamp(12rem, 13vw, 14.25rem) !important;
+  border: 0 !important;
+  background: #ff5522 !important;
+  color: #ffffff !important;
+  box-shadow: 0 18px 34px rgba(255, 85, 34, 0.18) !important;
+}
+
+.review-back:hover,
+.review-submit:hover {
+  transform: translateY(-2px) !important;
+}
+
+@keyframes quizReviewIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.55rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1181px) and (max-height: 800px) {
+  .quiz-review-page {
+    overflow: auto !important;
+  }
+
+  .quiz-review-content {
+    min-height: calc(100dvh - 4.85rem) !important;
+    gap: clamp(1.25rem, 2.6dvh, 1.8rem) !important;
+    padding-top: clamp(3.1rem, 6dvh, 4rem) !important;
+  }
+
+  .quiz-review-heading h1 {
+    font-size: clamp(2.55rem, 3vw, 3.45rem) !important;
+  }
+
+  .review-card {
+    height: auto !important;
+    min-height: 32rem !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .quiz-review-content {
+    padding: 2.4rem 1rem 2rem !important;
+  }
+
+  .quiz-review-heading h1 {
+    font-size: clamp(2.25rem, 11vw, 3rem) !important;
+  }
+
+  .review-card {
+    height: auto !important;
+  }
+
+  .review-group-row {
+    grid-template-columns: 1fr !important;
+    justify-items: start !important;
+    padding-block: 1rem !important;
+  }
+
+  .review-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+  }
+
+  .review-back,
+  .review-submit {
+    width: 100% !important;
+  }
+}
+

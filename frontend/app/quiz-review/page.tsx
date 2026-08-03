@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, ClipboardCheck, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, X } from "lucide-react";
 
 const reviewGroups = ["Questions 1-4", "Questions 5-8", "Questions 9-12"];
 
@@ -35,8 +35,12 @@ export default function QuizReviewSubmit() {
             {reviewGroups.map((label) => (
               <article className="review-group-row" key={label}>
                 <strong>{label}</strong>
-                <Check size={16} />
-                <button type="button">Answered Edit -&gt;</button>
+                <CheckCircle2 size={18} />
+                <button type="button">
+                  <span>Answered</span>
+                  <span>Edit</span>
+                  <ArrowRight size={16} />
+                </button>
               </article>
             ))}
           </div>
