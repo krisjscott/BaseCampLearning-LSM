@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import DemoNavigator from "./components/DemoNavigator";
+import MobileHamburgerMenu from "./components/MobileHamburgerMenu";
 import "./globals.css";
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <MobileHamburgerMenu />
         {children}
         <DemoNavigator />
       </body>
