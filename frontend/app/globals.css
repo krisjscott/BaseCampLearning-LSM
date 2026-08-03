@@ -11801,6 +11801,7 @@ body:has(.auth-page) {
   border-radius: clamp(1rem, 1.35vw, 1.35rem);
   background: #ffffff;
   box-shadow: 0 16px 36px rgb(18 28 38 / 4%);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .onboarding-page.flow .goal-card:hover {
@@ -11821,10 +11822,21 @@ body:has(.auth-page) {
   place-items: center;
   color: #111111;
   background: #eeeeea;
+  transition: background-color 220ms ease, color 220ms ease;
 }
 
 .onboarding-page.flow .goal-card.selected .goal-icon {
-  background: #ffffff;
+  background: #ff5a1f;
+  color: #ffffff;
+}
+
+.onboarding-page.flow .goal-icon svg {
+  transition: color 220ms ease, transform 220ms ease;
+}
+
+.onboarding-page.flow .goal-card.selected .goal-icon svg {
+  color: #ffffff;
+  transform: scale(1.06);
 }
 
 .onboarding-page.flow .goal-card strong {
