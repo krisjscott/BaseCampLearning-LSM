@@ -14956,3 +14956,231 @@ body:has(.auth-page) {
   }
 }
 
+/* Lesson player fit correction: no clipping on PC-height screens. */
+@media (min-width: 1181px) {
+  .lesson-player {
+    height: 100dvh !important;
+    min-height: 0 !important;
+  }
+
+  .lesson-topbar {
+    height: clamp(4.5rem, 7dvh, 5.9rem) !important;
+    flex-basis: clamp(4.5rem, 7dvh, 5.9rem) !important;
+    padding-inline: clamp(2.5rem, 3.35vw, 4.25rem) !important;
+  }
+
+  .lesson-brand-block img {
+    width: clamp(6.7rem, 7vw, 8.7rem) !important;
+    height: clamp(2.6rem, 4.3dvh, 3.8rem) !important;
+  }
+
+  .lesson-shell {
+    height: calc(100dvh - clamp(4.5rem, 7dvh, 5.9rem)) !important;
+    grid-template-columns: minmax(0, 70.8%) minmax(25rem, 29.2%) !important;
+  }
+
+  .lesson-stage {
+    height: 100% !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+    row-gap: clamp(1.05rem, 1.9dvh, 1.55rem) !important;
+    padding: clamp(1.65rem, 3.25dvh, 2.8rem) clamp(2.6rem, 3.4vw, 4.2rem) clamp(1.55rem, 2.75dvh, 2.25rem) !important;
+  }
+
+  .lesson-heading {
+    gap: clamp(0.35rem, 0.7dvh, 0.65rem) !important;
+  }
+
+  .lesson-heading h1 {
+    font-size: clamp(1.85rem, 2.18vw, 2.62rem) !important;
+  }
+
+  .lesson-heading span,
+  .lesson-playlist header span {
+    font-size: clamp(0.9rem, 1vw, 1.12rem) !important;
+  }
+
+  .video-card {
+    height: 100% !important;
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    grid-template-rows: minmax(0, 1fr) clamp(4.55rem, 7dvh, 5.65rem) !important;
+    border-radius: clamp(1rem, 1.35vw, 1.55rem) !important;
+  }
+
+  .play-badge {
+    width: clamp(3.95rem, 4.8vw, 5.65rem) !important;
+    height: clamp(3.95rem, 4.8vw, 5.65rem) !important;
+  }
+
+  .video-controls {
+    padding: clamp(0.75rem, 1.05dvh, 0.95rem) clamp(1.5rem, 1.8vw, 2rem) !important;
+    gap: clamp(0.55rem, 0.95dvh, 0.95rem) !important;
+  }
+
+  .control-row {
+    gap: clamp(1rem, 2vw, 2.6rem) !important;
+  }
+
+  .control-icons {
+    width: min(52%, 35rem) !important;
+    justify-content: space-between !important;
+    gap: clamp(1rem, 2.2vw, 4rem) !important;
+  }
+
+  .watch-policy {
+    height: clamp(3.35rem, 5.05dvh, 4.15rem) !important;
+    margin-top: 0 !important;
+  }
+
+  .lesson-lower {
+    height: clamp(3rem, 4.8dvh, 3.75rem) !important;
+    margin-top: clamp(0.55rem, 1.4dvh, 1.15rem) !important;
+  }
+
+  .lesson-tabs {
+    min-height: 100% !important;
+    align-items: center !important;
+    gap: clamp(1.25rem, 2.25vw, 2.8rem) !important;
+  }
+
+  .lesson-tabs button {
+    height: 100% !important;
+  }
+
+  .mark-complete {
+    height: clamp(2.65rem, 4.05dvh, 3.15rem) !important;
+  }
+
+  .lesson-playlist {
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: clamp(1.6rem, 3.05dvh, 2.75rem) clamp(1.45rem, 2.35vw, 2.9rem) !important;
+  }
+
+  .lesson-playlist header {
+    flex: 0 0 auto !important;
+  }
+
+  .lesson-playlist header h2 {
+    font-size: clamp(1.35rem, 1.5vw, 1.9rem) !important;
+  }
+
+  .playlist-progress {
+    flex: 0 0 auto !important;
+    margin: clamp(1rem, 1.75dvh, 1.55rem) 0 clamp(0.9rem, 1.65dvh, 1.35rem) !important;
+  }
+
+  .playlist-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: repeat(7, minmax(0, 1fr)) !important;
+    gap: clamp(0.45rem, 1.2dvh, 1.25rem) !important;
+    padding-top: clamp(0.85rem, 1.65dvh, 1.35rem) !important;
+  }
+
+  .playlist-row {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-inline: clamp(0.65rem, 1vw, 1.05rem) !important;
+  }
+
+  .playlist-row > div {
+    width: clamp(2.35rem, 2.8vw, 3.15rem) !important;
+    height: clamp(2.35rem, 2.8vw, 3.15rem) !important;
+  }
+
+  .playlist-row h3 {
+    font-size: clamp(0.78rem, 0.9vw, 0.98rem) !important;
+  }
+
+  .playlist-row p {
+    margin-top: clamp(0.2rem, 0.45dvh, 0.42rem) !important;
+    font-size: clamp(0.78rem, 0.95vw, 1.05rem) !important;
+  }
+
+  .saved-card {
+    flex: 0 0 clamp(4.8rem, 8dvh, 6.6rem) !important;
+    height: auto !important;
+    margin-top: clamp(0.85rem, 1.75dvh, 1.55rem) !important;
+  }
+}
+
+@media (min-width: 1181px) and (max-height: 820px) {
+  .lesson-stage {
+    padding-block: 1.35rem 1rem !important;
+    row-gap: 0.8rem !important;
+  }
+
+  .lesson-heading h1 {
+    font-size: clamp(1.72rem, 2vw, 2.25rem) !important;
+  }
+
+  .lesson-heading span {
+    font-size: 0.95rem !important;
+  }
+
+  .video-card {
+    grid-template-rows: minmax(0, 1fr) 4.35rem !important;
+  }
+
+  .watch-policy {
+    height: 3.25rem !important;
+  }
+
+  .lesson-lower {
+    height: 3rem !important;
+    margin-top: 0.35rem !important;
+  }
+
+  .lesson-playlist {
+    padding-block: 1.35rem !important;
+  }
+
+  .lesson-playlist header h2 {
+    margin-block: 0.45rem !important;
+  }
+
+  .playlist-progress {
+    margin-block: 0.85rem !important;
+  }
+
+  .playlist-list {
+    gap: 0.45rem !important;
+    padding-top: 0.75rem !important;
+  }
+
+  .saved-card {
+    flex-basis: 4.7rem !important;
+    margin-top: 0.8rem !important;
+  }
+}
+
+.lesson-player .lesson-tabs button,
+.lesson-player .lesson-tabs button:hover,
+.lesson-player .lesson-tabs button.active {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.lesson-player .lesson-tabs button {
+  color: #7b848b !important;
+}
+
+.lesson-player .lesson-tabs button.active {
+  color: #111416 !important;
+}
+
+.lesson-player .lesson-tabs button.active::after {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 0.12rem !important;
+  background: #ff5522 !important;
+}
+
