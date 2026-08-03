@@ -13007,3 +13007,726 @@ body:has(.auth-page) {
   }
 }
 
+/* Learning dashboard reference match. */
+.learning-home {
+  min-height: 100dvh !important;
+  display: grid !important;
+  grid-template-columns: clamp(18rem, 17.38vw, 22.25rem) minmax(0, 1fr) !important;
+  overflow: hidden !important;
+  background: linear-gradient(100deg, #f8fafc 0%, #f5f6f4 48%, #fff4ec 100%) !important;
+  color: #111315 !important;
+}
+
+.learning-sidebar {
+  position: sticky !important;
+  top: 0 !important;
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: clamp(3rem, 5.1vh, 4.25rem) clamp(1.15rem, 1.15vw, 1.5rem) clamp(1.65rem, 2.5vh, 2rem) !important;
+  border: 0 !important;
+  border-right: 1px solid rgb(255 255 255 / 72%) !important;
+  background: linear-gradient(108deg, rgb(246 248 249 / 86%) 0%, rgb(241 245 246 / 78%) 100%) !important;
+  box-shadow: inset -1px 0 0 rgb(18 28 38 / 5%) !important;
+}
+
+.learning-sidebar-logo {
+  width: clamp(7.75rem, 7.4vw, 10rem) !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto clamp(3.35rem, 6.8vh, 4.55rem) !important;
+  object-fit: contain !important;
+}
+
+.learning-nav {
+  display: grid !important;
+  gap: clamp(0.9rem, 1.75vh, 1.15rem) !important;
+  margin: 0 !important;
+}
+
+.learning-nav button {
+  width: 100% !important;
+  height: clamp(3.35rem, 5.35vh, 3.75rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(0.85rem, 1vw, 1.05rem) !important;
+  border: 1px solid transparent !important;
+  border-radius: 1rem !important;
+  padding: 0 clamp(1.1rem, 1.35vw, 1.45rem) !important;
+  background: transparent !important;
+  color: #25282b !important;
+  font-size: clamp(1rem, 1vw, 1.12rem) !important;
+  font-weight: 700 !important;
+  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease !important;
+}
+
+.learning-nav button svg {
+  width: clamp(1.25rem, 1.3vw, 1.5rem) !important;
+  height: clamp(1.25rem, 1.3vw, 1.5rem) !important;
+  color: #4d565e !important;
+}
+
+.learning-nav button.active,
+.learning-nav button:hover {
+  border-color: rgb(255 255 255 / 66%) !important;
+  background: rgb(255 255 255 / 60%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 84%), 0 12px 28px rgb(18 28 38 / 5%) !important;
+}
+
+.learning-nav button:hover {
+  transform: translateX(3px);
+}
+
+.recent-trails {
+  margin: clamp(3rem, 6.2vh, 4rem) clamp(0.55rem, 0.9vw, 1rem) 0 !important;
+}
+
+.recent-trails > p {
+  margin: 0 0 clamp(0.8rem, 1.4vh, 1rem) !important;
+  color: #808589 !important;
+  font-size: clamp(0.74rem, 0.72vw, 0.84rem) !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+}
+
+.recent-trails div {
+  min-height: clamp(3rem, 4.9vh, 3.45rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+}
+
+.recent-trails span {
+  color: #232528 !important;
+  font-size: clamp(0.98rem, 0.95vw, 1.08rem) !important;
+  font-weight: 700 !important;
+}
+
+.recent-trails strong {
+  color: #777d82 !important;
+  font-size: clamp(0.86rem, 0.82vw, 0.95rem) !important;
+  font-weight: 800 !important;
+}
+
+.learner-profile {
+  position: static !important;
+  height: auto !important;
+  margin: auto calc(clamp(1.15rem, 1.15vw, 1.5rem) * -1) calc(clamp(1.65rem, 2.5vh, 2rem) * -1) !important;
+  display: grid !important;
+  grid-template-columns: clamp(3.25rem, 3.05vw, 3.55rem) 1fr !important;
+  gap: clamp(0.9rem, 1vw, 1.1rem) !important;
+  align-items: center !important;
+  padding: clamp(2rem, 3.6vh, 2.45rem) clamp(1.75rem, 2vw, 2rem) clamp(1.75rem, 2.8vh, 2rem) !important;
+  border-top: 1px solid rgb(18 28 38 / 8%) !important;
+}
+
+.learner-profile > div {
+  width: clamp(3.25rem, 3.05vw, 3.55rem) !important;
+  height: clamp(3.25rem, 3.05vw, 3.55rem) !important;
+  border-radius: 999px !important;
+  background: #0b0d0e !important;
+  color: #ffffff !important;
+  font-size: clamp(1rem, 1vw, 1.15rem) !important;
+}
+
+.learner-profile section {
+  display: grid !important;
+  gap: 0.2rem !important;
+}
+
+.learner-profile strong {
+  color: #111315 !important;
+  font-size: clamp(1rem, 1vw, 1.08rem) !important;
+  font-weight: 800 !important;
+}
+
+.learner-profile span,
+.learner-profile small {
+  color: #73797e !important;
+  font-size: clamp(0.82rem, 0.78vw, 0.9rem) !important;
+  font-weight: 700 !important;
+}
+
+.learning-main {
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: auto !important;
+  padding: clamp(3rem, 5.2vh, 4.6rem) clamp(2.7rem, 4.9vw, 5rem) clamp(3.25rem, 5vh, 4rem) !important;
+}
+
+.learning-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 28rem) auto auto !important;
+  gap: clamp(1rem, 1.25vw, 1.35rem) !important;
+  align-items: start !important;
+  margin: 0 0 clamp(3.2rem, 6.15vh, 4.35rem) !important;
+}
+
+.learning-header h1 {
+  margin: 0 !important;
+  color: #111315 !important;
+  font-size: clamp(2.45rem, 2.65vw, 3.05rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.08 !important;
+}
+
+.learning-header p {
+  margin: clamp(0.65rem, 1.2vh, 0.9rem) 0 0 !important;
+  color: #777d82 !important;
+  font-size: clamp(1.08rem, 1.15vw, 1.3rem) !important;
+  line-height: 1.35 !important;
+}
+
+.learning-search {
+  width: 100% !important;
+  height: clamp(3.55rem, 5vh, 4rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(0.85rem, 0.9vw, 1rem) !important;
+  padding: 0 clamp(1.2rem, 1.3vw, 1.45rem) !important;
+  border: 1px solid rgb(255 255 255 / 76%) !important;
+  border-radius: 999px !important;
+  background: rgb(255 255 255 / 52%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 86%), 0 14px 34px rgb(18 28 38 / 8%) !important;
+  color: #4f5961 !important;
+}
+
+.learning-search input {
+  min-width: 0 !important;
+  width: 100% !important;
+  color: #111315 !important;
+  font-size: clamp(0.96rem, 0.95vw, 1.08rem) !important;
+  font-weight: 500 !important;
+}
+
+.learning-search input::placeholder {
+  color: #73797e !important;
+}
+
+.header-profile {
+  display: none !important;
+}
+
+.xp-pill,
+.notification-button {
+  height: clamp(3.55rem, 5vh, 4rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgb(255 255 255 / 74%) !important;
+  background: rgb(255 255 255 / 56%) !important;
+  color: #25282b !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 86%), 0 13px 28px rgb(18 28 38 / 7%) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease !important;
+}
+
+.xp-pill {
+  min-width: clamp(8.5rem, 7.6vw, 9.6rem) !important;
+  gap: 0.45rem !important;
+  border-radius: 999px !important;
+  padding: 0 clamp(1.1rem, 1.25vw, 1.4rem) !important;
+  font-size: clamp(0.95rem, 0.9vw, 1rem) !important;
+  font-weight: 800 !important;
+}
+
+.notification-button {
+  width: clamp(3.55rem, 5vh, 4rem) !important;
+  border-radius: 999px !important;
+}
+
+.xp-pill:hover,
+.notification-button:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 88%), 0 18px 34px rgb(18 28 38 / 10%) !important;
+}
+
+.learning-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) clamp(20rem, 21vw, 24rem) !important;
+  gap: clamp(2.2rem, 3vw, 3.55rem) !important;
+  margin: 0 !important;
+}
+
+.learning-left-column > h2,
+.learning-right-column > h2 {
+  margin: 0 0 clamp(1rem, 1.8vh, 1.35rem) !important;
+  color: #111315 !important;
+  font-size: clamp(1.45rem, 1.5vw, 1.7rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.18 !important;
+}
+
+.learning-right-column > h2 {
+  font-size: clamp(1.28rem, 1.25vw, 1.45rem) !important;
+}
+
+.featured-course {
+  position: relative !important;
+  min-height: clamp(25rem, 34.5vh, 28rem) !important;
+  height: auto !important;
+  padding: clamp(2.35rem, 3.4vw, 3rem) !important;
+  border: 0 !important;
+  border-radius: clamp(1.65rem, 1.9vw, 2rem) !important;
+  background: #090b0d !important;
+  color: #ffffff !important;
+  box-shadow: 0 28px 58px rgb(18 28 38 / 15%) !important;
+  animation: dashboard-rise 440ms ease both !important;
+}
+
+.featured-course > p {
+  margin: 0 0 clamp(1.35rem, 2.2vh, 1.7rem) !important;
+  color: #aeb4b6 !important;
+  font-size: clamp(0.74rem, 0.72vw, 0.86rem) !important;
+  font-weight: 800 !important;
+}
+
+.featured-course h3 {
+  max-width: 18ch !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: clamp(2.25rem, 2.05vw, 2.65rem) !important;
+  font-weight: 800 !important;
+  line-height: 1.12 !important;
+}
+
+.featured-course > span {
+  display: block !important;
+  margin-top: clamp(1rem, 1.8vh, 1.3rem) !important;
+  color: #c5c9ca !important;
+  font-size: clamp(1rem, 1.02vw, 1.18rem) !important;
+  font-weight: 700 !important;
+}
+
+.featured-progress {
+  width: min(38rem, 58%) !important;
+  height: clamp(0.4rem, 0.6vh, 0.48rem) !important;
+  margin-top: clamp(2.35rem, 4.4vh, 3.1rem) !important;
+  border-radius: 999px !important;
+  background: #383d3f !important;
+}
+
+.featured-progress span {
+  background: #ff5a1f !important;
+  animation: dashboard-progress 900ms ease both !important;
+}
+
+.progress-copy {
+  gap: clamp(0.65rem, 0.75vw, 0.9rem) !important;
+  margin-top: clamp(1rem, 1.6vh, 1.25rem) !important;
+}
+
+.progress-copy strong {
+  color: #ff5a1f !important;
+  font-size: clamp(2rem, 1.95vw, 2.45rem) !important;
+  font-weight: 800 !important;
+}
+
+.progress-copy span {
+  color: #aeb4b6 !important;
+  font-size: clamp(0.92rem, 0.9vw, 1rem) !important;
+  font-weight: 700 !important;
+}
+
+.course-meta {
+  gap: clamp(3.2rem, 5.2vw, 5.4rem) !important;
+  margin-top: clamp(1.75rem, 3vh, 2.25rem) !important;
+}
+
+.course-meta dt {
+  margin-bottom: 0.45rem !important;
+  color: #8d9497 !important;
+  font-size: clamp(0.7rem, 0.68vw, 0.82rem) !important;
+  font-weight: 800 !important;
+}
+
+.course-meta dd {
+  color: #ffffff !important;
+  font-size: clamp(0.9rem, 0.9vw, 1rem) !important;
+  font-weight: 700 !important;
+}
+
+.featured-course button {
+  right: clamp(2.25rem, 2.7vw, 3rem) !important;
+  bottom: clamp(2.25rem, 2.7vw, 3rem) !important;
+  width: clamp(12rem, 11vw, 14rem) !important;
+  height: clamp(4.35rem, 5.7vh, 4.9rem) !important;
+  border-radius: 1.2rem !important;
+  background: #ff5a1f !important;
+  font-size: clamp(1rem, 0.95vw, 1.08rem) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease !important;
+}
+
+.featured-course button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgb(255 90 31 / 24%) !important;
+}
+
+.timeline-card,
+.learning-action-list button,
+.stat-card {
+  border: 1px solid rgb(255 255 255 / 68%) !important;
+  background: linear-gradient(108deg, rgb(255 255 255 / 58%) 0%, rgb(255 255 255 / 36%) 58%, rgb(245 246 243 / 42%) 100%) !important;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 78%), 0 16px 34px rgb(18 28 38 / 7%) !important;
+}
+
+.timeline-card {
+  height: clamp(5.85rem, 8.8vh, 7rem) !important;
+  margin-top: clamp(1.6rem, 2.5vh, 2rem) !important;
+  padding: 0 clamp(1.45rem, 1.5vw, 1.8rem) !important;
+  border-radius: 1.35rem !important;
+}
+
+.timeline-card strong {
+  color: #111315 !important;
+  font-size: clamp(0.96rem, 0.95vw, 1.08rem) !important;
+  font-weight: 800 !important;
+}
+
+.timeline-card p {
+  color: #747b81 !important;
+  font-size: clamp(0.9rem, 0.88vw, 1rem) !important;
+  font-weight: 500 !important;
+}
+
+.learning-action-list {
+  gap: clamp(1.2rem, 1.9vh, 1.55rem) !important;
+  margin-top: clamp(1.6rem, 2.5vh, 2rem) !important;
+}
+
+.learning-action-list button {
+  height: clamp(5.35rem, 7.9vh, 5.9rem) !important;
+  grid-template-columns: clamp(3rem, 2.7vw, 3.25rem) minmax(0, 1fr) minmax(11rem, 13rem) auto !important;
+  gap: clamp(1rem, 1.2vw, 1.25rem) !important;
+  border-radius: 1.35rem !important;
+  padding: 0 clamp(1.5rem, 1.6vw, 1.9rem) 0 clamp(1.25rem, 1.35vw, 1.55rem) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease !important;
+}
+
+.learning-action-list button:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 80%), 0 20px 38px rgb(18 28 38 / 10%) !important;
+}
+
+.action-icon {
+  width: clamp(3rem, 2.7vw, 3.25rem) !important;
+  height: clamp(3rem, 2.7vw, 3.25rem) !important;
+  border-radius: 1rem !important;
+  background: #ecefef !important;
+  color: #4e5860 !important;
+}
+
+.learning-action-list strong {
+  color: #111315 !important;
+  font-size: clamp(1rem, 0.98vw, 1.1rem) !important;
+  font-weight: 800 !important;
+}
+
+.learning-action-list small,
+.learning-action-list em {
+  color: #747b81 !important;
+  font-size: clamp(0.86rem, 0.82vw, 0.95rem) !important;
+  font-weight: 700 !important;
+}
+
+.learning-right-column {
+  gap: clamp(1.55rem, 2.55vh, 2rem) !important;
+}
+
+.stat-card {
+  border-radius: 1.65rem !important;
+  padding: clamp(1.75rem, 1.75vw, 2rem) !important;
+  animation: dashboard-rise 440ms ease both !important;
+}
+
+.level-card {
+  min-height: clamp(12.8rem, 16.9vh, 14rem) !important;
+  height: auto !important;
+}
+
+.week-card {
+  min-height: clamp(11.5rem, 15.4vh, 12.9rem) !important;
+  height: auto !important;
+}
+
+.certificate-card {
+  min-height: clamp(13.2rem, 17.5vh, 14.2rem) !important;
+  height: auto !important;
+}
+
+.checkpoint-card {
+  min-height: clamp(13.6rem, 17.8vh, 14.5rem) !important;
+  height: auto !important;
+}
+
+.level-card > p,
+.checkpoint-card > p {
+  font-size: clamp(0.68rem, 0.66vw, 0.78rem) !important;
+  font-weight: 800 !important;
+}
+
+.checkpoint-card > p {
+  color: #ff5a1f !important;
+}
+
+.stat-card h3 {
+  margin-top: clamp(0.75rem, 1.2vh, 0.95rem) !important;
+  font-size: clamp(1.08rem, 1.1vw, 1.22rem) !important;
+  font-weight: 800 !important;
+}
+
+.level-card h3 {
+  font-size: clamp(1.85rem, 1.7vw, 2.1rem) !important;
+}
+
+.level-card > span,
+.checkpoint-card > span,
+.stat-card small,
+.stat-card p {
+  color: #73797e !important;
+  font-size: clamp(0.82rem, 0.8vw, 0.94rem) !important;
+  font-weight: 600 !important;
+}
+
+.level-card > div {
+  height: 0.5rem !important;
+  margin: clamp(1rem, 1.5vh, 1.15rem) 0 clamp(0.85rem, 1.35vh, 1rem) !important;
+  border-radius: 999px !important;
+  background: rgb(17 19 21 / 10%) !important;
+}
+
+.level-card > div span {
+  width: 62% !important;
+  background: #ff5a1f !important;
+}
+
+.week-card div {
+  gap: clamp(1rem, 1.1vw, 1.25rem) !important;
+  margin: clamp(1.05rem, 1.8vh, 1.35rem) 0 clamp(1.5rem, 2.4vh, 1.9rem) !important;
+}
+
+.week-card strong {
+  color: #111315 !important;
+  font-size: clamp(2.05rem, 2vw, 2.45rem) !important;
+  font-weight: 800 !important;
+}
+
+.certificate-card strong {
+  margin-top: clamp(1.2rem, 2vh, 1.55rem) !important;
+  color: #279b5b !important;
+  font-size: clamp(0.95rem, 0.95vw, 1.1rem) !important;
+  font-weight: 800 !important;
+}
+
+.certificate-card button {
+  height: clamp(3rem, 4.4vh, 3.4rem) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  margin-top: clamp(1.35rem, 2.25vh, 1.75rem) !important;
+  border-radius: 0.9rem !important;
+  background: rgb(246 244 238 / 82%) !important;
+  color: #111315 !important;
+  font-size: clamp(0.86rem, 0.82vw, 0.95rem) !important;
+}
+
+.checkpoint-card hr {
+  margin: clamp(1.7rem, 2.8vh, 2rem) 0 clamp(1rem, 1.6vh, 1.2rem) !important;
+  border-color: rgb(18 28 38 / 8%) !important;
+}
+
+@keyframes dashboard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dashboard-progress {
+  from {
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  to {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+}
+
+@media (max-width: 1180px) {
+  .learning-home {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+
+  .learning-sidebar {
+    display: none !important;
+  }
+
+  .learning-main {
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 2rem 1.25rem 3rem !important;
+  }
+
+  .learning-header {
+    grid-template-columns: 1fr auto auto !important;
+  }
+
+  .learning-header > div {
+    grid-column: 1 / -1;
+  }
+
+  .learning-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .learning-right-column {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .learning-header {
+    grid-template-columns: 1fr auto !important;
+  }
+
+  .learning-search {
+    grid-column: 1 / -1;
+  }
+
+  .xp-pill {
+    min-width: 0 !important;
+  }
+
+  .notification-button {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .featured-course h3 {
+    max-width: none !important;
+  }
+
+  .featured-progress {
+    width: 100% !important;
+  }
+
+  .course-meta {
+    flex-direction: column !important;
+    gap: 1rem !important;
+    margin-bottom: 5.8rem !important;
+  }
+
+  .featured-course button {
+    left: 1.5rem !important;
+    right: 1.5rem !important;
+    width: auto !important;
+  }
+
+  .learning-action-list button {
+    grid-template-columns: 3rem minmax(0, 1fr) auto !important;
+  }
+
+  .learning-action-list em {
+    display: none !important;
+  }
+
+  .learning-right-column {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .learning-nav button,
+  .xp-pill,
+  .notification-button,
+  .featured-course,
+  .featured-progress span,
+  .featured-course button,
+  .learning-action-list button,
+  .stat-card {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Dashboard final viewport-fit tuning. */
+@media (min-width: 1181px) {
+  .learning-header {
+    margin-bottom: clamp(34px, 3.35vh, 46px) !important;
+  }
+
+  .learning-left-column > h2,
+  .learning-right-column > h2 {
+    margin-bottom: clamp(16px, 1.6vh, 22px) !important;
+  }
+
+  .featured-course {
+    min-height: clamp(390px, 32.5vh, 430px) !important;
+    height: clamp(390px, 32.5vh, 430px) !important;
+    padding: clamp(36px, 3.6vh, 44px) clamp(42px, 2.7vw, 48px) !important;
+  }
+
+  .featured-course > p {
+    margin-bottom: clamp(16px, 1.7vh, 22px) !important;
+  }
+
+  .featured-course > span {
+    margin-top: clamp(10px, 1.2vh, 16px) !important;
+  }
+
+  .featured-progress {
+    margin-top: clamp(30px, 3.3vh, 42px) !important;
+  }
+
+  .course-meta {
+    margin-top: clamp(18px, 2.1vh, 28px) !important;
+  }
+
+  .featured-course button {
+    height: clamp(62px, 5.3vh, 70px) !important;
+  }
+
+  .timeline-card {
+    height: clamp(92px, 8.5vh, 112px) !important;
+    min-height: clamp(92px, 8.5vh, 112px) !important;
+    margin-top: clamp(18px, 2vh, 24px) !important;
+  }
+
+  .learning-action-list {
+    gap: clamp(14px, 1.7vh, 20px) !important;
+    margin-top: clamp(18px, 2vh, 24px) !important;
+  }
+
+  .learning-action-list button {
+    height: clamp(76px, 7vh, 88px) !important;
+    min-height: clamp(76px, 7vh, 88px) !important;
+  }
+
+  .level-card {
+    min-height: clamp(188px, 16.2vh, 212px) !important;
+  }
+
+  .week-card {
+    min-height: clamp(164px, 14.6vh, 194px) !important;
+  }
+
+  .certificate-card {
+    min-height: clamp(190px, 16.7vh, 220px) !important;
+  }
+
+  .checkpoint-card {
+    min-height: clamp(190px, 17vh, 220px) !important;
+  }
+}
+
