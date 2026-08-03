@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, BarChart3, BookOpen, Compass, Home, Menu, Trophy, X } from "lucide-react";
+import { Award, BarChart3, Bell, BookOpen, Compass, Home, Menu, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -77,6 +77,15 @@ export default function MobileHamburgerMenu() {
         <Link href="/learning" className="mobile-hamburger-logo" aria-label="BaseCamp learning home">
           <img src="/basecamp-logo.png" alt="BaseCamp" />
         </Link>
+        <div className="mobile-hamburger-actions" aria-label="Learning status">
+          <button type="button" className="mobile-xp-pill" aria-label="Current XP">
+            <img src="/xp-star.svg" alt="" aria-hidden="true" />
+            <span>2,480 XP</span>
+          </button>
+          <Link href="/notifications" className="mobile-notification-button" aria-label="Notifications">
+            <Bell size={19} strokeWidth={1.95} />
+          </Link>
+        </div>
       </div>
 
       {open && <button type="button" className="mobile-menu-backdrop" aria-label="Close menu" onClick={() => setOpen(false)} />}
