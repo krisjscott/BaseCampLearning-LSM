@@ -11686,11 +11686,11 @@ body:has(.auth-page) {
 /* Onboarding reference polish: airy first-step composition, responsive not artboard-fixed. */
 .onboarding-page.flow .onboarding-screen:not(.personalising-screen):not(.ready-screen) {
   --onboarding-topbar: clamp(4.75rem, 9vh, 7.5rem);
-  --onboarding-footer: clamp(5.5rem, 10vh, 7.25rem);
+  --onboarding-footer: clamp(6rem, 13.2vh, 11rem);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100dvh;
   padding: var(--onboarding-topbar) 0 var(--onboarding-footer) !important;
   overflow: hidden;
@@ -11716,6 +11716,12 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .topbar-actions button {
+  min-height: auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
   color: #111111;
   font-weight: 700;
 }
@@ -11735,6 +11741,7 @@ body:has(.auth-page) {
   align-self: center;
   width: min(85vw, 106rem);
   height: auto;
+  margin-top: clamp(2.25rem, 7vh, 5.75rem);
   gap: clamp(2rem, 4vh, 3.4rem);
   overflow: visible;
   transform: none;
@@ -11775,9 +11782,9 @@ body:has(.auth-page) {
 .onboarding-page.flow .goal-card {
   min-height: 0;
   aspect-ratio: 0.94;
-  display: grid;
-  grid-template-rows: minmax(0, 1.25fr) minmax(0, 0.95fr);
-  align-content: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   overflow: hidden;
   border-color: rgb(209 212 214 / 72%);
   border-radius: clamp(1rem, 1.35vw, 1.35rem);
@@ -11797,8 +11804,8 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-icon {
+  flex: 0 0 51.5%;
   min-height: 0;
-  height: auto;
   display: grid;
   place-items: center;
   color: #111111;
@@ -11810,8 +11817,7 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-card strong {
-  align-self: end;
-  margin: 0 clamp(1rem, 2vw, 1.75rem);
+  margin: clamp(2.2rem, 3.6vh, 3rem) clamp(1rem, 2vw, 1.75rem) 0;
   color: #111111;
   font-size: clamp(0.95rem, 1.15vw, 1.1rem);
   font-weight: 700;
@@ -11823,7 +11829,6 @@ body:has(.auth-page) {
 }
 
 .onboarding-page.flow .goal-card span {
-  align-self: start;
   width: auto;
   margin: clamp(0.55rem, 1vh, 0.85rem) clamp(1rem, 2vw, 1.75rem) 0;
   color: #858c94;
@@ -11900,6 +11905,7 @@ body:has(.auth-page) {
   .onboarding-page.flow .context-content,
   .onboarding-page.flow .education-content {
     width: 100%;
+    margin-top: 0;
     padding: clamp(1.25rem, 5vw, 1.5rem);
   }
 
