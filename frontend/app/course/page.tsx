@@ -37,6 +37,8 @@ const modules = [
   ["Project execution and delivery", "Locked until Module 3 is complete", "Locked", "locked"],
 ] as const;
 
+const skills = ["Project planning", "Stakeholder communication", "Risk management", "Agile delivery"] as const;
+
 function Sidebar() {
   return (
     <aside className="learning-sidebar">
@@ -156,7 +158,11 @@ export default function CourseOverview() {
           <aside className="course-side-panel">
             <section className="info-card muted">
               <h2>Skills you will gain</h2>
-              <p>Project planning - Stakeholder communication - Risk management - Agile delivery</p>
+              <div className="skill-chip-list" aria-label="Skills you will gain">
+                {skills.map((skill) => (
+                  <span key={skill}>{skill}</span>
+                ))}
+              </div>
             </section>
             <section className="info-card">
               <h2>Earn a verified certificate</h2>
