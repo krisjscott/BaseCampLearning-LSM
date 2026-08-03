@@ -34,3 +34,7 @@ logging:
   level:
     com.tiesverse: INFO
     org.springframework.security: WARN
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}

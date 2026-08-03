@@ -180,7 +180,7 @@ const SESSION_COOKIE = "basecamp_session";
 const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]);
 
 const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
-const API_BASE_URL = (configuredApiBaseUrl || "http://localhost:8081").replace(/\/$/, "");
+const API_BASE_URL = configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : "";
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -285,10 +285,17 @@ export async function backendRequest<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    const target = API_BASE_URL || "the app API proxy";
+    throw new Error(`Could not reach BaseCamp backend at ${target}. Check NEXT_PUBLIC_API_BASE_URL and backend deployment.`);
+  }
 
   if (response.status === 401 && !AUTH_ROUTES.has(path)) {
     const newToken = await doRefresh();

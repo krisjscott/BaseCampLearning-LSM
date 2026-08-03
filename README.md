@@ -30,6 +30,7 @@ Required production values:
 ```text
 SERVER_PORT=8081
 SPRING_PROFILES_ACTIVE=prod
+CORS_ALLOWED_ORIGINS=https://your-frontend-domain.com
 JWT_SECRET=<strong-base64-secret>
 DB_URL=<production-jdbc-url>
 DB_USERNAME=<production-db-user>
@@ -79,6 +80,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
 ```
 
 For deployed frontend builds, set these same variables in the hosting provider.
+If the frontend and backend are on separate domains, `NEXT_PUBLIC_API_BASE_URL` must point to the backend origin and that frontend origin must be included in backend `CORS_ALLOWED_ORIGINS`.
 
 ## Start The Frontend
 
