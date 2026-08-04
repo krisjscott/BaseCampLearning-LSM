@@ -258,8 +258,16 @@ async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
     try {
       body = JSON.parse(text);
     } catch (e) {
-      console.error("Failed to parse JSON response:", text.substring(0, 200));
-      throw new Error(`Invalid response from server: ${response.status} ${response.statusText}`);
+      const serverText = text.substring(0, 200).trim();
+      if (serverText.toLowerCase().includes("invalid cors request")) {
+        throw new Error(
+          "Backend rejected this browser origin. Add the frontend origin to backend CORS_ALLOWED_ORIGINS and restart the backend.",
+        );
+      }
+      if (!response.ok) {
+        throw new Error(serverText || `Backend request failed: ${response.status} ${response.statusText}`);
+      }
+      throw new Error(`Invalid JSON response from backend: ${response.status} ${response.statusText}`);
     }
   }
 
