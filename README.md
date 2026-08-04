@@ -45,6 +45,14 @@ TURNSTILE_ENABLED=true
 TURNSTILE_SECRET=<cloudflare-turnstile-secret>
 ```
 
+For local browser testing against the backend, `CORS_ALLOWED_ORIGINS` must include the frontend origin:
+
+```text
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+Add every actual dev origin you use, such as `http://localhost:3001` or `http://localhost:3100`. The browser error `Invalid CORS request` means the backend rejected the request before it reached the controller.
+
 OAuth and SMTP values are optional until those flows are enabled.
 
 ## Start The Backend

@@ -29,6 +29,14 @@ TURNSTILE_ENABLED=true
 TURNSTILE_SECRET=<cloudflare-turnstile-secret>
 ```
 
+For local frontend testing against a backend running on `prod`, include the local browser origin in CORS:
+
+```text
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
+
+If the frontend runs on another port, add that exact origin too, for example `http://localhost:3001`. A missing origin causes Spring to return `Invalid CORS request` before the API controller is reached.
+
 ## Build
 
 ```powershell
