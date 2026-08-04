@@ -30,7 +30,7 @@ const stats = [
 ] as const;
 
 const curriculum = [
-  ["1. Project Management Foundations", "Starter", "Start here", "Begin"],
+  ["1. Course foundations", "Starter", "Start here", "Begin"],
   ["2. Planning & Execution", "Builder", "Locked", "Requirements"],
   ["3. Leading Delivery", "Achiever", "Locked", "Requirements"],
 ] as const;
@@ -39,14 +39,25 @@ export default function ProjectManagementPath() {
   return (
     <main className="path-page">
       <aside className="learning-sidebar">
-        <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
+        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
 
         <nav className="learning-nav" aria-label="Learning sections">
           {navItems.map(([label, Icon, active]) => (
-            <button type="button" className={active ? "active" : ""} key={label}>
+            <a
+              href={({
+                "Learning Home": "/learning",
+                "My Learning": "/my-learning",
+                Explore: "/explore",
+                Achievements: "/achievements",
+                Certificates: "/certificates",
+                Progress: "/progress",
+              } as const)[label]}
+              className={active ? "active" : ""}
+              key={label}
+            >
               <Icon size={22} strokeWidth={1.8} />
               <span>{label}</span>
-            </button>
+            </a>
           ))}
         </nav>
 
@@ -62,9 +73,9 @@ export default function ProjectManagementPath() {
 <section className="learner-profile" aria-label="Learner profile">
           <div>N</div>
           <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
+            <strong>Learner</strong>
+            <span>Learner</span>
+            <small>Account active</small>
           </section>
         </section>
       </aside>

@@ -5,7 +5,6 @@ import {
   BookOpen,
   Check,
   Compass,
-  Download,
   Grid2X2,
   GraduationCap,
   Home,
@@ -38,18 +37,31 @@ const modules = [
   ["Project execution and delivery", "Locked until Module 3 is complete", "Locked", "locked"],
 ] as const;
 
+const skills = ["Project planning", "Stakeholder communication", "Risk management", "Agile delivery"] as const;
+
 function Sidebar() {
   return (
     <aside className="learning-sidebar">
-      <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
+      <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
 
       <nav className="learning-nav" aria-label="Learning sections">
         {navItems.map(([label, Icon, active]) => (
-          <button type="button" className={active ? "active" : ""} key={label}>
-            <Icon size={22} strokeWidth={1.8} />
-            <span>{label}</span>
-          </button>
-        ))}
+            <a
+              href={({
+                "Learning Home": "/learning",
+                "My Learning": "/my-learning",
+                Explore: "/explore",
+                Achievements: "/achievements",
+                Certificates: "/certificates",
+                Progress: "/progress",
+              } as const)[label]}
+              className={active ? "active" : ""}
+              key={label}
+            >
+              <Icon size={22} strokeWidth={1.8} />
+              <span>{label}</span>
+            </a>
+          ))}
       </nav>
 
       <section className="recent-trails" aria-label="Recent trails">
@@ -64,9 +76,9 @@ function Sidebar() {
 <section className="learner-profile" aria-label="Learner profile">
         <div>N</div>
         <section>
-          <strong>Nirjhar</strong>
-          <span>Builder - 2,480 XP</span>
-          <small>BC-CR-021</small>
+          <strong>Learner</strong>
+          <span>Learner</span>
+          <small>Account active</small>
         </section>
       </section>
     </aside>
@@ -80,26 +92,22 @@ export default function CourseOverview() {
 
       <section className="course-main">
         <header className="course-breadcrumb">
-          <p>My Learning / Google Project Management</p>
+          <p>My Learning / Selected course</p>
           <div>
-            <button type="button">
-              <Download size={16} />
-              <span>Resources</span>
-            </button>
             <button type="button"><Share2 size={16} /><span>Share</span></button>
           </div>
         </header>
 
         <section className="course-hero">
           <div className="course-hero-copy">
-            <p>Professional certificate</p>
-            <h1>Google Project Management</h1>
-            <span>Build practical project planning, execution, communication, and delivery skills.</span>
+            <p>BaseCamp certificate</p>
+            <h1>Selected course</h1>
+            <span>Build practical project management skills through guided lessons, real workplace scenarios and assessed checkpoints.</span>
             <div className="course-facts">
               <span>6 modules</span>
-              <span>28 lessons</span>
-              <span>7 quizzes</span>
-              <span>24 hours - Certificate</span>
+              <span>Beginner</span>
+              <span>Approx. 24 hours</span>
+              <span>Certificate</span>
             </div>
           </div>
 
@@ -110,7 +118,7 @@ export default function CourseOverview() {
               <span />
             </div>
             <span>Next: Define scope &amp; deliverables</span>
-            <button type="button"><span>Continue learning -&gt;</span><ArrowRight size={16} /></button>
+            <button type="button"><span>Continue learning</span><ArrowRight size={16} /></button>
           </aside>
         </section>
 
@@ -161,7 +169,11 @@ export default function CourseOverview() {
           <aside className="course-side-panel">
             <section className="info-card muted">
               <h2>Skills you will gain</h2>
-              <p>Project planning - Stakeholder communication - Risk management - Agile delivery</p>
+              <div className="skill-chip-list" aria-label="Skills you will gain">
+                {skills.map((skill) => (
+                  <span key={skill}>{skill}</span>
+                ))}
+              </div>
             </section>
             <section className="info-card">
               <h2>Earn a verified certificate</h2>

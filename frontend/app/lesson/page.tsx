@@ -1,38 +1,238 @@
-﻿import {
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import {
   Captions,
   Check,
-  CheckCircle2,
   FileText,
-  Gauge,
+  Folder,
   Grid2X2,
   Lock,
   Maximize,
-  MessageCircle,
+  Pause,
   Play,
+  StickyNote,
   Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
+import { getLesson, LessonResponse } from "../lib/backendApi";
+import { CardSkeleton, Skeleton } from "../components/Skeleton";
 
 const lessons = [
   ["Project goals and stakeholders", "8 min video", "done"],
   ["Build a project charter", "10 min video", "done"],
   ["Identify project risks", "9 min video", "done"],
-  ["Define scope and deliverables", "12 min video - Playing", "playing"],
+  ["Define scope and deliverables", "24 sec video - Playing", "playing"],
   ["Build a work breakdown structure", "11 min video", "next"],
   ["Module checkpoint quiz", "12 questions - Required", "locked"],
   ["Module wrap-up", "5 min reading", "locked"],
 ] as const;
 
+const playbackRates = [1, 1.25, 1.5, 2] as const;
+
+const captionCues = [
+  {
+    start: 0,
+    end: 5,
+    text: "Welcome to the BaseCamp lesson player.",
+  },
+  {
+    start: 5,
+    end: 11,
+    text: "This sample video lets you test playback, progress, volume, captions, speed, and fullscreen.",
+  },
+  {
+    start: 11,
+    end: 17,
+    text: "Use the course checklist on the right to follow your module progress.",
+  },
+  {
+    start: 17,
+    end: 24,
+    text: "When the lesson finishes, the watch progress updates to complete.",
+  },
+] as const;
+
+function formatTime(value: number) {
+  if (!Number.isFinite(value)) {
+    return "00:00";
+  }
+
+  const minutes = Math.floor(value / 60);
+  const seconds = Math.floor(value % 60);
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
 export default function LessonPlayer() {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const [lesson, setLesson] = useState<LessonResponse | null>(null);
+  const [loadingLesson, setLoadingLesson] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [captionsEnabled, setCaptionsEnabled] = useState(false);
+  const [duration, setDuration] = useState(24);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const videoUrl = lesson?.contentUrl || "/lesson-sample.mp4";
+  const lessonTitle = lesson?.title || "Define scope and deliverables";
+  const fallbackDuration = lesson?.durationMinutes ? lesson.durationMinutes * 60 : 24;
+  const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+  const watchedPercent = Math.min(100, Math.round(progress));
+  const activeCaption = captionsEnabled
+    ? captionCues.find((cue) => currentTime >= cue.start && currentTime < cue.end)?.text || ""
+    : "";
+
+  useEffect(() => {
+    const lessonId = new URLSearchParams(window.location.search).get("lessonId");
+
+    if (!lessonId) {
+      setLoadingLesson(false);
+      return;
+    }
+
+    getLesson(lessonId)
+      .then(setLesson)
+      .catch(() => setLesson(null))
+      .finally(() => setLoadingLesson(false));
+  }, []);
+
+  useEffect(() => {
+    setDuration(fallbackDuration);
+  }, [fallbackDuration]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    const sync = () => {
+      setCurrentTime(video.currentTime);
+      setDuration(video.duration || fallbackDuration);
+      setIsMuted(video.muted || video.volume === 0);
+      setPlaybackRate(video.playbackRate);
+    };
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+
+    video.addEventListener("loadedmetadata", sync);
+    video.addEventListener("timeupdate", sync);
+    video.addEventListener("volumechange", sync);
+    video.addEventListener("ratechange", sync);
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onPause);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", sync);
+      video.removeEventListener("timeupdate", sync);
+      video.removeEventListener("volumechange", sync);
+      video.removeEventListener("ratechange", sync);
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onPause);
+    };
+  }, [fallbackDuration, videoUrl]);
+
+  const togglePlayback = async () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    if (video.paused) {
+      await video.play();
+    } else {
+      video.pause();
+    }
+  };
+
+  const toggleMute = () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    video.muted = !video.muted;
+  };
+
+  const toggleCaptions = () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    const next = !captionsEnabled;
+    Array.from(video.textTracks).forEach((track) => {
+      track.mode = next ? "hidden" : "disabled";
+    });
+    setCaptionsEnabled(next);
+  };
+
+  const cyclePlaybackRate = () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    const currentIndex = playbackRates.findIndex((rate) => rate === video.playbackRate);
+    const nextRate = playbackRates[(currentIndex + 1) % playbackRates.length] || 1;
+    video.playbackRate = nextRate;
+  };
+
+  const enterFullscreen = async () => {
+    const target = cardRef.current;
+
+    if (!target) {
+      return;
+    }
+
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await target.requestFullscreen();
+  };
+
+  const seekTo = (value: number) => {
+    const video = videoRef.current;
+
+    if (!video || !duration) {
+      return;
+    }
+
+    const nextTime = Math.min(duration, Math.max(0, value));
+    video.currentTime = nextTime;
+    setCurrentTime(nextTime);
+  };
+
   return (
     <main className="lesson-player">
       <header className="lesson-topbar">
         <div className="lesson-brand-block">
-          <img src="/BasecampExactLogo.png" alt="BaseCamp" />
+          <img src="/basecamp-logo.png" alt="BaseCamp" />
           <span />
           <section>
-            <strong>Google Project Management</strong>
-            <p>Module 3 - Planning and execution</p>
+            {loadingLesson ? (
+              <>
+                <Skeleton className="skeleton-copy" />
+                <Skeleton className="skeleton-copy" />
+              </>
+            ) : (
+              <>
+                <strong>{lesson?.title || "Lesson player"}</strong>
+                <p>{lesson?.contentType || "Course lesson"}</p>
+              </>
+            )}
           </section>
         </div>
         <div className="lesson-top-actions">
@@ -47,38 +247,88 @@ export default function LessonPlayer() {
       <div className="lesson-shell">
         <section className="lesson-stage">
           <div className="lesson-heading">
-            <p>Lesson 4 of 7</p>
-            <h1>Define scope and deliverables</h1>
-            <span>12 min video - Required</span>
+            {loadingLesson ? (
+              <CardSkeleton lines={3} />
+            ) : (
+              <>
+                <p>LESSON 4 OF 7</p>
+                <h1>{lessonTitle}</h1>
+                <span>{lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "24 sec video - Required"}</span>
+              </>
+            )}
           </div>
 
-          <section className="video-card" aria-label="Video lesson player">
-            <button type="button" className="video-surface">
+          <section className="video-card" aria-label="Video lesson player" ref={cardRef}>
+            <video
+              ref={videoRef}
+              className="lesson-video-media"
+              preload="metadata"
+              poster="/basecamp-logo.png"
+              playsInline
+              onClick={togglePlayback}
+              key={videoUrl}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              <track
+                src="/lesson-sample.vtt"
+                kind="captions"
+                srcLang="en"
+                label="English"
+              />
+            </video>
+            <button
+              type="button"
+              className={`video-surface ${isPlaying ? "is-playing" : ""}`}
+              onClick={togglePlayback}
+              aria-label={isPlaying ? "Pause lesson video" : "Play lesson video"}
+            >
               <span className="play-badge">
-                <Play size={24} fill="none" />
+                {isPlaying ? <Pause size={24} fill="none" /> : <Play size={24} fill="none" />}
               </span>
-              <strong>Resume from 07:18</strong>
+              <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson" : `Resume from ${formatTime(currentTime)}`}</strong>
             </button>
+            {captionsEnabled && activeCaption ? (
+              <div className="lesson-caption-box" aria-live="polite">
+                {activeCaption}
+              </div>
+            ) : null}
             <div className="video-controls">
-              <div className="video-progress">
-                <span />
+              <div className="video-progress" aria-label="Video progress">
+                <span style={{ width: `${progress}%` }} />
+                <input
+                  className="video-progress-input"
+                  type="range"
+                  min={0}
+                  max={Math.max(duration, 0.1)}
+                  step={0.1}
+                  value={Math.min(currentTime, duration)}
+                  aria-label="Seek video"
+                  onInput={(event) => seekTo(Number(event.currentTarget.value))}
+                  onChange={(event) => seekTo(Number(event.currentTarget.value))}
+                />
               </div>
               <div className="control-row">
-                <button type="button" aria-label="Play">
-                  <Play size={17} />
+                <button type="button" aria-label={isPlaying ? "Pause" : "Play"} onClick={togglePlayback}>
+                  {isPlaying ? <Pause size={17} /> : <Play size={17} />}
                 </button>
-                <p>07:18 / 12:00</p>
+                <p>{formatTime(currentTime)} / {formatTime(duration)}</p>
+                <div className="control-spacer" />
                 <div className="control-icons">
-                  <button type="button" aria-label="Volume">
-                    <Volume2 size={17} />
+                  <button type="button" aria-label={isMuted ? "Unmute" : "Volume"} onClick={toggleMute}>
+                    {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
                   </button>
-                  <button type="button" aria-label="Captions">
+                  <button
+                    type="button"
+                    aria-label="Captions"
+                    className={captionsEnabled ? "active" : ""}
+                    onClick={toggleCaptions}
+                  >
                     <Captions size={17} />
                   </button>
-                  <button type="button" aria-label="Playback speed">
-                    <Gauge size={17} />
+                  <button type="button" aria-label="Playback speed" onClick={cyclePlaybackRate}>
+                    <span>{playbackRate}x</span>
                   </button>
-                  <button type="button" aria-label="Fullscreen">
+                  <button type="button" aria-label="Fullscreen" onClick={enterFullscreen}>
                     <Maximize size={17} />
                   </button>
                 </div>
@@ -88,8 +338,8 @@ export default function LessonPlayer() {
 
           <section className="watch-policy">
             <Lock size={18} />
-            <p>This video must be watched completely. Seeking ahead is disabled.</p>
-            <strong>61% watched</strong>
+            <p>Video progress is tracked from the active lesson media.</p>
+            <strong>{watchedPercent}% watched</strong>
           </section>
 
           <section className="lesson-lower">
@@ -103,28 +353,20 @@ export default function LessonPlayer() {
                 <span>Transcript</span>
               </button>
               <button type="button">
-                <MessageCircle size={16} />
-                <span>Discussion</span>
+                <Folder size={16} />
+                <span>Resources</span>
               </button>
-              <button type="button" className="locked">
-                <Lock size={16} />
-                <span>Quiz unlocks after video</span>
+              <button type="button">
+                <StickyNote size={16} />
+                <span>Notes</span>
               </button>
             </nav>
 
             <button type="button" className="mark-complete">
-              <CheckCircle2 size={16} />
-              <span>Mark complete after watch</span>
+              <Lock size={16} />
+              <span>Quiz unlocks after video</span>
             </button>
           </section>
-
-          <article className="lesson-overview-card">
-            <h2>About this lesson</h2>
-            <p>
-              Learn how to define a project&apos;s scope, translate goals into deliverables,
-              and identify the boundaries that keep a project on track.
-            </p>
-          </article>
         </section>
 
         <aside className="lesson-playlist">
@@ -165,4 +407,3 @@ export default function LessonPlayer() {
     </main>
   );
 }
-

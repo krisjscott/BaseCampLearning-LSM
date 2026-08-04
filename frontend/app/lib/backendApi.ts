@@ -53,6 +53,52 @@ export type SearchResponse = {
   size: number;
 };
 
+export type LessonResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  contentUrl?: string | null;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  orderIndex?: number | null;
+};
+
+export type AssessmentOptionResponse = {
+  id: string;
+  optionText: string;
+};
+
+export type AssessmentQuestionResponse = {
+  id: string;
+  questionText: string;
+  questionType?: string | null;
+  points?: number | null;
+  orderIndex?: number | null;
+  options?: AssessmentOptionResponse[] | null;
+};
+
+export type AssessmentResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  courseId?: string | null;
+  type?: string | null;
+  passingScore?: number | null;
+  timeLimitMinutes?: number | null;
+  maxAttempts?: number | null;
+  questions?: AssessmentQuestionResponse[] | null;
+};
+
+export type AssessmentResultResponse = {
+  id: string;
+  assessmentId: string;
+  assessmentTitle?: string | null;
+  score?: number | null;
+  attemptNumber?: number | null;
+  passed: boolean;
+  submittedAt?: string | null;
+};
+
 export type CertificateResponse = {
   id: string;
   certificateNumber: string;
@@ -81,6 +127,7 @@ export type UserResponse = {
   fullName?: string | null;
   email: string;
   profilePictureUrl?: string | null;
+  learnerCode?: string | null;
   phone?: string | null;
   bio?: string | null;
   role?: string | null;
@@ -98,6 +145,7 @@ export type UserSettingsResponse = {
 };
 
 export type PublicDashboardResponse = {
+  xpPoints?: number | null;
   continueLearning?: Array<{
     courseId: string;
     courseTitle: string;
@@ -131,7 +179,8 @@ const AUTH_STORAGE_KEYS = {
 const SESSION_COOKIE = "basecamp_session";
 const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]);
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081").replace(/\/$/, "");
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+const API_BASE_URL = configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : "";
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -203,7 +252,16 @@ async function doRefresh(): Promise<string | null> {
 
 async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   const text = await response.text();
-  const body = text ? JSON.parse(text) : null;
+  let body: any = null;
+
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch (e) {
+      console.error("Failed to parse JSON response:", text.substring(0, 200));
+      throw new Error(`Invalid response from server: ${response.status} ${response.statusText}`);
+    }
+  }
 
   if (!response.ok) {
     throw new Error(body?.message || response.statusText || "Backend request failed");
@@ -227,10 +285,17 @@ export async function backendRequest<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    const target = API_BASE_URL || "the app API proxy";
+    throw new Error(`Could not reach BaseCamp backend at ${target}. Check NEXT_PUBLIC_API_BASE_URL and backend deployment.`);
+  }
 
   if (response.status === 401 && !AUTH_ROUTES.has(path)) {
     const newToken = await doRefresh();
@@ -247,10 +312,10 @@ export async function backendRequest<T>(
   return parseResponse<T>(response);
 }
 
-export async function login(email: string, password: string): Promise<AuthPayload> {
+export async function login(email: string, password: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, turnstileToken }),
   });
 
   if (!response.data) {
@@ -261,10 +326,10 @@ export async function login(email: string, password: string): Promise<AuthPayloa
   return response.data;
 }
 
-export async function register(email: string, password: string, fullName: string): Promise<AuthPayload> {
+export async function register(email: string, password: string, fullName: string, turnstileToken?: string | null): Promise<AuthPayload> {
   const response = await backendRequest<AuthPayload>("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, fullName }),
+    body: JSON.stringify({ email, password, fullName, turnstileToken }),
   });
 
   if (!response.data) {
@@ -276,23 +341,21 @@ export async function register(email: string, password: string, fullName: string
 }
 
 export async function logout(): Promise<void> {
-  const email = typeof window !== "undefined"
-    ? localStorage.getItem(AUTH_STORAGE_KEYS.email)
-    : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_STORAGE_KEYS.accessToken) : null;
 
-  clearSessionCookie();
-  clearAuthSession();
-
-  if (email) {
+  if (token) {
     try {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout?email=${encodeURIComponent(email)}`, {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
       });
     } catch {
       // best-effort backend logout
     }
   }
 
+  clearSessionCookie();
+  clearAuthSession();
   redirectToLogin();
 }
 
@@ -363,6 +426,35 @@ export async function updateCurrentUserSettings(payload: {
 export async function getPublicDashboard(): Promise<PublicDashboardResponse | null> {
   const response = await backendRequest<PublicDashboardResponse>("/api/v1/dashboard/public", {
     headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function getLesson(lessonId: string): Promise<LessonResponse | null> {
+  const response = await backendRequest<LessonResponse>(`/api/v1/courses/lessons/${lessonId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function getAssessment(assessmentId: string): Promise<AssessmentResponse | null> {
+  const response = await backendRequest<AssessmentResponse>(`/api/v1/assessments/${assessmentId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function submitAssessment(payload: {
+  assessmentId: string;
+  answers: Array<{
+    questionId: string;
+    answerText?: string | null;
+    selectedOptionId?: string | null;
+  }>;
+}): Promise<AssessmentResultResponse | null> {
+  const response = await backendRequest<AssessmentResultResponse>("/api/v1/assessments/submit", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
   return response.data || null;
 }

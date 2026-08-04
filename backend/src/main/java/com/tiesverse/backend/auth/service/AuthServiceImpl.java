@@ -14,7 +14,9 @@ import com.tiesverse.backend.auth.mapper.AuthMapper;
 import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
+import com.tiesverse.backend.common.exception.UnauthorizedException;
 import com.tiesverse.backend.security.jwt.JwtProvider;
+import com.tiesverse.backend.security.turnstile.TurnstileService;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.entity.UserSettings;
 import com.tiesverse.backend.user.repository.UserRepository;
@@ -33,13 +35,15 @@ public class AuthServiceImpl implements AuthService {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final UserSettingsRepository userSettingsRepository;
-    private final DemoExperienceService demoExperienceService;
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
+    private final TurnstileService turnstileService;
 
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        turnstileService.verify(request.getTurnstileToken());
+
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
@@ -68,7 +72,6 @@ public class AuthServiceImpl implements AuthService {
                 .language("en")
                 .timezone("Asia/Kolkata")
                 .build());
-        demoExperienceService.attachDemoExperience(savedUser.getId(), request.getFullName());
 
         String accessToken = jwtProvider.generateToken(
                 savedAccount.getEmail(),
@@ -84,11 +87,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(LoginRequest request) {
+        turnstileService.verify(request.getTurnstileToken());
+
         Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         String accessToken = jwtProvider.generateToken(
@@ -106,7 +111,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public TokenResponse refreshToken(RefreshTokenRequest request) {
         Account account = accountRepository.findByRefreshToken(request.getRefreshToken())
-                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+        if (!jwtProvider.isTokenValid(request.getRefreshToken(), account.getEmail())) {
+            account.setRefreshToken(null);
+            accountRepository.save(account);
+            throw new UnauthorizedException("Invalid refresh token");
+        }
 
         String accessToken = jwtProvider.generateToken(
                 account.getEmail(),
@@ -127,15 +137,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout(String email) {
         Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new UnauthorizedException("Account not found"));
         account.setRefreshToken(null);
         accountRepository.save(account);
     }
 
     @Override
     public void forgotPassword(ForgotPasswordRequest request) {
-        accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+        turnstileService.verify(request.getTurnstileToken());
+
+        accountRepository.findByEmail(request.getEmail());
     }
 
     @Override

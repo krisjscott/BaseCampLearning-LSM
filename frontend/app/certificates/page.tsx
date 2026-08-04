@@ -9,8 +9,10 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { CertificateResponse, UserResponse, getCertificates, getCurrentUser } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, false],
@@ -19,24 +21,6 @@ const navItems = [
   ["Achievements", Trophy, false],
   ["Certificates", Award, true],
   ["Progress", BarChart3, false],
-] as const;
-
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["1", "Ready"],
-  ["2", "In progress"],
-  ["0", "Expiring"],
-] as const;
-
-const credentials = [
-  ["Content Writing Foundations", "Issued Jul 20", "Verified", "Open"],
-  ["Google Project Management", "58% complete", "", "Progress"],
-  ["Graphic Design Essentials", "8% complete", "", "Progress"],
 ] as const;
 
 function shortDate(value?: string | null) {
@@ -52,27 +36,30 @@ function longDate(value?: string | null) {
 function CertificatesWallet() {
   const [backendCertificates, setBackendCertificates] = useState<CertificateResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     Promise.allSettled([getCertificates(), getCurrentUser()])
       .then(([certificatesResult, userResult]) => {
         if (!active) return;
-        if (certificatesResult.status === "fulfilled" && certificatesResult.value.length) {
+        if (certificatesResult.status === "fulfilled") {
           setBackendCertificates(certificatesResult.value);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
           setUser(userResult.value);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
   }, []);
 
   const credentialRows = useMemo(() => {
-    if (!backendCertificates.length) return credentials;
     return backendCertificates.slice(0, 3).map((certificate) => [
       certificate.title || certificate.courseName || "Certificate",
       certificate.issuedDate ? `Issued ${shortDate(certificate.issuedDate)}` : "Issued",
@@ -82,7 +69,6 @@ function CertificatesWallet() {
   }, [backendCertificates]);
 
   const summaryStats = useMemo(() => {
-    if (!backendCertificates.length) return stats;
     return [
       [String(backendCertificates.length), "Ready"],
       ["0", "In progress"],
@@ -91,39 +77,54 @@ function CertificatesWallet() {
   }, [backendCertificates]);
 
   const heroCertificate = backendCertificates[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
   return (
     <main className="certificates-page">
       <aside className="learning-sidebar">
-        <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
+        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
 
         <nav className="learning-nav" aria-label="Learning sections">
           {navItems.map(([label, Icon, active]) => (
-            <button type="button" className={active ? "active" : ""} key={label}>
+            <a
+              href={({
+                "Learning Home": "/learning",
+                "My Learning": "/my-learning",
+                Explore: "/explore",
+                Achievements: "/achievements",
+                Certificates: "/certificates",
+                Progress: "/progress",
+              } as const)[label]}
+              className={active ? "active" : ""}
+              key={label}
+            >
               <Icon size={22} strokeWidth={1.8} />
               <span>{label}</span>
-            </button>
+            </a>
           ))}
         </nav>
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
+          {loading ? <SidebarSkeleton /> : <small>No course progress yet</small>}
         </section>
-        <section className="learner-profile" aria-label="Learner profile">
-          <div>{learnerName.charAt(0).toUpperCase()}</div>
-          <section>
-            <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
-          </section>
-        </section>
+        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
+          {loading ? (
+            <>
+              <div><Skeleton className="skeleton-pill" /></div>
+              <SidebarSkeleton />
+            </>
+          ) : (
+            <>
+              <div>{learnerName.charAt(0).toUpperCase()}</div>
+              <section>
+                <strong>{learnerName}</strong>
+                <span>{user?.role || "Learner"}</span>
+                <small>{user?.learnerCode || "Profile code pending"}</small>
+              </section>
+            </>
+          )}
+        </Link>
       </aside>
 
       <section className="certificates-main">
@@ -139,16 +140,24 @@ function CertificatesWallet() {
         </header>
 
         <section className="certificates-hero">
-          <h2>{heroCertificate?.title || "Content Writing Foundations"}</h2>
-          <p>
-            {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Certificate issued Jul 20, 2026"}{" "}
-            - Credential {heroCertificate?.certificateNumber || "BC-CW-0148"}
-          </p>
-          <button type="button">Download certificate -&gt;</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{heroCertificate?.title || "No certificates yet"}</h2>
+              <p>
+                {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Completed course certificates will appear here."}{" "}
+                {heroCertificate?.certificateNumber ? `- Credential ${heroCertificate.certificateNumber}` : ""}
+              </p>
+              <button type="button">{heroCertificate ? "Download certificate ->" : "Explore courses ->"}</button>
+            </>
+          )}
         </section>
 
         <section className="certificates-stats" aria-label="Certificates summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -160,7 +169,9 @@ function CertificatesWallet() {
 
         <div className="certificates-grid">
           <section className="credential-list" aria-label="Your credentials">
-            {credentialRows.map(([title, meta, status, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : credentialRows.length ? credentialRows.map(([title, meta, status, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -168,13 +179,32 @@ function CertificatesWallet() {
                 </div>
                 <button type="button">{action} -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No credentials issued</h3>
+                  <p>Certificates are created from completed course assessments.</p>
+                </div>
+                <button type="button">Explore courses -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="public-profile-card">
-            <h2>Public profile</h2>
-            <p>Show selected credentials publicly.</p>
-            <button type="button">Manage visibility -&gt;</button>
+            {loading ? <CardSkeleton lines={5} /> : (
+              <>
+                <div className="side-card-kicker">Public profile</div>
+                <h2>{backendCertificates.length} credentials visible</h2>
+                <p>Only certificates stored in the database appear on your profile.</p>
+                <div className="profile-visibility-list" aria-label="Public profile visibility">
+                  <span>
+                    <strong>{backendCertificates[0]?.courseName || "No public certificates"}</strong>
+                    <small>{backendCertificates.length ? "Visible" : "Hidden"}</small>
+                  </span>
+                </div>
+                <button type="button">Manage visibility -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

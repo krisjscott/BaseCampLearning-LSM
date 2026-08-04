@@ -1,6 +1,7 @@
 package com.tiesverse.backend.security.jwt;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +39,30 @@ public class JwtProvider {
                 .compact();
     }
 
+    public boolean isTokenValid(String token, String expectedSubject) {
+        try {
+            String subject = Jwts.parser()
+                    .verifyWith(getSignKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getSubject();
+            Date expirationDate = Jwts.parser()
+                    .verifyWith(getSignKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration();
+            return expectedSubject.equals(subject) && expirationDate != null && expirationDate.after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     private SecretKey getSignKey() {
+        if(secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT secret key config is empty");
+        }
         byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }

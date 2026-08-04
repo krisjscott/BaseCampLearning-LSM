@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.UUID;
+import com.tiesverse.backend.security.AuthContext;
 
 @RestController
 @RequestMapping("/api/v1/dashboard")
@@ -22,6 +23,7 @@ public class DashboardController {
 
     private final DashboardService dashboardService;
     private final AccountRepository accountRepository;
+    private final AuthContext authContext;
 
     @GetMapping("/public")
     public ApiResponse<PublicDashboardResponse> getPublicDashboard(Principal principal) {
@@ -34,7 +36,8 @@ public class DashboardController {
     }
 
     @GetMapping("/employee")
-    public ApiResponse<EmployeeDashboardResponse> getEmployeeDashboard(@RequestParam UUID userId) {
+    public ApiResponse<EmployeeDashboardResponse> getEmployeeDashboard(Principal principal, @RequestParam UUID userId) {
+        authContext.requireSelfOrAdmin(principal, userId);
         return ApiResponse.success(dashboardService.getEmployeeDashboard(userId));
     }
 

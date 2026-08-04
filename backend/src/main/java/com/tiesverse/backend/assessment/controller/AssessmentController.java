@@ -8,6 +8,7 @@ import com.tiesverse.backend.assessment.dto.response.AssessmentResultResponse;
 import com.tiesverse.backend.assessment.dto.response.QuestionResponse;
 import com.tiesverse.backend.assessment.service.AssessmentService;
 import com.tiesverse.backend.common.response.ApiResponse;
+import com.tiesverse.backend.security.AuthContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class AssessmentController {
 
     private final AssessmentService assessmentService;
+    private final AuthContext authContext;
 
     @PostMapping
     public ApiResponse<AssessmentResponse> createAssessment(@Valid @RequestBody CreateAssessmentRequest request) {
@@ -80,20 +83,22 @@ public class AssessmentController {
 
     @PostMapping("/submit")
     public ApiResponse<AssessmentResultResponse> submitAssessment(
-            @RequestParam UUID userId,
+            Principal principal,
             @Valid @RequestBody SubmitAssessmentRequest request) {
-        return ApiResponse.success("Assessment submitted", assessmentService.submitAssessment(userId, request));
+        return ApiResponse.success("Assessment submitted", assessmentService.submitAssessment(authContext.currentUserId(principal), request));
     }
 
     @GetMapping("/results/{resultId}")
-    public ApiResponse<AssessmentResultResponse> getResult(@PathVariable UUID resultId) {
-        return ApiResponse.success(assessmentService.getResult(resultId));
+    public ApiResponse<AssessmentResultResponse> getResult(Principal principal, @PathVariable UUID resultId) {
+        return ApiResponse.success(assessmentService.getResult(resultId, authContext.currentAccount(principal)));
     }
 
     @GetMapping("/results")
     public ApiResponse<List<AssessmentResultResponse>> getResultHistory(
+            Principal principal,
             @RequestParam UUID userId,
             @RequestParam UUID assessmentId) {
+        authContext.requireSelfOrAdmin(principal, userId);
         return ApiResponse.success(assessmentService.getResultHistory(userId, assessmentId));
     }
 }

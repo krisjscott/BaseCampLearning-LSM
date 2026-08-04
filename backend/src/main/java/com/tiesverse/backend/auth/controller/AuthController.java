@@ -11,14 +11,16 @@ import com.tiesverse.backend.auth.dto.response.AuthResponse;
 import com.tiesverse.backend.auth.dto.response.TokenResponse;
 import com.tiesverse.backend.auth.service.AuthService;
 import com.tiesverse.backend.common.response.ApiResponse;
+import com.tiesverse.backend.security.AuthContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthContext authContext;
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
@@ -46,8 +49,8 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@RequestParam String email) {
-        authService.logout(email);
+    public ResponseEntity<ApiResponse<Void>> logout(Principal principal) {
+        authService.logout(authContext.currentAccount(principal).getEmail());
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
     }
 

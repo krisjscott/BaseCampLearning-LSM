@@ -31,26 +31,50 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {})
+                        .csrf(AbstractHttpConfigurer::disable)
+                        .cors(cors -> {})
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
+                        .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/auth/**",
-                                "/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/actuator/**"
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/verify-email",
+                                "/api/v1/auth/verify-otp",
+                                "/actuator/health",
+                                "/actuator/info"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/**").permitAll()
+                        .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/actuator/**")
+                        .hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/assessments/submit").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/assessments/results/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/assessments/results").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
+                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
+                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
+                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/enrollments/assign", "/api/v1/enrollments/learning-paths")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/enrollments/**")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/enrollments/course/**", "/api/v1/enrollments/learning-paths")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/organizations/**").hasAnyRole("ORGANIZATION_ADMIN", "HR_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/analytics/**").hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/dashboard/admin").hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/dashboard/employee").hasAnyRole("EMPLOYEE", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

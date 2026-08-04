@@ -1,26 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getAuthSession } from "../lib/backendApi";
+import { Skeleton } from "./Skeleton";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const session = getAuthSession();
-    if (!session) {
+    if (!getAuthSession()) {
       router.replace("/");
-    } else {
-      setIsChecking(false);
+      return;
     }
+
+    setChecking(false);
   }, [router]);
 
-  if (isChecking) {
+  if (checking) {
     return (
-      <main style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
-        <p>Loading...</p>
+      <main className="auth-check-screen">
+        <Skeleton className="skeleton-title" />
+        <Skeleton className="skeleton-copy" />
       </main>
     );
   }

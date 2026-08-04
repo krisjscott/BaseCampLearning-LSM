@@ -31,3 +31,6 @@ backend/logs/
 frontend/.next/
 frontend/node_modules/
 
+#Frontend
+tsconfig.tsbuildinfo
+

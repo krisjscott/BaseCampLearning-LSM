@@ -1,78 +1,73 @@
+"use client";
+
+import { ArrowRight, BarChart3 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+  CertificateResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCertificates,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
+import { getLevelProgress, levelMilestones } from "../lib/levelProgress";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, true],
-] as const;
+function ProgressContent() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard(), getCertificates()])
+      .then(([userResult, dashboardResult, certificateResult]) => {
+        if (!active) return;
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+        setCertificates(certificateResult.status === "fulfilled" ? certificateResult.value : []);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-const stats = [
-  ["42h", "Learning time"],
-  ["7", "Modules complete"],
-  ["2 days", "Current streak"],
-] as const;
+    return () => {
+      active = false;
+    };
+  }, []);
 
-const courseProgress = [
-  ["Google Project Management", "58%", "On track"],
-  ["Content Writing", "24%", "1h this week"],
-  ["Graphic Design", "8%", "Needs attention"],
-] as const;
+  const courses = dashboard?.continueLearning || [];
+  const recommendations = dashboard?.recommendedCourses || [];
+  const activities = dashboard?.recentActivities || [];
+  const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
+  const level = getLevelProgress(xpPoints);
+  const averageProgress = courses.length
+    ? Math.round(courses.reduce((sum, item) => sum + (item.completionPercentage || 0), 0) / courses.length)
+    : 0;
+  const completedCourses = courses.filter((course) => (course.completionPercentage || 0) >= 100).length;
+  const stats = [
+    [courses.length.toLocaleString(), "Active courses"],
+    [`${averageProgress}%`, "Average completion"],
+    [certificates.length.toLocaleString(), "Certificates"],
+  ] as const;
 
-export default function ProgressDashboard() {
+  const levelLabel = useMemo(() => {
+    if (!level.next) return "Highest stage reached";
+    return `${level.remaining.toLocaleString()} XP to ${level.next.name}`;
+  }, [level.next, level.remaining]);
+
   return (
     <main className="progress-dashboard-page">
-      <aside className="learning-sidebar">
-        <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <button type="button" className={active ? "active" : ""} key={label}>
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Nirjhar</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/progress" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="progress-dashboard-main">
         <header className="progress-dashboard-header">
           <div>
             <h1>Progress</h1>
-            <p>Learning time, course completion and skill growth.</p>
+            <p>Learning completion, XP, levels and database-recorded activity.</p>
           </div>
           <button type="button">
             <BarChart3 size={18} />
@@ -81,13 +76,23 @@ export default function ProgressDashboard() {
         </header>
 
         <section className="progress-dashboard-hero">
-          <h2>You are building momentum</h2>
-          <p>Complete two more weekly goals to maintain your Builder pace.</p>
-          <button type="button">View insights -&gt;</button>
+          {loading ? (
+            <CardSkeleton lines={3} />
+          ) : (
+            <>
+              <h2>{courses.length ? "Your learning activity is live" : "No active progress yet"}</h2>
+              <p>
+                {courses.length
+                  ? `${courses.length} course${courses.length === 1 ? "" : "s"} and ${activities.length} recent activit${activities.length === 1 ? "y" : "ies"} are powering this view.`
+                  : "Enroll in a course and your progress cards will populate from the database."}
+              </p>
+              <button type="button">View insights -&gt;</button>
+            </>
+          )}
         </section>
 
         <section className="progress-dashboard-stats" aria-label="Progress summary">
-          {stats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : stats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -99,27 +104,95 @@ export default function ProgressDashboard() {
 
         <div className="progress-dashboard-grid">
           <section className="course-progress-list" aria-label="Progress by course">
-            {courseProgress.map(([title, percent, status]) => (
-              <article key={title}>
+            {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : courses.length ? courses.map((course) => {
+              const progress = Math.round(course.completionPercentage || 0);
+              return (
+                <article key={course.courseId}>
+                  <div>
+                    <h3>{course.courseTitle}</h3>
+                    <p>{progress}% - {progress >= 100 ? "Completed" : progress > 0 ? "In progress" : "Ready to start"}</p>
+                  </div>
+                  <button type="button">Details -&gt;</button>
+                </article>
+              );
+            }) : (
+              <article className="empty-state-card">
                 <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {percent} - {status}
-                  </p>
+                  <h3>No course progress found</h3>
+                  <p>Backend course progress will appear here once the learner starts a course.</p>
                 </div>
-                <button type="button">Details -&gt;</button>
               </article>
-            ))}
+            )}
           </section>
 
           <aside className="current-level-card">
-            <h2>Current level</h2>
-            <p>Builder - 2,830 XP</p>
-            <button type="button">Level details -&gt;</button>
+            {loading ? (
+              <CardSkeleton lines={6} />
+            ) : (
+              <>
+                <div className="current-level-card-header">
+                  <section>
+                    <p>Current level</p>
+                    <h2>{level.current.name}</h2>
+                  </section>
+                </div>
+                <div className="current-level-xp">
+                  <strong>{xpPoints.toLocaleString()}</strong>
+                  <span>{level.current.nextXp == null ? "XP earned" : `/ ${level.target.toLocaleString()} XP`}</span>
+                </div>
+                <div className="current-level-meter" aria-label={`${level.percentage} percent toward ${level.next?.name || "top level"}`}>
+                  <span style={{ width: `${level.percentage}%` }} />
+                </div>
+                <div className="current-level-next">
+                  <span>{level.next ? "Next stage" : "Level status"}</span>
+                  <strong>{level.next?.name || "Champion"}</strong>
+                </div>
+                <div className="current-level-pill-row" aria-label="Level milestones">
+                  {levelMilestones.map((milestone) => (
+                    <span className={milestone.name === level.current.name ? "active" : ""} key={milestone.name}>
+                      {milestone.name}
+                    </span>
+                  ))}
+                </div>
+                <button type="button">
+                  <span>{levelLabel}</span>
+                  <ArrowRight size={17} strokeWidth={2.3} />
+                </button>
+              </>
+            )}
           </aside>
         </div>
+
+        <section className="progress-support-grid" aria-label="Progress details">
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={3} />) : (
+            <>
+              <article className="weekly-goal-card">
+                <h2>Weekly goal</h2>
+                <strong>{completedCourses} / {Math.max(courses.length, 1)}</strong>
+                <p>{courses.length ? "Courses completed from active learning." : "No weekly learning goal has started yet."}</p>
+              </article>
+              <article className="recommended-path-card">
+                <h2>Recommended path</h2>
+                <strong>{recommendations.length ? recommendations[0].courseTitle : "No recommendation yet"}</strong>
+                <p>{recommendations.length ? `${recommendations.length} backend recommendation${recommendations.length === 1 ? "" : "s"} available.` : "Onboarding and course data will generate recommendations."}</p>
+              </article>
+              <article className="public-profile-card">
+                <h2>Public profile</h2>
+                <strong>{user?.learnerCode || "Profile code pending"}</strong>
+                <p>{certificates.length} certificate{certificates.length === 1 ? "" : "s"} connected to this learner.</p>
+              </article>
+            </>
+          )}
+        </section>
       </section>
     </main>
   );
 }
 
+export default function ProgressDashboard() {
+  return (
+    <AuthGuard>
+      <ProgressContent />
+    </AuthGuard>
+  );
+}

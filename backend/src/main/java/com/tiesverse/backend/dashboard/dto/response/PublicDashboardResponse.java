@@ -15,6 +15,7 @@ public class PublicDashboardResponse {
     private List<ContinueLearningItem> continueLearning;
     private List<RecommendedCourseItem> recommendedCourses;
     private List<RecentActivityItem> recentActivities;
+    private Integer xpPoints;
 
     @Data
     @Builder
