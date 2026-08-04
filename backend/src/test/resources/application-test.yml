@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:basecamp_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+
+jwt:
+  secret: VGhpcy1pcy1hLXRlc3QtYmFzZWNhbXAtc2VjcmV0LWtleS0zMi1ieXRlcy1sb25n
+  expiration: 3600000
+
+turnstile:
+  enabled: false

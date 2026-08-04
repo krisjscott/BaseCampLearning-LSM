@@ -1,9 +1,9 @@
 spring:
   datasource:
 
-    url: ${DB_URL:jdbc:postgresql://ep-wispy-wind-az0pqand-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:npg_BeEZX7syJdK6}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/basecamp}
+    username: ${DB_USERNAME:basecamp}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   security:
@@ -11,8 +11,8 @@ spring:
       client:
         registration:
           google:
-            client-id: dev-client-id
-            client-secret: dev-client-secret
+            client-id: ${GOOGLE_CLIENT_ID:}
+            client-secret: ${GOOGLE_CLIENT_SECRET:}
 
   jpa:
     hibernate:
@@ -29,14 +29,15 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
 
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 logging:
   level:

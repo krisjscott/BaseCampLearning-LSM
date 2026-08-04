@@ -1,5 +1,6 @@
 package com.tiesverse.backend.dashboard.service;
 
+import com.tiesverse.backend.assessment.repository.AssessmentResultRepository;
 import com.tiesverse.backend.common.enums.CourseStatus;
 import com.tiesverse.backend.common.enums.CourseVisibility;
 import com.tiesverse.backend.course.entity.Course;
@@ -24,6 +25,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final CourseRepository courseRepository;
     private final CourseProgressRepository courseProgressRepository;
     private final UserActivityRepository userActivityRepository;
+    private final AssessmentResultRepository assessmentResultRepository;
 
     @Override
     @Cacheable(value = "publicDashboard", key = "#userId")
@@ -81,10 +83,13 @@ public class DashboardServiceImpl implements DashboardService {
                                 .build())
                         .toList();
 
+        Long xpPoints = userId == null ? 0L : assessmentResultRepository.sumPassedScoresByUserId(userId);
+
         return PublicDashboardResponse.builder()
                 .continueLearning(continueLearning)
                 .recommendedCourses(recommendedCourses)
                 .recentActivities(recentActivities)
+                .xpPoints(xpPoints == null ? 0 : Math.toIntExact(Math.min(xpPoints, Integer.MAX_VALUE)))
                 .build();
     }
 

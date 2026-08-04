@@ -2,6 +2,8 @@ package com.tiesverse.backend.assessment.repository;
 
 import com.tiesverse.backend.assessment.entity.AssessmentResult;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,4 +18,7 @@ public interface AssessmentResultRepository extends JpaRepository<AssessmentResu
     Optional<AssessmentResult> findTopByUserIdAndAssessmentIdOrderByAttemptNumberDesc(UUID userId, UUID assessmentId);
 
     long countByAssessmentIdAndPassedTrue(UUID assessmentId);
+
+    @Query("select coalesce(sum(ar.score), 0) from AssessmentResult ar where ar.userId = :userId and ar.passed = true")
+    Long sumPassedScoresByUserId(@Param("userId") UUID userId);
 }

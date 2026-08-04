@@ -69,7 +69,11 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle>(function TurnstileWidg
 
   if (!SITE_KEY) return null;
 
-  return <div ref={containerRef} className="cf-turnstile" data-action="turnstile-spin-v2" />;
+  return (
+    <div className="turnstile-slot">
+      <div ref={containerRef} className="cf-turnstile" data-action="turnstile-spin-v2" />
+    </div>
+  );
 });
 
 export default TurnstileWidget;

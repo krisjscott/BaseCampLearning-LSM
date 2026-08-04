@@ -19,7 +19,10 @@ import com.tiesverse.backend.assessment.repository.AssessmentRepository;
 import com.tiesverse.backend.assessment.repository.AssessmentResultRepository;
 import com.tiesverse.backend.assessment.repository.QuestionOptionRepository;
 import com.tiesverse.backend.assessment.repository.QuestionRepository;
+import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.common.exception.BadRequestException;
+import com.tiesverse.backend.common.exception.ForbiddenException;
 import com.tiesverse.backend.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,12 +32,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AssessmentServiceImpl implements AssessmentService {
+
+    private static final Set<Role> ADMIN_ROLES = Set.of(Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
 
     private final AssessmentRepository assessmentRepository;
     private final QuestionRepository questionRepository;
@@ -245,9 +251,14 @@ public class AssessmentServiceImpl implements AssessmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public AssessmentResultResponse getResult(UUID resultId) {
+    public AssessmentResultResponse getResult(UUID resultId, Account requester) {
         AssessmentResult result = assessmentResultRepository.findById(resultId)
                 .orElseThrow(() -> new ResourceNotFoundException("AssessmentResult", "id", resultId));
+        boolean canRead = requester != null
+                && (result.getUserId().equals(requester.getUserId()) || ADMIN_ROLES.contains(requester.getRole()));
+        if (!canRead) {
+            throw new ForbiddenException("You can only access your own assessment results");
+        }
 
         AssessmentResultResponse response = assessmentMapper.toAssessmentResultResponse(result);
         assessmentRepository.findById(result.getAssessmentId())

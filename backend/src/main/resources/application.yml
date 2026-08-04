@@ -1,10 +1,10 @@
 spring:
   application:
     name: tiesverse-basecamp-learning
-  profiles:
-    active: cloud
   config:
     import: optional:file:.env[.properties]
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
   jpa:
     properties:
@@ -44,8 +44,8 @@ springdoc:
     enabled: true
 
 jwt:
-  secret: ${JWT_SECRET:VGhpcy1pcy1hLWJhc2VjYW1wLWNsb3VkLWRldi1zZWNyZXQta2V5LTMyLWJ5dGVzLWxvbmc=}
-  expiration: 86400000
+  secret: ${JWT_SECRET:VGhpcy1pcy1hLWJhc2VjYW1wLWxvY2FsLWRldi1zZWNyZXQta2V5LTMyLWJ5dGVzLWxvbmc=}
+  expiration: ${JWT_EXPIRATION:86400000}
 
 turnstile:
   secret-key: ${TURNSTILE_SECRET:}

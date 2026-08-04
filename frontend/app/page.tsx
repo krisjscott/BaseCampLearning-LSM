@@ -10,9 +10,9 @@ import TurnstileWidget, { TurnstileWidgetHandle } from "./components/TurnstileWi
 export default function AuthScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
-  const [email, setEmail] = useState("demo@basecamp.local");
+  const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState("password");
+  const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
@@ -65,7 +65,7 @@ export default function AuthScreen() {
 
         <section className="form-panel">
           <Image
-            src="/BasecampLogoExact.png"
+            src="/basecamp-logo.png"
             alt="BaseCamp"
             width={148}
             height={91}

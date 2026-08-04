@@ -4,9 +4,9 @@ server:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL:jdbc:postgresql://ep-wispy-wind-az0pqand-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       keepalive-time: 30000
       max-lifetime: 1800000
@@ -43,10 +43,12 @@ management:
       enabled: false
 
 jwt:
-  secret: "VGhpcy1pcy1hLWJhc2VjYW1wLWNsb3VkLWRldi1zZWNyZXQta2V5LTMyLWJ5dGVzLWxvbmc="
-  expiration: 3600000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000}
   refresh-expiration: 604800000
 
 app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   video:
     base-url: ${VIDEO_BASE_URL:}

@@ -10,8 +10,10 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { NotificationResponse, UserResponse, getCurrentUser, getNotifications } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
+import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
 
 const navItems = [
   ["Learning Home", Home, true],
@@ -22,48 +24,33 @@ const navItems = [
   ["Progress", BarChart3, false],
 ] as const;
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["6", "Unread"],
-  ["2", "Deadline alerts"],
-  ["3", "Course updates"],
-] as const;
-
-const recentNotifications = [
-  ["Checkpoint reminder", "Quiz scheduled for Jul 28", "Open course"],
-  ["Certificate ready", "Content Writing certificate is available", "Download"],
-  ["New recommendation", "Communication Mastery matches your goals", "View"],
-] as const;
-
 function Notifications() {
   const [backendNotifications, setBackendNotifications] = useState<NotificationResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     Promise.allSettled([getNotifications(), getCurrentUser()])
       .then(([notificationsResult, userResult]) => {
         if (!active) return;
-        if (notificationsResult.status === "fulfilled" && notificationsResult.value.length) {
+        if (notificationsResult.status === "fulfilled") {
           setBackendNotifications(notificationsResult.value);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
           setUser(userResult.value);
         }
       })
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
   }, []);
 
   const notificationRows = useMemo(() => {
-    if (!backendNotifications.length) return recentNotifications;
     return backendNotifications.slice(0, 3).map((item) => [
       item.title,
       item.message,
@@ -72,7 +59,6 @@ function Notifications() {
   }, [backendNotifications]);
 
   const summaryStats = useMemo(() => {
-    if (!backendNotifications.length) return stats;
     const unread = backendNotifications.filter((item) => !item.read).length;
     const deadlineAlerts = backendNotifications.filter((item) => item.category === "DEADLINE_REMINDER").length;
     const courseUpdates = backendNotifications.filter((item) => item.category === "COURSE_ASSIGNED").length;
@@ -84,39 +70,54 @@ function Notifications() {
   }, [backendNotifications]);
 
   const heroNotification = backendNotifications.find((item) => !item.read) || backendNotifications[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "Nirjhar";
+  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
 
   return (
     <main className="notifications-page">
       <aside className="learning-sidebar">
-        <img src="/BasecampLogoExact.png" alt="BaseCamp" className="learning-sidebar-logo" />
+        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
 
         <nav className="learning-nav" aria-label="Learning sections">
           {navItems.map(([label, Icon, active]) => (
-            <button type="button" className={active ? "active" : ""} key={label}>
+            <a
+              href={({
+                "Learning Home": "/learning",
+                "My Learning": "/my-learning",
+                Explore: "/explore",
+                Achievements: "/achievements",
+                Certificates: "/certificates",
+                Progress: "/progress",
+              } as const)[label]}
+              className={active ? "active" : ""}
+              key={label}
+            >
               <Icon size={22} strokeWidth={1.8} />
               <span>{label}</span>
-            </button>
+            </a>
           ))}
         </nav>
 
         <section className="recent-trails" aria-label="Recent trails">
           <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
+          {loading ? <SidebarSkeleton /> : <small>No course progress yet</small>}
         </section>
-        <section className="learner-profile" aria-label="Learner profile">
-          <div>{learnerName.charAt(0).toUpperCase()}</div>
-          <section>
-            <strong>{learnerName}</strong>
-            <span>Builder - 2,480 XP</span>
-            <small>BC-CR-021</small>
-          </section>
-        </section>
+        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
+          {loading ? (
+            <>
+              <div><Skeleton className="skeleton-pill" /></div>
+              <SidebarSkeleton />
+            </>
+          ) : (
+            <>
+              <div>{learnerName.charAt(0).toUpperCase()}</div>
+              <section>
+                <strong>{learnerName}</strong>
+                <span>{user?.role || "Learner"}</span>
+                <small>{user?.learnerCode || "Profile code pending"}</small>
+              </section>
+            </>
+          )}
+        </Link>
       </aside>
 
       <section className="notifications-main">
@@ -132,13 +133,21 @@ function Notifications() {
         </header>
 
         <section className="notifications-hero">
-          <h2>{heroNotification?.title || "One deadline needs attention"}</h2>
-          <p>{heroNotification?.message || "Workplace Safety Essentials is due Jul 30."}</p>
-          <button type="button">Review deadline -&gt;</button>
+          {loading ? <CardSkeleton lines={3} /> : (
+            <>
+              <h2>{heroNotification?.title || "No notifications yet"}</h2>
+              <p>{heroNotification?.message || "Course updates and reminders will appear here."}</p>
+              <button type="button">{heroNotification ? "Review notification ->" : "Manage preferences ->"}</button>
+            </>
+          )}
         </section>
 
         <section className="notifications-stats" aria-label="Notifications summary">
-          {summaryStats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => (
+            <article key={index}>
+              <CardSkeleton lines={2} />
+            </article>
+          )) : summaryStats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -150,7 +159,9 @@ function Notifications() {
 
         <div className="notifications-content-grid">
           <section className="notification-list" aria-label="Recent notifications">
-            {notificationRows.map(([title, detail, action]) => (
+            {loading ? Array.from({ length: 3 }, (_, index) => (
+              <CardSkeleton key={index} lines={2} />
+            )) : notificationRows.length ? notificationRows.map(([title, detail, action]) => (
               <article key={title}>
                 <div>
                   <h3>{title}</h3>
@@ -158,13 +169,25 @@ function Notifications() {
                 </div>
                 <button type="button">{action} -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No recent notifications</h3>
+                  <p>Your backend notifications table has no records for this account.</p>
+                </div>
+                <button type="button">Preferences -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="notification-preferences-card">
-            <h2>Preferences</h2>
-            <p>Choose email and in-product notification types.</p>
-            <button type="button">Manage preferences -&gt;</button>
+            {loading ? <CardSkeleton lines={3} /> : (
+              <>
+                <h2>Preferences</h2>
+                <p>Choose email and in-product notification types.</p>
+                <button type="button">Manage preferences -&gt;</button>
+              </>
+            )}
           </aside>
         </div>
       </section>

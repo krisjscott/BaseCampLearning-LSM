@@ -1,39 +1,32 @@
 # BaseCamp Frontend
 
-Next.js frontend for the BaseCamp learning demo.
+Next.js frontend for the BaseCamp learning platform.
 
-## Run Locally
+## Environment
 
-Start the backend first from `../backend` with the `local` Spring profile, then run:
+Create an ignored `.env.local` file:
 
 ```powershell
-cd F:\basecamp\backend\frontend
-npm install
 copy .env.example .env.local
-npm run dev:local
 ```
 
-Open:
+Set the deployed backend URL and Turnstile site key:
 
 ```text
-http://127.0.0.1:3100
+NEXT_PUBLIC_API_BASE_URL=https://api.your-basecamp-domain.com
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=<cloudflare-turnstile-site-key>
 ```
 
-The frontend talks to:
+## Development
 
-```text
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
+```powershell
+npm install
+npm run dev
 ```
 
-Demo login:
-
-```text
-demo@basecamp.local
-password
-```
-
-## Build
+## Production Build
 
 ```powershell
 npm run build
+npm run start
 ```

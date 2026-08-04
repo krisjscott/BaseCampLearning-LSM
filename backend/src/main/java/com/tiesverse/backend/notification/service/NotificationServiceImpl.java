@@ -1,6 +1,7 @@
 package com.tiesverse.backend.notification.service;
 
 import com.tiesverse.backend.common.enums.NotificationType;
+import com.tiesverse.backend.common.exception.ForbiddenException;
 import com.tiesverse.backend.notification.dto.request.SendBulkNotificationRequest;
 import com.tiesverse.backend.notification.dto.request.SendNotificationRequest;
 import com.tiesverse.backend.notification.dto.response.NotificationResponse;
@@ -70,9 +71,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public NotificationResponse markAsRead(UUID notificationId) {
+    public NotificationResponse markAsRead(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
+        if (!notification.getUserId().equals(userId)) {
+            throw new ForbiddenException("You can only update your own notifications");
+        }
         notification.setRead(true);
         notification.setReadAt(LocalDateTime.now());
         Notification saved = notificationRepository.save(notification);
@@ -91,9 +95,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void deleteNotification(UUID notificationId) {
+    public void deleteNotification(UUID notificationId, UUID userId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
+        if (!notification.getUserId().equals(userId)) {
+            throw new ForbiddenException("You can only delete your own notifications");
+        }
         notificationRepository.delete(notification);
     }
 }
