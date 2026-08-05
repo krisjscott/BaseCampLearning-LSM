@@ -1,27 +1,21 @@
 "use client";
 
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+import { Award } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { CertificateResponse, UserResponse, getCertificates, getCurrentUser } from "../lib/backendApi";
+import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
-import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
-
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, true],
-  ["Progress", BarChart3, false],
-] as const;
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
+import {
+  CertificateResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  downloadCertificate,
+  getCertificates,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
+import { encodeId } from "../lib/idCodec";
 
 function shortDate(value?: string | null) {
   if (!value) return "";
@@ -34,14 +28,17 @@ function longDate(value?: string | null) {
 }
 
 function CertificatesWallet() {
+  const router = useRouter();
   const [backendCertificates, setBackendCertificates] = useState<CertificateResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAllCertificates, setShowAllCertificates] = useState(false);
 
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getCertificates(), getCurrentUser()])
-      .then(([certificatesResult, userResult]) => {
+    Promise.allSettled([getCertificates(), getCurrentUser(), getPublicDashboard()])
+      .then(([certificatesResult, userResult, dashboardResult]) => {
         if (!active) return;
         if (certificatesResult.status === "fulfilled") {
           setBackendCertificates(certificatesResult.value);
@@ -49,6 +46,7 @@ function CertificatesWallet() {
         if (userResult.status === "fulfilled" && userResult.value) {
           setUser(userResult.value);
         }
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
       })
       .catch(() => undefined)
       .finally(() => {
@@ -59,14 +57,9 @@ function CertificatesWallet() {
     };
   }, []);
 
-  const credentialRows = useMemo(() => {
-    return backendCertificates.slice(0, 3).map((certificate) => [
-      certificate.title || certificate.courseName || "Certificate",
-      certificate.issuedDate ? `Issued ${shortDate(certificate.issuedDate)}` : "Issued",
-      certificate.certificateNumber ? "Verified" : "",
-      certificate.fileUrl ? "Download" : "Open",
-    ] as const);
-  }, [backendCertificates]);
+  const visibleCertificates = useMemo(() => {
+    return showAllCertificates ? backendCertificates : backendCertificates.slice(0, 3);
+  }, [backendCertificates, showAllCertificates]);
 
   const summaryStats = useMemo(() => {
     return [
@@ -77,55 +70,20 @@ function CertificatesWallet() {
   }, [backendCertificates]);
 
   const heroCertificate = backendCertificates[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
+
+  async function openCertificateFile(certificateId: string, fallbackUrl?: string | null) {
+    try {
+      const freshUrl = await downloadCertificate(certificateId);
+      const url = freshUrl || fallbackUrl;
+      if (url) window.open(url, "_blank");
+    } catch {
+      if (fallbackUrl) window.open(fallbackUrl, "_blank");
+    }
+  }
 
   return (
     <main className="certificates-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {loading ? <SidebarSkeleton /> : <small>No course progress yet</small>}
-        </section>
-        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
-          {loading ? (
-            <>
-              <div><Skeleton className="skeleton-pill" /></div>
-              <SidebarSkeleton />
-            </>
-          ) : (
-            <>
-              <div>{learnerName.charAt(0).toUpperCase()}</div>
-              <section>
-                <strong>{learnerName}</strong>
-                <span>{user?.role || "Learner"}</span>
-                <small>{user?.learnerCode || "Profile code pending"}</small>
-              </section>
-            </>
-          )}
-        </Link>
-      </aside>
+      <LearningSidebar activeHref="/certificates" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificates-main">
         <header className="certificates-header">
@@ -133,7 +91,16 @@ function CertificatesWallet() {
             <h1>Certificates</h1>
             <p>Download, verify and share completed credentials.</p>
           </div>
-          <button type="button">
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                heroCertificate
+                  ? `/verify-credential?certificateNumber=${encodeId(heroCertificate.certificateNumber)}`
+                  : "/verify-credential",
+              )
+            }
+          >
             <Award size={18} />
             <span>Verify credential</span>
           </button>
@@ -147,7 +114,16 @@ function CertificatesWallet() {
                 {heroCertificate?.issuedDate ? `Certificate issued ${longDate(heroCertificate.issuedDate)}` : "Completed course certificates will appear here."}{" "}
                 {heroCertificate?.certificateNumber ? `- Credential ${heroCertificate.certificateNumber}` : ""}
               </p>
-              <button type="button">{heroCertificate ? "Download certificate ->" : "Explore courses ->"}</button>
+              <button
+                type="button"
+                onClick={() =>
+                  heroCertificate
+                    ? openCertificateFile(heroCertificate.id, heroCertificate.fileUrl)
+                    : router.push("/explore")
+                }
+              >
+                {heroCertificate ? "Download certificate ->" : "Explore courses ->"}
+              </button>
             </>
           )}
         </section>
@@ -171,21 +147,37 @@ function CertificatesWallet() {
           <section className="credential-list" aria-label="Your credentials">
             {loading ? Array.from({ length: 3 }, (_, index) => (
               <CardSkeleton key={index} lines={2} />
-            )) : credentialRows.length ? credentialRows.map(([title, meta, status, action]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{status ? `${meta} - ${status}` : meta}</p>
-                </div>
-                <button type="button">{action} -&gt;</button>
-              </article>
-            )) : (
+            )) : visibleCertificates.length ? (
+              <>
+                {visibleCertificates.map((certificate) => {
+                  const meta = certificate.issuedDate ? `Issued ${shortDate(certificate.issuedDate)}` : "Issued";
+                  const status = certificate.certificateNumber ? "Verified" : "";
+                  const actionLabel = certificate.fileUrl ? "Download" : "Open";
+                  return (
+                    <article key={certificate.id}>
+                      <div>
+                        <h3>{certificate.title || certificate.courseName || "Certificate"}</h3>
+                        <p>{status ? `${meta} - ${status}` : meta}</p>
+                      </div>
+                      <button type="button" onClick={() => openCertificateFile(certificate.id, certificate.fileUrl)}>
+                        {actionLabel} -&gt;
+                      </button>
+                    </article>
+                  );
+                })}
+                {!showAllCertificates && backendCertificates.length > 3 ? (
+                  <button type="button" className="view-all-certificates" onClick={() => setShowAllCertificates(true)}>
+                    View all certificates
+                  </button>
+                ) : null}
+              </>
+            ) : (
               <article>
                 <div>
                   <h3>No credentials issued</h3>
                   <p>Certificates are created from completed course assessments.</p>
                 </div>
-                <button type="button">Explore courses -&gt;</button>
+                <button type="button" onClick={() => router.push("/explore")}>Explore courses -&gt;</button>
               </article>
             )}
           </section>
@@ -202,7 +194,7 @@ function CertificatesWallet() {
                     <small>{backendCertificates.length ? "Visible" : "Hidden"}</small>
                   </span>
                 </div>
-                <button type="button">Manage visibility -&gt;</button>
+                <button type="button" onClick={() => router.push("/profile-preferences")}>Manage visibility -&gt;</button>
               </>
             )}
           </aside>

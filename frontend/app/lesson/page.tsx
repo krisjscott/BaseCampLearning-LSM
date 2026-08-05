@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Captions,
   Check,
-  FileText,
   Folder,
   Grid2X2,
-  Lock,
   Maximize,
   Pause,
   Play,
@@ -16,43 +15,20 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { getLesson, LessonResponse } from "../lib/backendApi";
+import {
+  LessonResponse,
+  ModuleResponse,
+  getCourseModules,
+  getCurrentUser,
+  getLesson,
+  getLessonsProgress,
+  updateCourseProgress,
+} from "../lib/backendApi";
+import AuthGuard from "../components/AuthGuard";
 import { CardSkeleton, Skeleton } from "../components/Skeleton";
-
-const lessons = [
-  ["Project goals and stakeholders", "8 min video", "done"],
-  ["Build a project charter", "10 min video", "done"],
-  ["Identify project risks", "9 min video", "done"],
-  ["Define scope and deliverables", "24 sec video - Playing", "playing"],
-  ["Build a work breakdown structure", "11 min video", "next"],
-  ["Module checkpoint quiz", "12 questions - Required", "locked"],
-  ["Module wrap-up", "5 min reading", "locked"],
-] as const;
+import { decodeParam, encodeId } from "../lib/idCodec";
 
 const playbackRates = [1, 1.25, 1.5, 2] as const;
-
-const captionCues = [
-  {
-    start: 0,
-    end: 5,
-    text: "Welcome to the BaseCamp lesson player.",
-  },
-  {
-    start: 5,
-    end: 11,
-    text: "This sample video lets you test playback, progress, volume, captions, speed, and fullscreen.",
-  },
-  {
-    start: 11,
-    end: 17,
-    text: "Use the course checklist on the right to follow your module progress.",
-  },
-  {
-    start: 17,
-    end: 24,
-    text: "When the lesson finishes, the watch progress updates to complete.",
-  },
-] as const;
 
 function formatTime(value: number) {
   if (!Number.isFinite(value)) {
@@ -64,38 +40,75 @@ function formatTime(value: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export default function LessonPlayer() {
+type Tab = "overview" | "resources" | "notes";
+
+function LessonPlayer() {
+  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const cardRef = useRef<HTMLElement | null>(null);
+
+  const [lessonId, setLessonId] = useState<string | null>(null);
+  const [moduleId, setModuleId] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [lesson, setLesson] = useState<LessonResponse | null>(null);
+  const [module, setModule] = useState<ModuleResponse | null>(null);
+  const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set());
   const [loadingLesson, setLoadingLesson] = useState(true);
+  const [markedComplete, setMarkedComplete] = useState(false);
+  const [tab, setTab] = useState<Tab>("overview");
+  const [notes, setNotes] = useState("");
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [captionsEnabled, setCaptionsEnabled] = useState(false);
   const [duration, setDuration] = useState(24);
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+
   const videoUrl = lesson?.contentUrl || "/lesson-sample.mp4";
-  const lessonTitle = lesson?.title || "Define scope and deliverables";
   const fallbackDuration = lesson?.durationMinutes ? lesson.durationMinutes * 60 : 24;
   const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
   const watchedPercent = Math.min(100, Math.round(progress));
-  const activeCaption = captionsEnabled
-    ? captionCues.find((cue) => currentTime >= cue.start && currentTime < cue.end)?.text || ""
-    : "";
+  const isComplete = markedComplete || watchedPercent >= 100;
 
   useEffect(() => {
-    const lessonId = new URLSearchParams(window.location.search).get("lessonId");
+    const params = new URLSearchParams(window.location.search);
+    const id = decodeParam(params, "lessonId");
+    const modId = decodeParam(params, "moduleId");
+    const courseParam = decodeParam(params, "courseId");
+    setLessonId(id);
+    setModuleId(modId);
+    setCourseId(courseParam);
 
-    if (!lessonId) {
+    getCurrentUser().then((user) => setUserId(user?.id || null)).catch(() => undefined);
+
+    if (!id) {
       setLoadingLesson(false);
       return;
     }
 
-    getLesson(lessonId)
+    getLesson(id)
       .then(setLesson)
       .catch(() => setLesson(null))
       .finally(() => setLoadingLesson(false));
+
+    if (courseParam) {
+      getCourseModules(courseParam)
+        .then((modules) => {
+          const owningModule = modules.find((m) => m.id === modId) || modules.find((m) => m.lessons?.some((l) => l.id === id));
+          setModule(owningModule || null);
+
+          const lessonIds = (owningModule?.lessons || []).map((l) => l.id);
+          getCurrentUser().then((user) => {
+            if (!user || !lessonIds.length) return;
+            getLessonsProgress(user.id, lessonIds)
+              .then((rows) => setCompletedLessonIds(new Set(rows.filter((row) => row.completed).map((row) => row.lessonId))))
+              .catch(() => undefined);
+          });
+        })
+        .catch(() => setModule(null));
+    }
   }, []);
 
   useEffect(() => {
@@ -138,37 +151,35 @@ export default function LessonPlayer() {
     };
   }, [fallbackDuration, videoUrl]);
 
+  useEffect(() => {
+    if (watchedPercent < 100 || markedComplete || !courseId || !userId || !lessonId) return;
+    setMarkedComplete(true);
+    updateCourseProgress(courseId, userId, {
+      lessonId,
+      completed: true,
+      timeSpentMinutes: Math.round(duration / 60),
+    })
+      .then(() => setCompletedLessonIds((prev) => new Set(prev).add(lessonId)))
+      .catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedPercent, courseId, userId, lessonId]);
+
   const togglePlayback = async () => {
     const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
-    if (video.paused) {
-      await video.play();
-    } else {
-      video.pause();
-    }
+    if (!video) return;
+    if (video.paused) await video.play();
+    else video.pause();
   };
 
   const toggleMute = () => {
     const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
+    if (!video) return;
     video.muted = !video.muted;
   };
 
   const toggleCaptions = () => {
     const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
+    if (!video) return;
     const next = !captionsEnabled;
     Array.from(video.textTracks).forEach((track) => {
       track.mode = next ? "hidden" : "disabled";
@@ -178,11 +189,7 @@ export default function LessonPlayer() {
 
   const cyclePlaybackRate = () => {
     const video = videoRef.current;
-
-    if (!video) {
-      return;
-    }
-
+    if (!video) return;
     const currentIndex = playbackRates.findIndex((rate) => rate === video.playbackRate);
     const nextRate = playbackRates[(currentIndex + 1) % playbackRates.length] || 1;
     video.playbackRate = nextRate;
@@ -190,30 +197,34 @@ export default function LessonPlayer() {
 
   const enterFullscreen = async () => {
     const target = cardRef.current;
-
-    if (!target) {
-      return;
-    }
-
+    if (!target) return;
     if (document.fullscreenElement) {
       await document.exitFullscreen();
       return;
     }
-
     await target.requestFullscreen();
   };
 
   const seekTo = (value: number) => {
     const video = videoRef.current;
-
-    if (!video || !duration) {
-      return;
-    }
-
+    if (!video || !duration) return;
     const nextTime = Math.min(duration, Math.max(0, value));
     video.currentTime = nextTime;
     setCurrentTime(nextTime);
   };
+
+  function exitLesson() {
+    router.push(courseId ? `/course?courseId=${encodeId(courseId)}` : "/learning");
+  }
+
+  const orderedLessons = [...(module?.lessons || [])].sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+  const currentPosition = orderedLessons.findIndex((item) => item.id === lessonId);
+  const nextLesson = currentPosition >= 0 ? orderedLessons[currentPosition + 1] : undefined;
+
+  function goToNextLesson() {
+    if (!nextLesson || !courseId || !module) return;
+    router.push(`/lesson?lessonId=${encodeId(nextLesson.id)}&moduleId=${encodeId(module.id)}&courseId=${encodeId(courseId)}`);
+  }
 
   return (
     <main className="lesson-player">
@@ -236,8 +247,8 @@ export default function LessonPlayer() {
           </section>
         </div>
         <div className="lesson-top-actions">
-          <p>58% complete</p>
-          <button type="button">
+          <p>{watchedPercent}% watched</p>
+          <button type="button" onClick={exitLesson}>
             <X size={16} />
             <span>Exit lesson</span>
           </button>
@@ -249,11 +260,16 @@ export default function LessonPlayer() {
           <div className="lesson-heading">
             {loadingLesson ? (
               <CardSkeleton lines={3} />
+            ) : !lesson ? (
+              <>
+                <h1>Lesson not found</h1>
+                <span>Open this page from a course to load a real lesson.</span>
+              </>
             ) : (
               <>
-                <p>LESSON 4 OF 7</p>
-                <h1>{lessonTitle}</h1>
-                <span>{lesson?.durationMinutes ? `${lesson.durationMinutes} min video - Required` : "24 sec video - Required"}</span>
+                <p>{module ? `${module.title.toUpperCase()}${currentPosition >= 0 ? ` - LESSON ${currentPosition + 1} OF ${orderedLessons.length}` : ""}` : "LESSON"}</p>
+                <h1>{lesson.title}</h1>
+                <span>{lesson.durationMinutes ? `${lesson.durationMinutes} min ${lesson.contentType?.toLowerCase() || "video"}` : lesson.contentType || "Lesson"}</span>
               </>
             )}
           </div>
@@ -269,12 +285,7 @@ export default function LessonPlayer() {
               key={videoUrl}
             >
               <source src={videoUrl} type="video/mp4" />
-              <track
-                src="/lesson-sample.vtt"
-                kind="captions"
-                srcLang="en"
-                label="English"
-              />
+              <track src="/lesson-sample.vtt" kind="captions" srcLang="en" label="English" />
             </video>
             <button
               type="button"
@@ -287,11 +298,6 @@ export default function LessonPlayer() {
               </span>
               <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson" : `Resume from ${formatTime(currentTime)}`}</strong>
             </button>
-            {captionsEnabled && activeCaption ? (
-              <div className="lesson-caption-box" aria-live="polite">
-                {activeCaption}
-              </div>
-            ) : null}
             <div className="video-controls">
               <div className="video-progress" aria-label="Video progress">
                 <span style={{ width: `${progress}%` }} />
@@ -317,12 +323,7 @@ export default function LessonPlayer() {
                   <button type="button" aria-label={isMuted ? "Unmute" : "Volume"} onClick={toggleMute}>
                     {isMuted ? <VolumeX size={17} /> : <Volume2 size={17} />}
                   </button>
-                  <button
-                    type="button"
-                    aria-label="Captions"
-                    className={captionsEnabled ? "active" : ""}
-                    onClick={toggleCaptions}
-                  >
+                  <button type="button" aria-label="Captions" className={captionsEnabled ? "active" : ""} onClick={toggleCaptions}>
                     <Captions size={17} />
                   </button>
                   <button type="button" aria-label="Playback speed" onClick={cyclePlaybackRate}>
@@ -336,74 +337,95 @@ export default function LessonPlayer() {
             </div>
           </section>
 
-          <section className="watch-policy">
-            <Lock size={18} />
-            <p>Video progress is tracked from the active lesson media.</p>
-            <strong>{watchedPercent}% watched</strong>
-          </section>
-
           <section className="lesson-lower">
             <nav className="lesson-tabs" aria-label="Lesson sections">
-              <button type="button" className="active">
+              <button type="button" className={tab === "overview" ? "active" : ""} onClick={() => setTab("overview")}>
                 <Grid2X2 size={16} />
                 <span>Overview</span>
               </button>
-              <button type="button">
-                <FileText size={16} />
-                <span>Transcript</span>
-              </button>
-              <button type="button">
+              <button type="button" className={tab === "resources" ? "active" : ""} onClick={() => setTab("resources")}>
                 <Folder size={16} />
                 <span>Resources</span>
               </button>
-              <button type="button">
+              <button type="button" className={tab === "notes" ? "active" : ""} onClick={() => setTab("notes")}>
                 <StickyNote size={16} />
                 <span>Notes</span>
               </button>
             </nav>
 
-            <button type="button" className="mark-complete">
-              <Lock size={16} />
-              <span>Quiz unlocks after video</span>
+            {tab === "overview" && (
+              <p className="lesson-tab-panel">{lesson?.description || "No description was provided for this lesson."}</p>
+            )}
+            {tab === "resources" && (
+              <p className="lesson-tab-panel">
+                {lesson?.contentUrl ? (
+                  <a href={lesson.contentUrl} target="_blank" rel="noreferrer">Open lesson resource -&gt;</a>
+                ) : (
+                  "No downloadable resources for this lesson."
+                )}
+              </p>
+            )}
+            {tab === "notes" && (
+              <div className="lesson-tab-panel">
+                <textarea
+                  className="inline-textarea"
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  placeholder="Jot down notes for this lesson (kept for this session only)"
+                  rows={5}
+                />
+              </div>
+            )}
+
+            <button type="button" className="mark-complete" onClick={goToNextLesson} disabled={!isComplete || !nextLesson}>
+              <Check size={16} />
+              <span>{!isComplete ? "Finish watching to continue" : nextLesson ? "Continue to next lesson" : "This was the last lesson"}</span>
             </button>
           </section>
         </section>
 
         <aside className="lesson-playlist">
           <header>
-            <p>Module 3</p>
-            <h2>Planning and execution</h2>
-            <span>4 of 7 lessons - 58% course progress</span>
+            <p>{module ? module.title : "Playlist"}</p>
+            <h2>{module ? `${orderedLessons.length} lessons in this module` : "Open from a course to see the full playlist"}</h2>
+            <span>{completedLessonIds.size} of {orderedLessons.length} lessons complete</span>
           </header>
 
-          <div className="playlist-progress">
-            <span />
-          </div>
-
           <div className="playlist-list">
-            {lessons.map(([title, meta, state], index) => (
-              <article className={`playlist-row ${state}`} key={title}>
-                <div>
-                  {state === "done" && <Check size={18} />}
-                  {state === "playing" && <Play size={17} />}
-                  {state === "locked" && <Lock size={17} />}
-                  {state === "next" && <span>{index + 1}</span>}
-                </div>
-                <section>
-                  <h3>{title}</h3>
-                  <p>{meta}</p>
-                </section>
-              </article>
-            ))}
+            {orderedLessons.map((item, index) => {
+              const done = completedLessonIds.has(item.id) || (item.id === lessonId && isComplete);
+              const playing = item.id === lessonId;
+              return (
+                <article className={`playlist-row ${done ? "done" : playing ? "playing" : "next"}`} key={item.id}>
+                  <button
+                    type="button"
+                    className="playlist-row-link"
+                    onClick={() => courseId && module && router.push(`/lesson?lessonId=${encodeId(item.id)}&moduleId=${encodeId(module.id)}&courseId=${encodeId(courseId)}`)}
+                  >
+                    <div>
+                      {done && <Check size={18} />}
+                      {!done && playing && <Play size={17} />}
+                      {!done && !playing && <span>{index + 1}</span>}
+                    </div>
+                    <section>
+                      <h3>{item.title}</h3>
+                      <p>{item.durationMinutes ? `${item.durationMinutes} min` : item.contentType || "Lesson"}{playing ? " - Playing" : ""}</p>
+                    </section>
+                  </button>
+                </article>
+              );
+            })}
           </div>
-
-          <section className="saved-card">
-            <p>Progress saved</p>
-            <span>Last activity: Jul 26, 2026 - 04:52</span>
-            <strong>Quiz unlocks when this video reaches 100%.</strong>
-          </section>
         </aside>
       </div>
     </main>
+  );
+}
+
+export default function LessonPlayerPage() {
+  return (
+    <AuthGuard>
+      <LessonPlayer />
+    </AuthGuard>
   );
 }

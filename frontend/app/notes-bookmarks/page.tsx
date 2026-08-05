@@ -1,133 +1,152 @@
-import {
-  Award,
-  BarChart3,
-  Bookmark,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+"use client";
 
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+import { useEffect, useState } from "react";
+import { Bookmark } from "lucide-react";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+type LocalNote = {
+  id: string;
+  title: string;
+  text: string;
+  createdAt: string;
+};
 
-const stats = [
-  ["8", "Notes"],
-  ["4", "Bookmarks"],
-  ["3", "Resources"],
-] as const;
+function NotesBookmarks() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const savedItems = [
-  ["Define scope clearly", "Video 07:18", "Module 3 Lesson 4"],
-  ["Stakeholder influence matrix", "Reading", "Module 3 Lesson 2"],
-  ["Project charter template", "Resource", "Downloaded Jul 24"],
-] as const;
+  const [notes, setNotes] = useState<LocalNote[]>([]);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
+  const [formText, setFormText] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
-export default function NotesBookmarksDesktop() {
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard()]).then(([u, d]) => {
+      if (!active) return;
+      if (u.status === "fulfilled") setUser(u.value);
+      setDashboard(d.status === "fulfilled" ? d.value : null);
+    }).finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function createNote() {
+    const title = formTitle.trim();
+    const text = formText.trim();
+    if (!title) return;
+    setNotes((prev) => [
+      { id: `note-${Date.now()}`, title, text, createdAt: new Date().toLocaleString() },
+      ...prev,
+    ]);
+    setFormTitle("");
+    setFormText("");
+    setFormOpen(false);
+  }
+
+  function exportNotes() {
+    const payload = JSON.stringify(
+      notes.map(({ title, text, createdAt }) => ({ title, text, createdAt })),
+      null,
+      2,
+    );
+    const blob = new Blob([payload], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "basecamp-notes.json";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <main className="certificate-detail-page notes-bookmarks-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
           <div>
             <h1>Notes &amp; Bookmarks</h1>
-            <p>Review saved moments, lesson notes and resources.</p>
+            <p>Jot down and revisit notes from your courses.</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={() => setFormOpen((prev) => !prev)}>
             <Bookmark size={18} />
             <span>Create note</span>
           </button>
         </header>
 
         <section className="certificate-detail-hero">
-          <h2>12 saved learning moments</h2>
-          <p>Notes remain linked to the exact lesson and video timestamp.</p>
-          <button type="button">Open saved items -&gt;</button>
+          <h2>{notes.length} saved this session</h2>
+          <p className="session-note is-tight">
+            Notes are local to this browser session until note-taking is supported by the backend.
+          </p>
         </section>
 
         <section className="certificate-detail-stats" aria-label="Saved learning summary">
-          {stats.map(([value, label]) => (
-            <article key={label}>
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
+          <article>
+            <strong>{notes.length}</strong>
+            <p>Notes this session</p>
+          </article>
         </section>
 
         <h2 className="share-certificate-title">Recently saved</h2>
 
         <div className="certificate-detail-grid">
           <section className="certificate-share-list" aria-label="Recently saved">
-            {savedItems.map(([title, type, meta]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {type} - {meta}
-                  </p>
+            {formOpen && (
+              <div className="inline-composer-card">
+                <input
+                  type="text"
+                  className="inline-text-input"
+                  value={formTitle}
+                  onChange={(event) => setFormTitle(event.target.value)}
+                  placeholder="Note title"
+                />
+                <textarea
+                  className="inline-textarea"
+                  value={formText}
+                  onChange={(event) => setFormText(event.target.value)}
+                  placeholder="Note details..."
+                  rows={3}
+                />
+                <div className="composer-actions">
+                  <button type="button" className="is-ghost" onClick={() => setFormOpen(false)}>Cancel</button>
+                  <button type="button" onClick={createNote} disabled={!formTitle.trim()}>Save note</button>
                 </div>
-                <button type="button">Open -&gt;</button>
-              </article>
-            ))}
+              </div>
+            )}
+
+            {notes.length ? (
+              notes.map((note) => (
+                <article key={note.id}>
+                  <div>
+                    <h3>{note.title}</h3>
+                    <p>{note.createdAt}</p>
+                    {expandedId === note.id && note.text && <p>{note.text}</p>}
+                  </div>
+                  {note.text && (
+                    <button type="button" onClick={() => setExpandedId((prev) => (prev === note.id ? null : note.id))}>
+                      {expandedId === note.id ? "Hide" : "Open ->"}
+                    </button>
+                  )}
+                </article>
+              ))
+            ) : (
+              <p className="admin-empty">No notes saved yet this session.</p>
+            )}
           </section>
 
           <aside className="verification-card">
             <h2>Export notes</h2>
-            <p>Download your course notes as a document.</p>
-            <button type="button">Export -&gt;</button>
+            <p>Download your session notes as a JSON file.</p>
+            <button type="button" onClick={exportNotes} disabled={!notes.length}>Export -&gt;</button>
           </aside>
         </div>
       </section>
@@ -135,3 +154,10 @@ export default function NotesBookmarksDesktop() {
   );
 }
 
+export default function NotesBookmarksPage() {
+  return (
+    <AuthGuard>
+      <NotesBookmarks />
+    </AuthGuard>
+  );
+}

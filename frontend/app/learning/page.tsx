@@ -3,18 +3,15 @@
 import {
   ArrowRight,
   Award,
-  BarChart3,
   Bell,
   BookOpen,
   CalendarClock,
   ChevronRight,
   Compass,
-  Home,
   Search,
-  Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CertificateResponse,
   NotificationResponse,
@@ -25,18 +22,12 @@ import {
   getNotifications,
   getPublicDashboard,
 } from "../lib/backendApi";
+import { encodeId } from "../lib/idCodec";
 import AuthGuard from "../components/AuthGuard";
-import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
+import LearningSidebar from "../components/LearningSidebar";
+import NotificationsPanel from "../components/NotificationsPanel";
+import { CardSkeleton, Skeleton } from "../components/Skeleton";
 import { getLocalGreeting } from "../lib/greeting";
-
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
 
 const actionRows = [
   ["Mandatory learning", "Required company and role training.", "Open assignments", BookOpen],
@@ -77,12 +68,21 @@ function getLevelProgress(xpPoints: number) {
   };
 }
 
+const actionHrefs: Record<string, string> = {
+  "Mandatory learning": "/mandatory-learning",
+  "Upcoming checkpoints": "/learning-calendar",
+  "Recommended paths": "/explore",
+};
+
 function LearningHome() {
+  const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
   const [notifications, setNotifications] = useState<NotificationResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchValue, setSearchValue] = useState("");
+  const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -111,10 +111,6 @@ function LearningHome() {
   const levelProgress = getLevelProgress(xpPoints);
   const unreadNotifications = notifications.filter((item) => !item.read).length;
   const progress = Math.round(featured?.completionPercentage ?? 0);
-  const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
-    item.courseTitle,
-    `${Math.round(item.completionPercentage || 0)}%`,
-  ] as const);
 
   const dashboardActions = useMemo(() => {
     if (!recommendations.length) return actionRows;
@@ -131,56 +127,7 @@ function LearningHome() {
 
   return (
     <main className="learning-home">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {loading ? <SidebarSkeleton /> : trails.length ? trails.map(([name, progressValue]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progressValue}</strong>
-            </div>
-          )) : <small>No course progress yet</small>}
-        </section>
-        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
-          {loading ? (
-            <>
-              <div><Skeleton className="skeleton-pill" /></div>
-              <SidebarSkeleton />
-            </>
-          ) : (
-            <>
-              <div>{learnerName.charAt(0).toUpperCase()}</div>
-              <section>
-                <strong>{learnerName}</strong>
-                <span>{user?.role || "Learner"}</span>
-                <small>{user?.learnerCode || "Profile code pending"}</small>
-              </section>
-            </>
-          )}
-        </Link>
-      </aside>
+      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="learning-main">
         <header className="learning-header">
@@ -197,18 +144,37 @@ function LearningHome() {
               </>
             )}
           </div>
-          <label className="learning-search">
+          <form
+            className="learning-search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (searchValue.trim()) router.push(`/search-results?q=${encodeURIComponent(searchValue.trim())}`);
+            }}
+          >
             <Search size={20} />
-            <input aria-label="Search courses or ask BaseCamp" placeholder="Search courses or ask BaseCamp" />
-          </label>
-          <button type="button" className="xp-pill" aria-label="Current XP">
+            <input
+              aria-label="Search courses or ask BaseCamp"
+              placeholder="Search courses or ask BaseCamp"
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+            />
+          </form>
+          <button type="button" className="xp-pill" aria-label="Current XP" onClick={() => router.push("/progress")}>
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
             {loading ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()} XP</span>}
           </button>
-          <button type="button" className="notification-button" aria-label="Notifications">
+          <button
+            type="button"
+            className="notification-button"
+            aria-label={unreadNotifications ? `Notifications, ${unreadNotifications} unread` : "Notifications"}
+            onClick={() => setNotificationsPanelOpen(true)}
+          >
             <Bell size={22} strokeWidth={1.9} />
+            {unreadNotifications > 0 && <span className="notification-badge-dot" aria-hidden="true" />}
           </button>
         </header>
+
+        <NotificationsPanel open={notificationsPanelOpen} onClose={() => setNotificationsPanelOpen(false)} />
 
         <div className="learning-grid">
           <section className="learning-left-column">
@@ -239,7 +205,10 @@ function LearningHome() {
                       <dd>{featured ? "Continue from your saved course progress" : "Not scheduled"}</dd>
                     </div>
                   </dl>
-                  <button type="button">
+                  <button
+                    type="button"
+                    onClick={() => router.push(featured ? `/course?courseId=${encodeId(featured.courseId)}` : "/explore")}
+                  >
                     <span>{featured ? "Continue" : "Explore courses"}</span>
                     <ArrowRight size={20} />
                   </button>
@@ -260,7 +229,7 @@ function LearningHome() {
               {loading ? Array.from({ length: 3 }, (_, index) => (
                 <CardSkeleton key={index} lines={2} />
               )) : dashboardActions.map(([title, description, meta, Icon]) => (
-                <button type="button" key={title}>
+                <button type="button" key={title} onClick={() => router.push(actionHrefs[title] || "/explore")}>
                   <span className="action-icon">
                     <Icon size={20} strokeWidth={1.8} />
                   </span>
@@ -319,7 +288,7 @@ function LearningHome() {
                   <h3>Certificates</h3>
                   <strong>{certificates.length} ready to download</strong>
                   <p>{activeCourses} courses in progress</p>
-                  <button type="button">
+                  <button type="button" onClick={() => router.push("/certificates")}>
                     <Award size={16} />
                     <span>View certificates -&gt;</span>
                   </button>

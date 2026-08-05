@@ -4,8 +4,9 @@ import { Award, BarChart3, Bell, BookOpen, Compass, Home, LogOut, Menu, Trophy, 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getPublicDashboard, logout } from "../lib/backendApi";
+import { getNotifications, getPublicDashboard, logout } from "../lib/backendApi";
 import { Skeleton } from "./Skeleton";
+import NotificationsPanel from "./NotificationsPanel";
 
 const navItems = [
   { label: "Learning Home", href: "/learning", icon: Home },
@@ -58,6 +59,8 @@ export default function MobileHamburgerMenu() {
   const [xpPoints, setXpPoints] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsPanelOpen, setNotificationsPanelOpen] = useState(false);
   const shouldShow = learningRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const activePath = getActivePath(pathname);
 
@@ -73,11 +76,16 @@ export default function MobileHamburgerMenu() {
   useEffect(() => {
     let active = true;
     setLoadingStatus(true);
-    getPublicDashboard()
-      .then((dashboard) => {
-        if (active) setXpPoints(Math.max(0, Math.round(dashboard?.xpPoints || 0)));
+    Promise.allSettled([getPublicDashboard(), getNotifications()])
+      .then(([dashboardResult, notificationsResult]) => {
+        if (!active) return;
+        if (dashboardResult.status === "fulfilled") {
+          setXpPoints(Math.max(0, Math.round(dashboardResult.value?.xpPoints || 0)));
+        }
+        if (notificationsResult.status === "fulfilled") {
+          setUnreadCount(notificationsResult.value.filter((item) => !item.read).length);
+        }
       })
-      .catch(() => undefined)
       .finally(() => {
         if (active) setLoadingStatus(false);
       });
@@ -101,10 +109,10 @@ export default function MobileHamburgerMenu() {
           className="mobile-menu-toggle"
           aria-expanded={open}
           aria-controls="mobile-learning-menu"
+          aria-label={open ? "Close menu" : "Open menu"}
           onClick={() => setOpen((value) => !value)}
         >
           {open ? <X size={22} strokeWidth={2.4} /> : <Menu size={22} strokeWidth={2.4} />}
-          <span>Menu</span>
         </button>
         <Link href="/learning" className="mobile-hamburger-logo" aria-label="BaseCamp learning home">
           <img src="/basecamp-logo.png" alt="BaseCamp" />
@@ -114,11 +122,19 @@ export default function MobileHamburgerMenu() {
             <img src="/xp-star.svg" alt="" aria-hidden="true" />
             {loadingStatus ? <Skeleton className="skeleton-pill" /> : <span>{xpPoints.toLocaleString()}</span>}
           </button>
-          <Link href="/notifications" className="mobile-notification-button" aria-label="Notifications">
+          <button
+            type="button"
+            className="mobile-notification-button"
+            aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+            onClick={() => setNotificationsPanelOpen(true)}
+          >
             <Bell size={19} strokeWidth={1.95} />
-          </Link>
+            {unreadCount > 0 && <span className="notification-badge-dot" aria-hidden="true" />}
+          </button>
         </div>
       </div>
+
+      <NotificationsPanel open={notificationsPanelOpen} onClose={() => setNotificationsPanelOpen(false)} />
 
       {open && <button type="button" className="mobile-menu-backdrop" aria-label="Close menu" onClick={() => setOpen(false)} />}
 

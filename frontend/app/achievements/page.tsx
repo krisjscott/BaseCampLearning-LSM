@@ -1,10 +1,11 @@
 "use client";
 
-import { Award, BarChart3, BookOpen, Check, Compass, Home, LockKeyhole, Trophy } from "lucide-react";
+import { Check, LockKeyhole, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
 import LearningSidebar from "../components/LearningSidebar";
-import { CardSkeleton, Skeleton } from "../components/Skeleton";
+import { CardSkeleton } from "../components/Skeleton";
 import {
   CertificateResponse,
   PublicDashboardResponse,
@@ -21,10 +22,12 @@ function formatDate(value?: string | null) {
 }
 
 function AchievementsContent() {
+  const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [shareStatus, setShareStatus] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -66,6 +69,16 @@ function AchievementsContent() {
     return [...certificateItems, ...activityItems];
   }, [certificates, recentActivities]);
 
+  async function shareProfile() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareStatus("Link copied");
+    } catch {
+      setShareStatus("Could not copy link");
+    }
+    setTimeout(() => setShareStatus(""), 2500);
+  }
+
   return (
     <main className="achievements-page">
       <LearningSidebar activeHref="/achievements" dashboard={dashboard} loading={loading} user={user} />
@@ -76,9 +89,9 @@ function AchievementsContent() {
             <h1>Achievements</h1>
             <p>Milestones, levels, certificates and recorded learning wins.</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={shareProfile}>
             <Trophy size={18} />
-            <span>Share profile</span>
+            <span>{shareStatus || "Share profile"}</span>
           </button>
         </header>
 
@@ -93,7 +106,7 @@ function AchievementsContent() {
                   ? `Earn ${level.remaining.toLocaleString()} more XP through courses, quizzes and certificates.`
                   : "Your latest passed assessments have taken you to the highest level."}
               </p>
-              <button type="button">View level path -&gt;</button>
+              <button type="button" onClick={() => router.push("/progress")}>View level path -&gt;</button>
             </>
           )}
         </section>
@@ -117,7 +130,7 @@ function AchievementsContent() {
                   <h3>{title}</h3>
                   <p>{detail}</p>
                 </div>
-                <button type="button">Share -&gt;</button>
+                <button type="button" onClick={shareProfile}>Share -&gt;</button>
               </article>
             )) : (
               <article className="empty-state-card">

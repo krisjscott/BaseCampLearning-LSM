@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, ClipboardList, X } from "lucide-react";
-import { AssessmentResponse, getAssessment, submitAssessment } from "../lib/backendApi";
+import { AssessmentResponse, getAssessment } from "../lib/backendApi";
 import { CardSkeleton, Skeleton } from "../components/Skeleton";
+import AuthGuard from "../components/AuthGuard";
+import { courseExitHref, saveQuizSession } from "../lib/quizSession";
+import { decodeParam, encodeId } from "../lib/idCodec";
 
-export default function CompulsoryQuiz() {
+function CompulsoryQuiz() {
+  const router = useRouter();
   const [assessment, setAssessment] = useState<AssessmentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const assessmentId = new URLSearchParams(window.location.search).get("assessmentId");
+    const assessmentId = decodeParam(new URLSearchParams(window.location.search), "assessmentId");
 
     if (!assessmentId) {
       setLoading(false);
@@ -38,32 +42,22 @@ export default function CompulsoryQuiz() {
   const totalQuestions = questions.length || 0;
   const progress = totalQuestions ? Math.round((answeredCount / totalQuestions) * 100) : 0;
 
-  async function saveAndContinue() {
-    if (!assessment || !currentQuestion) return;
+  const isLastQuestion = currentIndex >= questions.length - 1;
+  const allAnswered = totalQuestions > 0 && answeredCount === totalQuestions;
 
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex((value) => value + 1);
-      return;
-    }
+  function goToNext() {
+    if (!currentQuestion || isLastQuestion) return;
+    setCurrentIndex((value) => value + 1);
+  }
 
-    setSaving(true);
-    setError("");
-    try {
-      await submitAssessment({
-        assessmentId: assessment.id,
-        answers: questions
-          .filter((question) => selectedAnswers[question.id])
-          .map((question) => ({
-            questionId: question.id,
-            selectedOptionId: selectedAnswers[question.id],
-          })),
-      });
-      window.location.href = "/quiz-review";
-    } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Could not submit assessment");
-    } finally {
-      setSaving(false);
-    }
+  function goToReview() {
+    if (!assessment || !allAnswered) return;
+    saveQuizSession({ assessment, selectedAnswers });
+    router.push(`/quiz-review?assessmentId=${encodeId(assessment.id)}`);
+  }
+
+  function exitQuiz() {
+    router.push(courseExitHref(assessment?.courseId));
   }
 
   return (
@@ -88,7 +82,7 @@ export default function CompulsoryQuiz() {
         </div>
         <div className="lesson-top-actions">
           <p>Attempt 1 of 2</p>
-          <button type="button">
+          <button type="button" onClick={exitQuiz}>
             <X size={16} />
             <span>Exit quiz</span>
           </button>
@@ -117,8 +111,8 @@ export default function CompulsoryQuiz() {
               {loading ? <CardSkeleton lines={2} /> : (
                 <>
                   <Check size={16} />
-                  <strong>{saving ? "Saving answers" : "Answers autosaved"}</strong>
-                  <span>{assessment?.maxAttempts ? `Maximum attempts: ${assessment.maxAttempts}` : "Assessment records save to the backend"}</span>
+                  <strong>{answeredCount} of {totalQuestions} answered</strong>
+                  <span>{assessment?.maxAttempts ? `Maximum attempts: ${assessment.maxAttempts}` : "Answer every question, then review and submit"}</span>
                 </>
               )}
             </section>
@@ -165,8 +159,8 @@ export default function CompulsoryQuiz() {
           </section>
 
           <footer className="quiz-actions">
-            <button type="button" className="quiz-secondary" onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))}><ArrowLeft size={16} /><span>Previous</span></button>
-            <button type="button" className="quiz-primary" onClick={saveAndContinue} disabled={!currentQuestion || saving}><span>{saving ? "Saving..." : "Save & continue"}</span><ArrowRight size={16} /></button>
+            <button type="button" className="quiz-secondary" onClick={() => setCurrentIndex((value) => Math.max(0, value - 1))} disabled={currentIndex === 0}><ArrowLeft size={16} /><span>Previous</span></button>
+            <button type="button" className="quiz-primary" onClick={goToNext} disabled={!currentQuestion || isLastQuestion}><span>Next question</span><ArrowRight size={16} /></button>
           </footer>
         </section>
 
@@ -226,8 +220,8 @@ export default function CompulsoryQuiz() {
               </section>
 
               <section className="submit-card">
-                <p>Answer all questions to submit.</p>
-                <button type="button" disabled={!totalQuestions || answeredCount < totalQuestions}><ClipboardList size={16} /><span>Review &amp; submit</span></button>
+                <p>{allAnswered ? "Ready to review and submit." : "Answer all questions to submit."}</p>
+                <button type="button" onClick={goToReview} disabled={!allAnswered}><ClipboardList size={16} /><span>Review &amp; submit</span></button>
               </section>
             </>
           )}
@@ -237,4 +231,10 @@ export default function CompulsoryQuiz() {
   );
 }
 
-
+export default function QuizPage() {
+  return (
+    <AuthGuard>
+      <CompulsoryQuiz />
+    </AuthGuard>
+  );
+}

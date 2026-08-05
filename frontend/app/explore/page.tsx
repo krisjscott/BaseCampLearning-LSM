@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Filter,
-  Home,
-  Trophy,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
 import {
   CourseResponse,
   PublicDashboardResponse,
@@ -19,30 +12,24 @@ import {
   getCurrentUser,
   getPublicDashboard,
 } from "../lib/backendApi";
-import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
+import { encodeId } from "../lib/idCodec";
+import { CardSkeleton } from "../components/Skeleton";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, true],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
-
-export default function ExploreCourses() {
+function ExploreContent() {
+  const router = useRouter();
   const [backendCourses, setBackendCourses] = useState<CourseResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let active = true;
-    Promise.allSettled([getCourses(12), getCurrentUser(), getPublicDashboard()])
+  const fetchCourses = useCallback(() => {
+    setLoading(true);
+    return Promise.allSettled([getCourses(12), getCurrentUser(), getPublicDashboard()])
       .then(([coursesResult, userResult, dashboardResult]) => {
-        if (!active) return;
         if (coursesResult.status === "fulfilled") {
           setBackendCourses(coursesResult.value?.content || []);
+        } else {
+          setBackendCourses([]);
         }
         if (userResult.status === "fulfilled" && userResult.value) {
           setUser(userResult.value);
@@ -53,19 +40,27 @@ export default function ExploreCourses() {
       })
       .catch(() => undefined)
       .finally(() => {
-        if (active) setLoading(false);
+        setLoading(false);
       });
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    fetchCourses().then(() => {
+      if (!active) return;
+    });
     return () => {
       active = false;
     };
-  }, []);
+  }, [fetchCourses]);
 
   const courseRows = useMemo(() => {
-    return backendCourses.slice(0, 3).map((course) => [
-      course.title,
-      course.categoryName || course.status || "Course",
-      course.durationHours ? `${course.durationHours} hours` : "Self-paced",
-    ] as const);
+    return backendCourses.slice(0, 3).map((course) => ({
+      id: course.id,
+      title: course.title,
+      level: course.categoryName || course.status || "Course",
+      duration: course.durationHours ? `${course.durationHours} hours` : "Self-paced",
+    }));
   }, [backendCourses]);
 
   const summaryStats = useMemo(() => {
@@ -77,64 +72,10 @@ export default function ExploreCourses() {
       [String(categories.size || 1), "Categories"],
     ] as const;
   }, [backendCourses]);
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
-    item.courseTitle,
-    `${Math.round(item.completionPercentage || 0)}%`,
-  ] as const);
 
   return (
     <main className="explore-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {loading ? <SidebarSkeleton /> : trails.length ? trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          )) : <small>No course progress yet</small>}
-        </section>
-        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
-          {loading ? (
-            <>
-              <div><Skeleton className="skeleton-pill" /></div>
-              <SidebarSkeleton />
-            </>
-          ) : (
-            <>
-              <div>{learnerName.charAt(0).toUpperCase()}</div>
-              <section>
-                <strong>{learnerName}</strong>
-                <span>{user?.role || "Learner"}</span>
-                <small>{user?.learnerCode || "Profile code pending"}</small>
-              </section>
-            </>
-          )}
-        </Link>
-      </aside>
+      <LearningSidebar activeHref="/explore" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="explore-main">
         <header className="explore-header">
@@ -142,16 +83,19 @@ export default function ExploreCourses() {
             <h1>Explore</h1>
             <p>Discover courses, certificates and role-based learning paths.</p>
           </div>
-          <button type="button">
-            <Filter size={18} />
-            <span>Filters</span>
-          </button>
         </header>
 
         <section className="explore-hero">
           <h2>Build practical skills. Earn recognised credentials.</h2>
           <p>Curated learning across project management, content, design and communication.</p>
-          <button type="button">Browse collection -&gt;</button>
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("popular-courses")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Browse collection -&gt;
+          </button>
         </section>
 
         <section className="explore-stats" aria-label="Explore summary">
@@ -167,21 +111,21 @@ export default function ExploreCourses() {
           ))}
         </section>
 
-        <h2 className="popular-courses-title">Popular courses</h2>
+        <h2 className="popular-courses-title" id="popular-courses">Popular courses</h2>
 
         <div className="explore-content-grid">
           <section className="popular-course-list" aria-label="Popular courses">
             {loading ? Array.from({ length: 3 }, (_, index) => (
               <CardSkeleton key={index} lines={2} />
-            )) : courseRows.length ? courseRows.map(([title, level, duration]) => (
-              <article key={title}>
+            )) : courseRows.length ? courseRows.map((course) => (
+              <article key={course.id}>
                 <div>
-                  <h3>{title}</h3>
+                  <h3>{course.title}</h3>
                   <p>
-                    {level} - {duration}
+                    {course.level} - {course.duration}
                   </p>
                 </div>
-                <button type="button">View course -&gt;</button>
+                <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(course.id)}`)}>View course -&gt;</button>
               </article>
             )) : (
               <article>
@@ -189,7 +133,7 @@ export default function ExploreCourses() {
                   <h3>No published courses yet</h3>
                   <p>The production courses table did not return records for this account.</p>
                 </div>
-                <button type="button">Refresh -&gt;</button>
+                <button type="button" onClick={() => fetchCourses()}>Refresh -&gt;</button>
               </article>
             )}
           </section>
@@ -216,12 +160,20 @@ export default function ExploreCourses() {
                   ))}
                   {!dashboard?.recommendedCourses?.length ? <span>No recommendations yet</span> : null}
                 </div>
-                <button type="button">Open path -&gt;</button>
+                <button type="button" onClick={() => router.push("/path/project-management")}>Open path -&gt;</button>
               </>
             )}
           </aside>
         </div>
       </section>
     </main>
+  );
+}
+
+export default function ExploreCourses() {
+  return (
+    <AuthGuard>
+      <ExploreContent />
+    </AuthGuard>
   );
 }
