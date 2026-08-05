@@ -75,7 +75,7 @@ export default function AuthScreen() {
 
           <div className="heading-group">
             <h1>Log in or create account</h1>
-            <p>Use your email or Crew ID to continue.</p>
+            <p>Use your email to continue.</p>
           </div>
 
           <div className="auth-mode-switch" aria-label="Authentication mode">
@@ -110,11 +110,11 @@ export default function AuthScreen() {
               </>
             ) : null}
 
-            <label htmlFor="email">Email or Crew ID</label>
+            <label htmlFor="email">Email</label>
             <input
               id="email"
               name="email"
-              placeholder="name@email.com or Crew ID"
+              placeholder="name@email.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="email"
@@ -135,6 +135,10 @@ export default function AuthScreen() {
               required
             />
 
+            {mode === "login" && (
+              <a href="/recover-access" className="forgot-password-link">Forgot your password?</a>
+            )}
+
             {status ? <p className="auth-status">{status}</p> : null}
 
             <TurnstileWidget ref={turnstileRef} />
@@ -143,24 +147,6 @@ export default function AuthScreen() {
               <span>{isSubmitting ? "Connecting..." : "Continue"}</span>
             </button>
           </form>
-
-          <div className="divider" aria-hidden="true">
-            <span />
-            <p>OR</p>
-            <span />
-          </div>
-
-          <button type="button" className="google-action">
-            <span className="google-mark" aria-hidden="true">
-              G
-            </span>
-            <span>Continue with Google</span>
-          </button>
-
-          <div className="organisation-note">
-            <strong>Using BaseCamp through an organisation?</strong>
-            <p>Enter the Crew ID provided to you in the field above.</p>
-          </div>
 
           <p className="legal-copy">
             By continuing, you agree to the Terms of Use and Privacy Policy.

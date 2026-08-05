@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   ArrowRight,
@@ -147,14 +148,18 @@ function Footer({
 }
 
 function OnboardingScreens() {
+  const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [step, setStep] = useState(0);
   const [goal, setGoal] = useState("");
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [interestQuery, setInterestQuery] = useState("");
   const [profileType, setProfileType] = useState("");
   const [role, setRole] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
   const [loadingDone, setLoadingDone] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [retryCount, setRetryCount] = useState(0);
 
   const isLoading = step === 4;
   const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
@@ -177,17 +182,39 @@ function OnboardingScreens() {
       return;
     }
 
-    const doneTimer = window.setTimeout(() => setLoadingDone(true), 1700);
-    const timer = window.setTimeout(() => {
-      void completeOnboarding();
-    }, 3200);
+    let active = true;
+    setSaveError("");
+
+    const profileSummary = [goal, selectedInterests.join(", "), profileType, role, educationLevel]
+      .filter(Boolean)
+      .join(" - ");
+
+    const minimumDelay = new Promise((resolve) => window.setTimeout(resolve, 1500));
+
+    Promise.all([
+      updateCurrentUser({ fullName: user?.fullName || "", bio: profileSummary }),
+      minimumDelay,
+    ])
+      .then(() => {
+        if (!active) return;
+        setLoadingDone(true);
+        window.setTimeout(() => active && router.push("/learning"), 500);
+      })
+      .catch((error) => {
+        if (!active) return;
+        setSaveError(error instanceof Error ? error.message : "Could not save your learning plan");
+      });
+
     return () => {
-      window.clearTimeout(doneTimer);
-      window.clearTimeout(timer);
+      active = false;
     };
-  }, [isLoading]);
+  }, [isLoading, retryCount, goal, selectedInterests, profileType, role, educationLevel, user, router]);
 
   const progress = useMemo(() => Math.min((step + 1) * 25, 100), [step]);
+  const filteredInterests = useMemo(() => {
+    const term = interestQuery.trim().toLowerCase();
+    return term ? interests.filter((item) => item.toLowerCase().includes(term)) : interests;
+  }, [interestQuery]);
 
   function next() {
     setStep((current) => Math.min(current + 1, 4));
@@ -211,17 +238,6 @@ function OnboardingScreens() {
     });
   }
 
-  function completeOnboarding() {
-    const profileSummary = [goal, selectedInterests.join(", "), profileType, role, educationLevel]
-      .filter(Boolean)
-      .join(" - ");
-    void updateCurrentUser({
-      fullName: user?.fullName || "",
-      bio: profileSummary,
-    }).catch(() => null);
-    window.location.assign("/learning");
-  }
-
   return (
     <main className="onboarding-page flow">
       <section className={`onboarding-screen${isLoading ? " personalising-screen" : ""}`}>
@@ -230,7 +246,7 @@ function OnboardingScreens() {
             learnerName={learnerName}
             step={`Step ${step + 1} of 4`}
             progress={progress}
-            onExit={() => setStep(0)}
+            onExit={() => router.push("/learning")}
           />
         )}
 
@@ -287,7 +303,12 @@ function OnboardingScreens() {
               </div>
               <label className="search-field">
                 <Search size={20} />
-                <input placeholder="Search roles, topics or skills" aria-label="Search roles, topics or skills" />
+                <input
+                  placeholder="Search roles, topics or skills"
+                  aria-label="Search roles, topics or skills"
+                  value={interestQuery}
+                  onChange={(event) => setInterestQuery(event.target.value)}
+                />
               </label>
               <div className="selected-tags">
                 {selectedInterests.map((item) => (
@@ -297,7 +318,7 @@ function OnboardingScreens() {
                 ))}
               </div>
               <div className="interest-grid">
-                {interests.map((item) => {
+                {filteredInterests.length ? filteredInterests.map((item) => {
                   const selected = selectedInterests.includes(item);
                   return (
                     <button
@@ -310,7 +331,7 @@ function OnboardingScreens() {
                       <span aria-hidden="true">{selected ? "\u00d7" : "+"}</span>
                     </button>
                   );
-                })}
+                }) : <p className="hint-pill">No topics match "{interestQuery}"</p>}
               </div>
               <p className="hint-pill">{selectedInterests.length} of 5 selected</p>
             </div>
@@ -396,7 +417,26 @@ function OnboardingScreens() {
           </>
         )}
 
-        {isLoading && (
+        {isLoading && saveError && (
+          <div className="personalising-card" role="alert">
+            <div className="screen-heading">
+              <h1>We couldn't save your learning plan</h1>
+              <span>{saveError}</span>
+            </div>
+            <div className="footer-actions">
+              <button type="button" className="secondary-button" onClick={() => setStep(3)}>
+                <ArrowLeft size={16} />
+                <span>Back</span>
+              </button>
+              <button type="button" className="accent-button" onClick={() => setRetryCount((count) => count + 1)}>
+                <span>Try again</span>
+                <GitBranch size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {isLoading && !saveError && (
           <div className={`personalising-card${loadingDone ? " is-complete" : ""}`} role="status" aria-live="polite">
             <div className="check-badge">
               {loadingDone ? <CheckCircle2 size={26} className="loader-check" /> : <Loader size={26} className="loader-icon" />}

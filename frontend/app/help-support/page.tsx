@@ -1,33 +1,10 @@
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  HelpCircle,
-  Home,
-  Trophy,
-} from "lucide-react";
+"use client";
 
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
-
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["24/7", "Help centre"],
-  ["<24h", "Response target"],
-  ["4", "Support topics"],
-] as const;
+import { useEffect, useMemo, useState } from "react";
+import { HelpCircle } from "lucide-react";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
 
 const topics = [
   ["Course progress not updating", "Video and activity troubleshooting"],
@@ -35,50 +12,36 @@ const topics = [
   ["Download or verify a certificate", "Credential support"],
 ] as const;
 
-export default function HelpSupportDesktop() {
+function HelpSupport() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [expandedTopic, setExpandedTopic] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard()]).then(([u, d]) => {
+      if (!active) return;
+      if (u.status === "fulfilled") setUser(u.value);
+      setDashboard(d.status === "fulfilled" ? d.value : null);
+    }).finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const filteredTopics = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return topics;
+    return topics.filter(([title, description]) =>
+      title.toLowerCase().includes(q) || description.toLowerCase().includes(q),
+    );
+  }, [query]);
+
   return (
     <main className="certificate-detail-page help-support-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
@@ -86,7 +49,7 @@ export default function HelpSupportDesktop() {
             <h1>Help &amp; Support</h1>
             <p>Find answers or contact the BaseCamp support team.</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={() => { window.location.href = "mailto:support@tiesverse.com"; }}>
             <HelpCircle size={18} />
             <span>Contact support</span>
           </button>
@@ -95,41 +58,54 @@ export default function HelpSupportDesktop() {
         <section className="certificate-detail-hero">
           <h2>How can we help?</h2>
           <p>Search help topics for courses, assessments, certificates and account access.</p>
-          <button type="button">Search help centre -&gt;</button>
+          <input
+            type="search"
+            className="inline-text-input hero-search-input"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search help topics..."
+            aria-label="Search help topics"
+          />
         </section>
 
-        <section className="certificate-detail-stats" aria-label="Support summary">
-          {stats.map(([value, label]) => (
-            <article key={label}>
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
-        </section>
-
-        <h2 className="share-certificate-title">Popular help topics</h2>
+        <h2 className="share-certificate-title">
+          {query.trim() ? `Results for "${query.trim()}"` : "Popular help topics"}
+        </h2>
 
         <div className="certificate-detail-grid">
           <section className="certificate-share-list" aria-label="Popular help topics">
-            {topics.map(([title, description]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{description}</p>
-                </div>
-                <button type="button">Open -&gt;</button>
-              </article>
-            ))}
+            {filteredTopics.length ? (
+              filteredTopics.map(([title, description]) => (
+                <article key={title}>
+                  <div>
+                    <h3>{title}</h3>
+                    <p>{description}</p>
+                    {expandedTopic === title && (
+                      <p className="expandable-note">For further help on this topic, use Contact support above.</p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedTopic((prev) => (prev === title ? null : title))}
+                  >
+                    {expandedTopic === title ? "Hide" : "Open ->"}
+                  </button>
+                </article>
+              ))
+            ) : (
+              <p className="admin-empty">No help topics match your search.</p>
+            )}
           </section>
-
-          <aside className="verification-card">
-            <h2>System status</h2>
-            <p>All BaseCamp services are operational.</p>
-            <button type="button">View status -&gt;</button>
-          </aside>
         </div>
       </section>
     </main>
   );
 }
 
+export default function HelpSupportPage() {
+  return (
+    <AuthGuard>
+      <HelpSupport />
+    </AuthGuard>
+  );
+}

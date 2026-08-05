@@ -1,83 +1,78 @@
+"use client";
+
+import { BookOpen } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+  CertificateResponse,
+  CourseResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCertificates,
+  getCourses,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
+import { encodeId } from "../lib/idCodec";
+import { getLevelProgress } from "../lib/levelProgress";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, true],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+function MyLearningEmptyContent() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard(), getCertificates(), getCourses(3)])
+      .then(([userResult, dashboardResult, certificateResult, coursesResult]) => {
+        if (!active) return;
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+        setCertificates(certificateResult.status === "fulfilled" ? certificateResult.value : []);
+        setCourses(coursesResult.status === "fulfilled" ? coursesResult.value?.content || [] : []);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-const stats = [
-  ["0", "Active courses"],
-  ["0", "Certificates"],
-  ["Starter", "Current level"],
-] as const;
+  const continueLearning = dashboard?.continueLearning || [];
+  const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
+  const level = getLevelProgress(xpPoints);
 
-const recommendations = [
-  ["Course foundations", "Beginner", "Certificate path"],
-  ["Completed course", "Beginner", "4 modules"],
-  ["Available course", "Beginner", "5 modules"],
-] as const;
+  const stats = [
+    [String(continueLearning.length), "Active courses"],
+    [String(certificates.length), "Certificates"],
+    [level.current.name, "Current level"],
+  ] as const;
 
-export default function MyLearningEmptyStateDesktop() {
+  const recommendations = useMemo(() => {
+    const fromDashboard = (dashboard?.recommendedCourses || []).slice(0, 3).map((course) => ({
+      id: course.courseId,
+      title: course.courseTitle,
+      meta: course.instructorName || "Recommended",
+    }));
+    if (fromDashboard.length) return fromDashboard;
+    return courses.slice(0, 3).map((course) => ({
+      id: course.id,
+      title: course.title,
+      meta: course.categoryName || course.status || "Course",
+    }));
+  }, [dashboard, courses]);
+
   return (
     <main className="certificate-detail-page my-learning-empty-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
@@ -85,7 +80,7 @@ export default function MyLearningEmptyStateDesktop() {
             <h1>My Learning</h1>
             <p>Your enrolled courses will appear here.</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={() => router.push("/explore")}>
             <BookOpen size={18} />
             <span>Explore courses</span>
           </button>
@@ -94,11 +89,11 @@ export default function MyLearningEmptyStateDesktop() {
         <section className="certificate-detail-hero">
           <h2>Start your first learning path</h2>
           <p>Choose a course or accept an assignment to begin tracking progress.</p>
-          <button type="button">Explore courses -&gt;</button>
+          <button type="button" onClick={() => router.push("/explore")}>Explore courses -&gt;</button>
         </section>
 
         <section className="certificate-detail-stats" aria-label="Empty learning summary">
-          {stats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : stats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
@@ -110,23 +105,29 @@ export default function MyLearningEmptyStateDesktop() {
 
         <div className="certificate-detail-grid">
           <section className="certificate-share-list" aria-label="Recommended starting points">
-            {recommendations.map(([title, level, meta]) => (
-              <article key={title}>
+            {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : recommendations.length ? recommendations.map((item) => (
+              <article key={item.id}>
                 <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {level} - {meta}
-                  </p>
+                  <h3>{item.title}</h3>
+                  <p>{item.meta}</p>
                 </div>
-                <button type="button">View -&gt;</button>
+                <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(item.id)}`)}>View -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No recommendations yet</h3>
+                  <p>Browse the catalogue to find a course to start.</p>
+                </div>
+                <button type="button" onClick={() => router.push("/explore")}>Explore courses -&gt;</button>
+              </article>
+            )}
           </section>
 
           <aside className="verification-card">
             <h2>How enrolment works</h2>
             <p>Start a public course or receive an assigned course.</p>
-            <button type="button">Learn more -&gt;</button>
+            <button type="button" onClick={() => router.push("/explore")}>Learn more -&gt;</button>
           </aside>
         </div>
       </section>
@@ -134,3 +135,10 @@ export default function MyLearningEmptyStateDesktop() {
   );
 }
 
+export default function MyLearningEmptyStateDesktop() {
+  return (
+    <AuthGuard>
+      <MyLearningEmptyContent />
+    </AuthGuard>
+  );
+}

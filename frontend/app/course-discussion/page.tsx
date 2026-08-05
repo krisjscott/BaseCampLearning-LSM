@@ -1,133 +1,170 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { MessageCircle } from "lucide-react";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  MessageCircle,
-  Trophy,
-} from "lucide-react";
+  CourseResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCourse,
+  getCurrentUser,
+  getPublicDashboard,
+} from "../lib/backendApi";
+import { decodeParam } from "../lib/idCodec";
 
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+type LocalPost = {
+  id: string;
+  author: string;
+  text: string;
+  createdAt: string;
+};
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+function DiscussionForum() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const stats = [
-  ["48", "Posts"],
-  ["12", "Unanswered"],
-  ["6", "Following"],
-] as const;
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const [course, setCourse] = useState<CourseResponse | null>(null);
+  const [courseLoading, setCourseLoading] = useState(false);
 
-const conversations = [
-  ["How detailed should a project scope be?", "8 replies", "Updated 12 min ago"],
-  ["Examples of measurable deliverables", "5 replies", "Instructor answered"],
-  ["Stakeholder mapping templates", "3 replies", "Resource attached"],
-] as const;
+  const [posts, setPosts] = useState<LocalPost[]>([]);
+  const [draft, setDraft] = useState("");
+  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
+  const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
-export default function DiscussionForumDesktop() {
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard()]).then(([u, d]) => {
+      if (!active) return;
+      if (u.status === "fulfilled") setUser(u.value);
+      setDashboard(d.status === "fulfilled" ? d.value : null);
+    }).finally(() => active && setLoading(false));
+
+    const params = new URLSearchParams(window.location.search);
+    const id = decodeParam(params, "courseId");
+    setCourseId(id);
+    if (id) {
+      setCourseLoading(true);
+      getCourse(id)
+        .then((result) => active && setCourse(result))
+        .catch(() => active && setCourse(null))
+        .finally(() => active && setCourseLoading(false));
+    }
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function submitPost() {
+    const text = draft.trim();
+    if (!text) return;
+    setPosts((prev) => [
+      {
+        id: `post-${Date.now()}`,
+        author: user?.fullName?.trim().split(/\s+/)[0] || "You",
+        text,
+        createdAt: new Date().toLocaleString(),
+      },
+      ...prev,
+    ]);
+    setDraft("");
+  }
+
+  function focusComposer() {
+    composerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    composerRef.current?.focus();
+  }
+
+  const subtitle = courseId
+    ? courseLoading
+      ? "Loading course..."
+      : course
+        ? `Discussion for ${course.title}`
+        : "Ask questions and learn with your course community."
+    : "Ask questions and learn with your course community.";
+
   return (
     <main className="certificate-detail-page course-discussion-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
           <div>
             <h1>Course Discussion</h1>
-            <p>Ask questions and learn with your course community.</p>
+            <p>{subtitle}</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={focusComposer}>
             <MessageCircle size={18} />
             <span>New post</span>
           </button>
         </header>
 
         <section className="certificate-detail-hero">
-          <h2>Module 3 discussion</h2>
-          <p>Share questions about scope, stakeholders and deliverables.</p>
-          <button type="button">Join discussion -&gt;</button>
+          <h2>{course ? course.title : "Course discussion"}</h2>
+          <p>Share questions, tips and resources with other learners.</p>
+          <button type="button" onClick={focusComposer}>Join discussion -&gt;</button>
         </section>
 
         <section className="certificate-detail-stats" aria-label="Discussion summary">
-          {stats.map(([value, label]) => (
-            <article key={label}>
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
+          <article>
+            <strong>{posts.length}</strong>
+            <p>Posts this session</p>
+          </article>
         </section>
 
-        <h2 className="share-certificate-title">Recent conversations</h2>
-
+        <h2 className="share-certificate-title">Start a discussion</h2>
+        <p className="session-note">
+          Discussion is local to this session until comments are supported.
+        </p>
         <div className="certificate-detail-grid">
-          <section className="certificate-share-list" aria-label="Recent conversations">
-            {conversations.map(([title, replies, meta]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {replies} - {meta}
-                  </p>
-                </div>
-                <button type="button">Open -&gt;</button>
-              </article>
-            ))}
+          <section className="certificate-share-list" aria-label="New post composer">
+            <div className="inline-composer-card">
+              <textarea
+                ref={composerRef}
+                className="inline-textarea"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Ask a question or share something with the course community..."
+                rows={4}
+              />
+              <div className="composer-actions">
+                <button type="button" onClick={submitPost} disabled={!draft.trim()}>
+                  Post
+                </button>
+              </div>
+            </div>
+
+            {posts.length ? (
+              posts.map((post) => (
+                <article key={post.id}>
+                  <div>
+                    <h3>{post.text}</h3>
+                    <p>{post.author} - {post.createdAt}</p>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p className="admin-empty">No posts yet this session. Be the first to start the discussion.</p>
+            )}
           </section>
 
           <aside className="verification-card">
             <h2>Community guidelines</h2>
             <p>Keep discussion useful, respectful and course-related.</p>
-            <button type="button">Read guidelines -&gt;</button>
+            <button type="button" onClick={() => setGuidelinesOpen((prev) => !prev)}>
+              {guidelinesOpen ? "Hide guidelines" : "Read guidelines ->"}
+            </button>
+            {guidelinesOpen && (
+              <p className="expandable-note">
+                Be respectful, stay on topic, avoid sharing personal information, and search existing
+                posts before starting a new one. Cite sources when sharing external material and keep
+                feedback constructive.
+              </p>
+            )}
           </aside>
         </div>
       </section>
@@ -135,3 +172,10 @@ export default function DiscussionForumDesktop() {
   );
 }
 
+export default function DiscussionForumPage() {
+  return (
+    <AuthGuard>
+      <DiscussionForum />
+    </AuthGuard>
+  );
+}

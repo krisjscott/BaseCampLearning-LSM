@@ -1,84 +1,59 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthGuard from "../../components/AuthGuard";
+import LearningSidebar from "../../components/LearningSidebar";
+import { CardSkeleton } from "../../components/Skeleton";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  ListFilter,
-  Trophy,
-} from "lucide-react";
+  CourseResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCurrentUser,
+  getPublicDashboard,
+  searchCourses,
+} from "../../lib/backendApi";
+import { encodeId } from "../../lib/idCodec";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+function BusinessManagementCategoryContent() {
+  const router = useRouter();
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([searchCourses("business management", 6), getCurrentUser(), getPublicDashboard()])
+      .then(([coursesResult, userResult, dashboardResult]) => {
+        if (!active) return;
+        setCourses(coursesResult.status === "fulfilled" ? coursesResult.value?.content || [] : []);
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-const stats = [
-  ["14", "Courses"],
-  ["4", "Learning paths"],
-  ["3", "Skill levels"],
-] as const;
+  const stats = useMemo(() => {
+    if (!courses.length) return [] as Array<readonly [string, string]>;
+    const totalHours = courses.reduce((sum, course) => sum + (course.durationHours || 0), 0);
+    const instructors = new Set(courses.map((course) => course.instructorName).filter(Boolean));
+    return [
+      [String(courses.length), "Courses"],
+      [String(totalHours), "Total hours"],
+      [String(instructors.size), "Instructors"],
+    ] as const;
+  }, [courses]);
 
-const featuredCourses = [
-  ["Selected course", "Certificate", "6 modules"],
-  ["Business Operations Essentials", "Course", "4 modules"],
-  ["Leadership Foundations", "Course", "5 modules"],
-] as const;
-
-export default function BusinessManagementCategory() {
   return (
     <main className="category-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/explore" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="category-main">
         <header className="category-header">
@@ -86,48 +61,60 @@ export default function BusinessManagementCategory() {
             <h1>Business &amp; Management</h1>
             <p>Courses for planning, operations, leadership and delivery.</p>
           </div>
-          <button type="button">
-            <ListFilter size={18} />
-            <span>Sort courses</span>
-          </button>
         </header>
 
         <section className="category-hero">
           <h2>Project management learning collection</h2>
           <p>Progress from foundational planning to advanced delivery leadership.</p>
-          <button type="button">Explore collection -&gt;</button>
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("featured-category")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            Explore collection -&gt;
+          </button>
         </section>
 
         <section className="category-stats" aria-label="Category summary">
-          {stats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : stats.length ? stats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
             </article>
-          ))}
+          )) : (
+            <article>
+              <strong>0</strong>
+              <p>Courses</p>
+            </article>
+          )}
         </section>
 
-        <h2 className="featured-category-title">Featured in this category</h2>
+        <h2 className="featured-category-title" id="featured-category">Featured in this category</h2>
 
         <div className="category-content-grid">
           <section className="featured-category-list" aria-label="Featured courses">
-            {featuredCourses.map(([title, type, modules]) => (
-              <article key={title}>
+            {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : courses.length ? courses.map((course) => (
+              <article key={course.id}>
                 <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {type} - {modules}
-                  </p>
+                  <h3>{course.title}</h3>
+                  <p>{course.instructorName || course.categoryName || "Course"}</p>
                 </div>
-                <button type="button">View -&gt;</button>
+                <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(course.id)}`)}>View -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No courses found</h3>
+                  <p>No business & management courses are published yet.</p>
+                </div>
+              </article>
+            )}
           </section>
 
           <aside className="category-skills-card">
             <h2>Category skills</h2>
             <p>Planning - Operations - Leadership - Communication</p>
-            <button type="button">Follow category -&gt;</button>
           </aside>
         </div>
       </section>
@@ -135,3 +122,10 @@ export default function BusinessManagementCategory() {
   );
 }
 
+export default function BusinessManagementCategory() {
+  return (
+    <AuthGuard>
+      <BusinessManagementCategoryContent />
+    </AuthGuard>
+  );
+}

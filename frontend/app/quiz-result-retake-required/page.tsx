@@ -1,154 +1,134 @@
-import {
-  AlertTriangle,
-  Award,
-  BarChart3,
-  BookOpen,
-  BookOpenCheck,
-  ClipboardList,
-  Compass,
-  Home,
-  ListChecks,
-  Percent,
-  RotateCcw,
-  Trophy,
-} from "lucide-react";
+"use client";
 
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+import { AlertTriangle, ClipboardList, ListChecks, Percent, RotateCcw } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
+import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import { QuizResultSession, clearQuizResult, loadQuizResult } from "../lib/quizSession";
+import { decodeParam, encodeId } from "../lib/idCodec";
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+function formatDate(value?: string | null) {
+  if (!value) return "Just now";
+  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
 
-const stats = [
-  ["67%", "Score", Percent],
-  ["1 of 2", "Attempts used", RotateCcw],
-  ["4", "Review topics", ListChecks],
-] as const;
+function QuizResultRetakeRequired() {
+  const router = useRouter();
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [resultSession, setResultSession] = useState<QuizResultSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
 
-const reviewTopics = [
-  ["Project deliverables", "2 questions incorrect", ClipboardList],
-  ["Scope boundaries", "1 question incorrect", ClipboardList],
-  ["Stakeholder roles", "1 question incorrect", ClipboardList],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getCurrentUser(), getPublicDashboard()])
+      .then(([userResult, dashboardResult]) => {
+        if (!active) return;
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-export default function QuizResultRetakeRequiredDesktop() {
+    const id = decodeParam(new URLSearchParams(window.location.search), "assessmentId");
+    setResultSession(id ? loadQuizResult(id) : null);
+    setReady(true);
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const assessment = resultSession?.assessment;
+  const result = resultSession?.result;
+
+  function startRetake() {
+    if (!assessment) return;
+    clearQuizResult();
+    router.push(`/quiz?assessmentId=${encodeId(assessment.id)}`);
+  }
+
   return (
     <main className="certificate-detail-page quiz-result-retake-required-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
-        <header className="certificate-detail-header">
-          <div>
-            <h1>Assessment result</h1>
-            <p>Your attempt was recorded, but the pass score was not reached.</p>
-          </div>
-          <button type="button">
-            <RotateCcw size={18} />
-            <span>Start retake</span>
-          </button>
-        </header>
+        {!ready ? (
+          <CardSkeleton lines={6} />
+        ) : !resultSession ? (
+          <>
+            <header className="certificate-detail-header">
+              <div>
+                <h1>No result found</h1>
+                <p>We couldn't find a recent attempt to show here.</p>
+              </div>
+            </header>
+            <button type="button" onClick={() => router.push("/learning")}>Go to learning home</button>
+          </>
+        ) : (
+          <>
+            <header className="certificate-detail-header">
+              <div>
+                <h1>Assessment result</h1>
+                <p>Your attempt was recorded, but the pass score was not reached.</p>
+              </div>
+              <button type="button" onClick={startRetake}>
+                <RotateCcw size={18} />
+                <span>Start retake</span>
+              </button>
+            </header>
 
-        <section className="certificate-detail-hero">
-          <AlertTriangle size={28} />
-          <h2>Score: 67% - Pass score: 80%</h2>
-          <p>8 of 12 correct - Attempt 1 of 2 - Completed Jul 26, 2026.</p>
-          <button type="button">
-            <ClipboardList size={15} />
-            <span>Review attempt -&gt;</span>
-          </button>
-        </section>
+            <section className="certificate-detail-hero">
+              <AlertTriangle size={28} />
+              <h2>Score: {Math.round(result?.score || 0)}% - Pass score: {assessment?.passingScore ?? 0}%</h2>
+              <p>Attempt {result?.attemptNumber || 1} of {assessment?.maxAttempts || 1} - Completed {formatDate(result?.submittedAt)}.</p>
+              <button type="button" onClick={() => assessment && router.push(`/quiz-review?assessmentId=${encodeId(assessment.id)}`)}>
+                <ClipboardList size={15} />
+                <span>Review attempt -&gt;</span>
+              </button>
+            </section>
 
-        <section className="certificate-detail-stats" aria-label="Assessment result summary">
-          {stats.map(([value, label, Icon]) => (
-            <article key={label}>
-              <Icon size={18} />
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
-        </section>
-
-        <h2 className="share-certificate-title">Review before retaking</h2>
-
-        <div className="certificate-detail-grid">
-          <section className="certificate-share-list" aria-label="Review topics">
-            {reviewTopics.map(([title, description, Icon]) => (
-              <article key={title}>
-                <div className="list-row-copy">
-                  <Icon size={18} />
-                  <div>
-                    <h3>{title}</h3>
-                    <p>{description}</p>
-                  </div>
-                </div>
-                <button type="button">
-                  <BookOpenCheck size={15} />
-                  <span>Review -&gt;</span>
-                </button>
+            <section className="certificate-detail-stats" aria-label="Assessment result summary">
+              <article>
+                <Percent size={18} />
+                <strong>{Math.round(result?.score || 0)}%</strong>
+                <p>Score</p>
               </article>
-            ))}
-          </section>
+              <article>
+                <RotateCcw size={18} />
+                <strong>{result?.attemptNumber || 1} of {assessment?.maxAttempts || 1}</strong>
+                <p>Attempts used</p>
+              </article>
+            </section>
 
-          <aside className="verification-card">
-            <h2>Retake rule</h2>
-            <p>The second attempt uses a new question order.</p>
-            <button type="button">
-              <ListChecks size={15} />
-              <span>View rules -&gt;</span>
-            </button>
-          </aside>
-        </div>
+            <h2 className="share-certificate-title">Before you retake</h2>
+
+            <div className="certificate-detail-grid">
+              <aside className="verification-card">
+                <h2>Retake rule</h2>
+                <p>You have {Math.max((assessment?.maxAttempts || 1) - (result?.attemptNumber || 1), 0)} attempt(s) remaining for this assessment.</p>
+                <button type="button" onClick={() => assessment && router.push(`/quiz-review?assessmentId=${encodeId(assessment.id)}`)}>
+                  <ListChecks size={15} />
+                  <span>Review your answers -&gt;</span>
+                </button>
+              </aside>
+            </div>
+          </>
+        )}
       </section>
     </main>
   );
 }
 
+export default function QuizResultRetakeRequiredPage() {
+  return (
+    <AuthGuard>
+      <QuizResultRetakeRequired />
+    </AuthGuard>
+  );
+}

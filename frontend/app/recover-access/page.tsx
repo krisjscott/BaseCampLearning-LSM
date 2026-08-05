@@ -1,135 +1,146 @@
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  RefreshCw,
-  Trophy,
-} from "lucide-react";
+"use client";
 
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
-
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
-
-const stats = [
-  ["Email", "Supported"],
-  ["Crew ID", "Supported"],
-  ["Secure", "Recovery"],
-] as const;
-
-const recoveryOptions = [
-  ["Email address", "Receive a secure sign-in link", "Use email"],
-  ["Crew ID", "Verify identity and reset access", "Use Crew ID"],
-  ["Google sign-in", "Return to Google authentication", "Continue"],
-] as const;
+import { CheckCircle2, LifeBuoy, Mail, RefreshCw } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import { forgotPassword, resetPassword } from "../lib/backendApi";
 
 export default function AccessRecoveryDesktop() {
+  const [token, setToken] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<{ tone: "error" | "success"; message: string } | null>(null);
+  const [requestSent, setRequestSent] = useState(false);
+  const [resetDone, setResetDone] = useState(false);
+
+  useEffect(() => {
+    setToken(new URLSearchParams(window.location.search).get("token"));
+  }, []);
+
+  async function handleRequestReset(event: FormEvent) {
+    event.preventDefault();
+    setSubmitting(true);
+    setStatus(null);
+    try {
+      await forgotPassword(email);
+      setRequestSent(true);
+    } catch (error) {
+      setStatus({ tone: "error", message: error instanceof Error ? error.message : "Could not send a recovery email" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function handleResetPassword(event: FormEvent) {
+    event.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setStatus({ tone: "error", message: "Passwords do not match" });
+      return;
+    }
+    if (!token) return;
+
+    setSubmitting(true);
+    setStatus(null);
+    try {
+      await resetPassword(token, newPassword);
+      setResetDone(true);
+    } catch (error) {
+      setStatus({ tone: "error", message: error instanceof Error ? error.message : "Could not reset your password" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <main className="certificate-detail-page recover-access-page">
       <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
+        <Link href="/">
+          <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
+        </Link>
+        <section className="verification-card sidebar-help-card">
+          <h2>Need more help?</h2>
+          <p>If you no longer have access to your email, contact your organization admin to reset your account.</p>
+          <Link href="/">Back to log in -&gt;</Link>
         </section>
       </aside>
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
           <div>
-            <h1>Recover Access</h1>
-            <p>Restore access using your email address or Crew ID.</p>
+            <h1>Recover access</h1>
+            <p>{token ? "Choose a new password for your account." : "Enter your email and we'll send you a reset link."}</p>
           </div>
-          <button type="button">
-            <RefreshCw size={18} />
-            <span>Send recovery link</span>
-          </button>
         </header>
 
         <section className="certificate-detail-hero">
-          <h2>Email or Crew ID recovery</h2>
-          <p>Enter the identifier used for BaseCamp. We will send the next secure step.</p>
-          <button type="button">Begin recovery -&gt;</button>
+          {token ? (
+            resetDone ? (
+              <>
+                <CheckCircle2 size={28} />
+                <h2>Password updated</h2>
+                <p>You can now log in with your new password.</p>
+                <Link href="/">Back to log in -&gt;</Link>
+              </>
+            ) : (
+              <form onSubmit={handleResetPassword} className="compact-inline-form">
+                <h2>Set a new password</h2>
+                <input
+                  type="password"
+                  className="inline-text-input"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                />
+                <input
+                  type="password"
+                  className="inline-text-input"
+                  placeholder="Confirm new password"
+                  value={confirmPassword}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
+                  minLength={8}
+                  required
+                  autoComplete="new-password"
+                />
+                {status && <p className={`status-message ${status.tone === "error" ? "is-error" : "is-success"}`}>{status.message}</p>}
+                <button type="submit" disabled={submitting}>
+                  <RefreshCw size={18} />
+                  <span>{submitting ? "Updating..." : "Update password"}</span>
+                </button>
+              </form>
+            )
+          ) : requestSent ? (
+            <>
+              <Mail size={28} />
+              <h2>Check your email</h2>
+              <p>If an account exists for {email}, a reset link is on its way.</p>
+            </>
+          ) : (
+            <form onSubmit={handleRequestReset} className="compact-inline-form">
+              <h2>Email recovery</h2>
+              <p>Enter the email you use for BaseCamp. We&apos;ll send a secure reset link.</p>
+              <input
+                type="email"
+                className="inline-text-input"
+                placeholder="name@email.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                autoComplete="email"
+              />
+              {status && <p className="status-message is-error">{status.message}</p>}
+              <button type="submit" disabled={submitting}>
+                <LifeBuoy size={18} />
+                <span>{submitting ? "Sending..." : "Send recovery link"}</span>
+              </button>
+            </form>
+          )}
         </section>
-
-        <section className="certificate-detail-stats" aria-label="Recovery summary">
-          {stats.map(([value, label]) => (
-            <article key={label}>
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
-        </section>
-
-        <h2 className="share-certificate-title">Recovery options</h2>
-
-        <div className="certificate-detail-grid">
-          <section className="certificate-share-list" aria-label="Recovery options">
-            {recoveryOptions.map(([title, description, action]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{description}</p>
-                </div>
-                <button type="button">{action} -&gt;</button>
-              </article>
-            ))}
-          </section>
-
-          <aside className="verification-card">
-            <h2>Need help?</h2>
-            <p>Contact support if you no longer have access to your email.</p>
-            <button type="button">Contact support -&gt;</button>
-          </aside>
-        </div>
       </section>
     </main>
   );
 }
-

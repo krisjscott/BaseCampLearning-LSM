@@ -1,84 +1,67 @@
+"use client";
+
+import { PlayCircle } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import AuthGuard from "../../components/AuthGuard";
+import LearningSidebar from "../../components/LearningSidebar";
+import { CardSkeleton } from "../../components/Skeleton";
 import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  PlayCircle,
-  Trophy,
-} from "lucide-react";
+  CourseResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCurrentUser,
+  getPublicDashboard,
+  searchCourses,
+} from "../../lib/backendApi";
+import { encodeId } from "../../lib/idCodec";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+function ProjectManagementPathContent() {
+  const router = useRouter();
+  const [courses, setCourses] = useState<CourseResponse[]>([]);
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([searchCourses("project management", 6), getCurrentUser(), getPublicDashboard()])
+      .then(([coursesResult, userResult, dashboardResult]) => {
+        if (!active) return;
+        setCourses(coursesResult.status === "fulfilled" ? coursesResult.value?.content || [] : []);
+        if (userResult.status === "fulfilled") setUser(userResult.value);
+        setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-const stats = [
-  ["4", "Courses"],
-  ["48h", "Estimated"],
-  ["1", "Certificate"],
-] as const;
+  const stats = useMemo(() => {
+    if (!courses.length) return [] as Array<readonly [string, string]>;
+    const totalHours = courses.reduce((sum, course) => sum + (course.durationHours || 0), 0);
+    const instructors = new Set(courses.map((course) => course.instructorName).filter(Boolean));
+    return [
+      [String(courses.length), "Courses"],
+      [`${totalHours}h`, "Estimated"],
+      [String(instructors.size), "Instructors"],
+    ] as const;
+  }, [courses]);
 
-const curriculum = [
-  ["1. Course foundations", "Starter", "Start here", "Begin"],
-  ["2. Planning & Execution", "Builder", "Locked", "Requirements"],
-  ["3. Leading Delivery", "Achiever", "Locked", "Requirements"],
-] as const;
+  const completedCount = useMemo(() => {
+    const progressByCourse = new Map((dashboard?.continueLearning || []).map((item) => [item.courseId, item.completionPercentage || 0]));
+    return courses.filter((course) => (progressByCourse.get(course.id) || 0) >= 100).length;
+  }, [courses, dashboard]);
 
-export default function ProjectManagementPath() {
+  const firstCourse = courses[0];
+
   return (
     <main className="path-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/explore" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="path-main">
         <header className="path-header">
@@ -86,48 +69,66 @@ export default function ProjectManagementPath() {
             <h1>Project Management Path</h1>
             <p>A structured route from Starter to Champion.</p>
           </div>
-          <button type="button">
-            <PlayCircle size={18} />
-            <span>Start path</span>
-          </button>
+          {firstCourse ? (
+            <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(firstCourse.id)}`)}>
+              <PlayCircle size={18} />
+              <span>Start path</span>
+            </button>
+          ) : null}
         </header>
 
         <section className="path-hero">
-          <h2>Starter -&gt; Builder -&gt; Achiever -&gt; Champion</h2>
-          <p>Complete four progressive courses, required quizzes and practical checkpoints.</p>
-          <button type="button">View full path -&gt;</button>
+          <h2>{courses.length ? `${completedCount} of ${courses.length} courses complete` : "Project Management Path"}</h2>
+          <p>Complete every course in this path, along with their required quizzes and checkpoints.</p>
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById("path-curriculum")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
+            View full path -&gt;
+          </button>
         </section>
 
         <section className="path-stats" aria-label="Path summary">
-          {stats.map(([value, label]) => (
+          {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : stats.length ? stats.map(([value, label]) => (
             <article key={label}>
               <strong>{value}</strong>
               <p>{label}</p>
             </article>
-          ))}
+          )) : (
+            <article>
+              <strong>0</strong>
+              <p>Courses</p>
+            </article>
+          )}
         </section>
 
-        <h2 className="path-curriculum-title">Path curriculum</h2>
+        <h2 className="path-curriculum-title" id="path-curriculum">Path curriculum</h2>
 
         <div className="path-content-grid">
           <section className="path-curriculum-list" aria-label="Path curriculum">
-            {curriculum.map(([title, level, state, action]) => (
-              <article key={title}>
+            {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : courses.length ? courses.map((course, index) => (
+              <article key={course.id}>
                 <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {level} - {state}
-                  </p>
+                  <h3>{index + 1}. {course.title}</h3>
+                  <p>{course.instructorName || course.categoryName || "Available"}</p>
                 </div>
-                <button type="button">{action} -&gt;</button>
+                <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(course.id)}`)}>Begin -&gt;</button>
               </article>
-            ))}
+            )) : (
+              <article>
+                <div>
+                  <h3>No courses found</h3>
+                  <p>No project management courses are published yet.</p>
+                </div>
+              </article>
+            )}
           </section>
 
           <aside className="path-progress-card">
             <h2>Path progress</h2>
-            <p>0 of 4 courses completed.</p>
-            <button type="button">View requirements -&gt;</button>
+            <p>{loading ? "Loading progress..." : `${completedCount} of ${courses.length} courses completed.`}</p>
           </aside>
         </div>
       </section>
@@ -135,3 +136,10 @@ export default function ProjectManagementPath() {
   );
 }
 
+export default function ProjectManagementPath() {
+  return (
+    <AuthGuard>
+      <ProjectManagementPathContent />
+    </AuthGuard>
+  );
+}

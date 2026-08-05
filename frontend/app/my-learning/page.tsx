@@ -1,29 +1,16 @@
 "use client";
 
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
-import { CardSkeleton, SidebarSkeleton, Skeleton } from "../components/Skeleton";
-
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, true],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
+import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import { encodeId } from "../lib/idCodec";
 
 function MyLearning() {
+  const router = useRouter();
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,11 +34,12 @@ function MyLearning() {
 
   const continueLearning = dashboard?.continueLearning || [];
   const courseRows = useMemo(() => {
-    return continueLearning.slice(0, 3).map((item) => [
-      item.courseTitle,
-      `${Math.round(item.completionPercentage || 0)}% complete${item.lastAccessedAt ? ` - Last activity ${new Date(item.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}` : ""}`,
-      "Continue ->",
-    ] as const);
+    return continueLearning.slice(0, 3).map((item) => ({
+      courseId: item.courseId,
+      title: item.courseTitle,
+      meta: `${Math.round(item.completionPercentage || 0)}% complete${item.lastAccessedAt ? ` - Last activity ${new Date(item.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}` : ""}`,
+      action: "Continue ->",
+    }));
   }, [continueLearning]);
 
   const summaryStats = useMemo(() => {
@@ -64,64 +52,10 @@ function MyLearning() {
   }, [continueLearning]);
 
   const featured = continueLearning[0];
-  const learnerName = user?.fullName?.split(" ")[0] || user?.email?.split("@")[0] || "there";
-  const trails = continueLearning.slice(0, 3).map((item) => [
-    item.courseTitle,
-    `${Math.round(item.completionPercentage || 0)}%`,
-  ] as const);
 
   return (
     <main className="my-learning-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {loading ? <SidebarSkeleton /> : trails.length ? trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          )) : <small>No course progress yet</small>}
-        </section>
-        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
-          {loading ? (
-            <>
-              <div><Skeleton className="skeleton-pill" /></div>
-              <SidebarSkeleton />
-            </>
-          ) : (
-            <>
-              <div>{learnerName.charAt(0).toUpperCase()}</div>
-              <section>
-                <strong>{learnerName}</strong>
-                <span>{user?.role || "Learner"}</span>
-                <small>{user?.learnerCode || "Profile code pending"}</small>
-              </section>
-            </>
-          )}
-        </Link>
-      </aside>
+      <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="my-learning-main">
         <header className="my-learning-header">
@@ -129,7 +63,7 @@ function MyLearning() {
             <h1>My Learning</h1>
             <p>All enrolled courses, organised by priority and progress.</p>
           </div>
-          <button type="button">
+          <button type="button" onClick={() => router.push("/explore")}>
             <BookOpen size={18} />
             <span>Browse courses</span>
           </button>
@@ -140,7 +74,12 @@ function MyLearning() {
             <>
               <h2>{featured ? `Continue ${featured.courseTitle}` : "No active courses yet"}</h2>
               <p>{featured ? "Progress loaded from your account." : "Browse the catalogue and enroll to start learning."}</p>
-              <button type="button">{featured ? "Continue learning ->" : "Browse courses ->"}</button>
+              <button
+                type="button"
+                onClick={() => (featured ? router.push(`/course?courseId=${encodeId(featured.courseId)}`) : router.push("/explore"))}
+              >
+                {featured ? "Continue learning ->" : "Browse courses ->"}
+              </button>
             </>
           )}
         </section>
@@ -164,13 +103,13 @@ function MyLearning() {
           <section className="my-course-list">
             {loading ? Array.from({ length: 3 }, (_, index) => (
               <CardSkeleton key={index} lines={2} />
-            )) : courseRows.length ? courseRows.map(([title, meta, action]) => (
-              <article key={title}>
+            )) : courseRows.length ? courseRows.map((row) => (
+              <article key={row.courseId}>
                 <div>
-                  <h3>{title}</h3>
-                  <p>{meta}</p>
+                  <h3>{row.title}</h3>
+                  <p>{row.meta}</p>
                 </div>
-                <button type="button">{action}</button>
+                <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(row.courseId)}`)}>{row.action}</button>
               </article>
             )) : (
               <article>
@@ -178,7 +117,7 @@ function MyLearning() {
                   <h3>No courses enrolled</h3>
                   <p>Your courses will appear here after enrollment.</p>
                 </div>
-                <button type="button">Explore courses -&gt;</button>
+                <button type="button" onClick={() => router.push("/explore")}>Explore courses -&gt;</button>
               </article>
             )}
           </section>
@@ -199,7 +138,7 @@ function MyLearning() {
                     </span>
                   )) : <span>No active goals yet</span>}
                 </div>
-                <button type="button">View progress -&gt;</button>
+                <button type="button" onClick={() => router.push("/progress")}>View progress -&gt;</button>
               </>
             )}
           </aside>

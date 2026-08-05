@@ -1,136 +1,194 @@
+"use client";
+
+import { BadgeCheck, Search } from "lucide-react";
+import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
+import AuthGuard from "../components/AuthGuard";
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
 import {
-  Award,
-  BadgeCheck,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  Trophy,
-} from "lucide-react";
+  CertificateResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCurrentUser,
+  getPublicDashboard,
+  verifyCertificate,
+} from "../lib/backendApi";
+import { decodeParam, encodeId } from "../lib/idCodec";
 
-const navItems = [
-  ["Learning Home", Home, false],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, true],
-  ["Progress", BarChart3, false],
-] as const;
+function formatDate(value?: string | null) {
+  if (!value) return "Unknown";
+  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
 
-const trails = [
-  ["Project Management", "58%"],
-  ["Content Writing", "24%"],
-  ["Graphic Design", "8%"],
-] as const;
+function PublicCredentialVerification() {
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [certificateNumber, setCertificateNumber] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [certificate, setCertificate] = useState<CertificateResponse | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("Copy verification link");
 
-const stats = [
-  ["Active", "Status"],
-  ["No expiry", "Validity"],
-  ["BC-CW-0148", "Credential ID"],
-] as const;
+  useEffect(() => {
+    Promise.allSettled([getCurrentUser(), getPublicDashboard()]).then(([userResult, dashboardResult]) => {
+      if (userResult.status === "fulfilled") setUser(userResult.value);
+      setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
+    });
 
-const records = [
-  ["Learner", "Learner"],
-  ["Course", "Completed course"],
-  ["Issuer", "BaseCamp - TIES HQ"],
-] as const;
+    const initial = decodeParam(new URLSearchParams(window.location.search), "certificateNumber");
+    setInputValue(initial || "");
+    if (initial) lookup(initial);
+    else setLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-export default function PublicCredentialVerificationDesktop() {
+  function lookup(number: string) {
+    const trimmed = number.trim();
+    if (!trimmed) return;
+    setChecking(true);
+    setLoading(true);
+    setNotFound(false);
+    setCertificateNumber(trimmed);
+    window.history.replaceState(null, "", `/verify-credential?certificateNumber=${encodeId(trimmed)}`);
+
+    verifyCertificate(trimmed)
+      .then((result) => {
+        if (result) setCertificate(result);
+        else setNotFound(true);
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => {
+        setChecking(false);
+        setLoading(false);
+      });
+  }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    lookup(inputValue);
+  }
+
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopyStatus("Link copied");
+    } catch {
+      setCopyStatus("Could not copy link");
+    }
+    setTimeout(() => setCopyStatus("Copy verification link"), 2500);
+  }
+
   return (
     <main className="certificate-detail-page verify-credential-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {trails.map(([name, progress]) => (
-            <div key={name}>
-              <span>{name}</span>
-              <strong>{progress}</strong>
-            </div>
-          ))}
-        </section>
-<section className="learner-profile" aria-label="Learner profile">
-          <div>N</div>
-          <section>
-            <strong>Learner</strong>
-            <span>Learner</span>
-            <small>Account active</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/certificates" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
           <div>
-            <h1>Verify Credential</h1>
+            <h1>Verify credential</h1>
             <p>Confirm a BaseCamp certificate and its current status.</p>
           </div>
-          <button type="button">
-            <BadgeCheck size={18} />
-            <span>Copy verification link</span>
-          </button>
+          {certificate && (
+            <button type="button" onClick={copyLink}>
+              <BadgeCheck size={18} />
+              <span>{copyStatus}</span>
+            </button>
+          )}
         </header>
 
-        <section className="certificate-detail-hero">
-          <h2>Verified certificate</h2>
-          <p>Completed course - Awarded to Learner - Issued Jul 20, 2026.</p>
-          <button type="button">View certificate -&gt;</button>
-        </section>
+        <form onSubmit={handleSubmit} className="learning-search compact-search-form is-wide">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Enter a certificate number, e.g. BC-CW-0148"
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            aria-label="Certificate number"
+          />
+        </form>
 
-        <section className="certificate-detail-stats" aria-label="Credential verification summary">
-          {stats.map(([value, label]) => (
-            <article key={label}>
-              <strong>{value}</strong>
-              <p>{label}</p>
-            </article>
-          ))}
-        </section>
-
-        <h2 className="share-certificate-title">Credential record</h2>
-
-        <div className="certificate-detail-grid">
-          <section className="certificate-share-list" aria-label="Credential record">
-            {records.map(([title, description]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>{description}</p>
-                </div>
-                <button type="button">Confirmed -&gt;</button>
-              </article>
-            ))}
+        {checking ? (
+          <CardSkeleton lines={5} />
+        ) : notFound ? (
+          <section className="certificate-detail-hero">
+            <h2>No certificate found</h2>
+            <p>We couldn&apos;t find a certificate matching "{certificateNumber}". Double-check the number and try again.</p>
           </section>
+        ) : certificate ? (
+          <>
+            <section className="certificate-detail-hero">
+              <BadgeCheck size={28} />
+              <h2>Verified certificate</h2>
+              <p>{certificate.courseName || "Course"} - Awarded to {certificate.recipientName || "learner"} - Issued {formatDate(certificate.issuedDate)}.</p>
+              {certificate.fileUrl && (
+                <a href={certificate.fileUrl} target="_blank" rel="noreferrer">View certificate -&gt;</a>
+              )}
+            </section>
 
-          <aside className="verification-card">
-            <h2>Verification integrity</h2>
-            <p>This public record is generated directly from BaseCamp.</p>
-            <button type="button">Report issue -&gt;</button>
-          </aside>
-        </div>
+            <section className="certificate-detail-stats" aria-label="Credential verification summary">
+              <article>
+                <strong>Verified</strong>
+                <p>Status</p>
+              </article>
+              <article>
+                <strong>{certificate.issuerName || "BaseCamp"}</strong>
+                <p>Issuer</p>
+              </article>
+              <article>
+                <strong>{certificate.certificateNumber}</strong>
+                <p>Credential ID</p>
+              </article>
+            </section>
+
+            <h2 className="share-certificate-title">Credential record</h2>
+
+            <div className="certificate-detail-grid">
+              <section className="certificate-share-list" aria-label="Credential record">
+                <article>
+                  <div>
+                    <h3>Recipient</h3>
+                    <p>{certificate.recipientName || "Unknown"}</p>
+                  </div>
+                </article>
+                <article>
+                  <div>
+                    <h3>Course</h3>
+                    <p>{certificate.courseName || "Unknown"}</p>
+                  </div>
+                </article>
+                <article>
+                  <div>
+                    <h3>Issued</h3>
+                    <p>{formatDate(certificate.issuedDate)}</p>
+                  </div>
+                </article>
+              </section>
+
+              <aside className="verification-card">
+                <h2>Verification integrity</h2>
+                <p>This record is generated directly from BaseCamp's certificate registry.</p>
+                <Link href="/help-support">Report an issue -&gt;</Link>
+              </aside>
+            </div>
+          </>
+        ) : (
+          <section className="certificate-detail-hero">
+            <h2>Look up a credential</h2>
+            <p>Enter a certificate number above to verify it.</p>
+          </section>
+        )}
       </section>
     </main>
   );
 }
 
-
+export default function VerifyCredentialPage() {
+  return (
+    <AuthGuard>
+      <PublicCredentialVerification />
+    </AuthGuard>
+  );
+}

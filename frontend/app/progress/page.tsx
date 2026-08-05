@@ -1,7 +1,8 @@
 "use client";
 
-import { ArrowRight, BarChart3 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
 import LearningSidebar from "../components/LearningSidebar";
 import { CardSkeleton } from "../components/Skeleton";
@@ -13,9 +14,11 @@ import {
   getCurrentUser,
   getPublicDashboard,
 } from "../lib/backendApi";
+import { encodeId } from "../lib/idCodec";
 import { getLevelProgress, levelMilestones } from "../lib/levelProgress";
 
 function ProgressContent() {
+  const router = useRouter();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
@@ -69,10 +72,6 @@ function ProgressContent() {
             <h1>Progress</h1>
             <p>Learning completion, XP, levels and database-recorded activity.</p>
           </div>
-          <button type="button">
-            <BarChart3 size={18} />
-            <span>Export report</span>
-          </button>
         </header>
 
         <section className="progress-dashboard-hero">
@@ -86,7 +85,7 @@ function ProgressContent() {
                   ? `${courses.length} course${courses.length === 1 ? "" : "s"} and ${activities.length} recent activit${activities.length === 1 ? "y" : "ies"} are powering this view.`
                   : "Enroll in a course and your progress cards will populate from the database."}
               </p>
-              <button type="button">View insights -&gt;</button>
+              <button type="button" onClick={() => router.push("/achievements")}>View insights -&gt;</button>
             </>
           )}
         </section>
@@ -112,7 +111,7 @@ function ProgressContent() {
                     <h3>{course.courseTitle}</h3>
                     <p>{progress}% - {progress >= 100 ? "Completed" : progress > 0 ? "In progress" : "Ready to start"}</p>
                   </div>
-                  <button type="button">Details -&gt;</button>
+                  <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(course.courseId)}`)}>Details -&gt;</button>
                 </article>
               );
             }) : (
@@ -154,7 +153,7 @@ function ProgressContent() {
                     </span>
                   ))}
                 </div>
-                <button type="button">
+                <button type="button" onClick={() => router.push("/explore")}>
                   <span>{levelLabel}</span>
                   <ArrowRight size={17} strokeWidth={2.3} />
                 </button>

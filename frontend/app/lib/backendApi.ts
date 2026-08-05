@@ -63,6 +63,25 @@ export type LessonResponse = {
   orderIndex?: number | null;
 };
 
+export type ModuleResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  orderIndex?: number | null;
+  lessons?: LessonResponse[] | null;
+};
+
+export type CourseProgressResponse = {
+  id: string;
+  courseId: string;
+  courseTitle?: string | null;
+  lastLessonId?: string | null;
+  lastLessonTitle?: string | null;
+  completionPercentage?: number | null;
+  timeSpentMinutes?: number | null;
+  lastAccessedAt?: string | null;
+};
+
 export type AssessmentOptionResponse = {
   id: string;
   optionText: string;
@@ -382,6 +401,85 @@ export async function searchCourses(title: string, size = 12): Promise<PageRespo
   return response.data || null;
 }
 
+export async function getCourse(courseId: string): Promise<CourseResponse | null> {
+  const response = await backendRequest<CourseResponse>(`/api/v1/courses/${courseId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function getCourseModules(courseId: string): Promise<ModuleResponse[]> {
+  const response = await backendRequest<ModuleResponse[]>(`/api/v1/courses/${courseId}/modules`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function getCourseProgress(courseId: string, userId: string): Promise<CourseProgressResponse | null> {
+  const response = await backendRequest<CourseProgressResponse>(
+    `/api/v1/progress/course/${courseId}/user/${userId}`,
+    { headers: { Accept: "application/json" } },
+  );
+  return response.data || null;
+}
+
+export async function getCourseAssessments(courseId: string): Promise<AssessmentResponse[]> {
+  const response = await backendRequest<AssessmentResponse[]>(`/api/v1/assessments/course/${courseId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export type LessonProgressResponse = {
+  id: string;
+  lessonId: string;
+  lessonTitle?: string | null;
+  completed: boolean;
+  timeSpentMinutes?: number | null;
+  completedAt?: string | null;
+};
+
+export async function getLessonsProgress(userId: string, lessonIds: string[]): Promise<LessonProgressResponse[]> {
+  if (!lessonIds.length) return [];
+  const query = lessonIds.map((id) => `lessonIds=${id}`).join("&");
+  const response = await backendRequest<LessonProgressResponse[]>(`/api/v1/progress/lessons/user/${userId}?${query}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function updateCourseProgress(
+  courseId: string,
+  userId: string,
+  payload: { lessonId: string; completed: boolean; timeSpentMinutes?: number },
+): Promise<CourseProgressResponse | null> {
+  const response = await backendRequest<CourseProgressResponse>(
+    `/api/v1/progress/course/${courseId}/user/${userId}`,
+    { method: "PUT", body: JSON.stringify(payload) },
+  );
+  return response.data || null;
+}
+
+export type EnrollmentResponse = {
+  id: string;
+  userId: string;
+  userName?: string | null;
+  courseId: string;
+  courseTitle?: string | null;
+  courseThumbnail?: string | null;
+  status?: string | null;
+  dueDate?: string | null;
+  enrolledDate?: string | null;
+  completedDate?: string | null;
+};
+
+export async function getMyEnrollments(userId: string): Promise<EnrollmentResponse[]> {
+  const response = await backendRequest<EnrollmentResponse[]>(`/api/v1/enrollments/user/${userId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
 export async function getGlobalSearch(query: string, size = 12): Promise<SearchResponse | null> {
   const response = await backendRequest<SearchResponse>(
     `/api/v1/search?query=${encodeURIComponent(query)}&size=${size}`,
@@ -474,11 +572,69 @@ export async function getCertificates(): Promise<CertificateResponse[]> {
   return response.data || [];
 }
 
+export async function downloadCertificate(certificateId: string): Promise<string | null> {
+  const response = await backendRequest<string>(`/api/v1/certificates/${certificateId}/download`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function verifyCertificate(certificateNumber: string): Promise<CertificateResponse | null> {
+  const response = await backendRequest<CertificateResponse>(
+    `/api/v1/certificates/verify/${encodeURIComponent(certificateNumber)}`,
+    { headers: { Accept: "application/json" } },
+  );
+  return response.data || null;
+}
+
 export async function getNotifications(): Promise<NotificationResponse[]> {
   const response = await backendRequest<NotificationResponse[]>("/api/v1/notifications/my-notifications", {
     headers: { Accept: "application/json" },
   });
   return response.data || [];
+}
+
+export async function getUnreadNotificationCount(): Promise<number> {
+  const response = await backendRequest<number>("/api/v1/notifications/unread-count", {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || 0;
+}
+
+export async function markNotificationRead(notificationId: string): Promise<NotificationResponse | null> {
+  const response = await backendRequest<NotificationResponse>(`/api/v1/notifications/${notificationId}/read`, {
+    method: "PUT",
+  });
+  return response.data || null;
+}
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await backendRequest<void>("/api/v1/notifications/read-all", { method: "PUT" });
+}
+
+export async function deleteNotification(notificationId: string): Promise<void> {
+  await backendRequest<void>(`/api/v1/notifications/${notificationId}`, { method: "DELETE" });
+}
+
+export async function forgotPassword(email: string, turnstileToken?: string | null): Promise<void> {
+  await backendRequest<void>("/api/v1/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email, turnstileToken }),
+  });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await backendRequest<void>("/api/v1/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+}
+
+export async function verifyOtp(email: string, otp: string): Promise<void> {
+  await backendRequest<void>("/api/v1/auth/verify-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, otp }),
+  });
 }
 
 export function saveAuth(payload: AuthPayload): void {
