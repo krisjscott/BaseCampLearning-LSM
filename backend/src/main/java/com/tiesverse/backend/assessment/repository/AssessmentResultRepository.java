@@ -19,6 +19,12 @@ public interface AssessmentResultRepository extends JpaRepository<AssessmentResu
 
     long countByAssessmentIdAndPassedTrue(UUID assessmentId);
 
+    boolean existsByAssessmentId(UUID assessmentId);
+
+    List<AssessmentResult> findByAssessmentIdIn(List<UUID> assessmentIds);
+
+    void deleteByAssessmentIdIn(List<UUID> assessmentIds);
+
     @Query("select coalesce(sum(ar.score), 0) from AssessmentResult ar where ar.userId = :userId and ar.passed = true")
     Long sumPassedScoresByUserId(@Param("userId") UUID userId);
 }

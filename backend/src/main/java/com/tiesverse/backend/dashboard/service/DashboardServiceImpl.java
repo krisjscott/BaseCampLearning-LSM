@@ -9,6 +9,7 @@ import com.tiesverse.backend.dashboard.dto.response.AdminDashboardResponse;
 import com.tiesverse.backend.dashboard.dto.response.EmployeeDashboardResponse;
 import com.tiesverse.backend.dashboard.dto.response.PublicDashboardResponse;
 import com.tiesverse.backend.progress.repository.CourseProgressRepository;
+import com.tiesverse.backend.progress.repository.LessonProgressRepository;
 import com.tiesverse.backend.user.repository.UserActivityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
@@ -16,14 +17,18 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
+    private static final int XP_PER_LESSON = 10;
+
     private final CourseRepository courseRepository;
     private final CourseProgressRepository courseProgressRepository;
+    private final LessonProgressRepository lessonProgressRepository;
     private final UserActivityRepository userActivityRepository;
     private final AssessmentResultRepository assessmentResultRepository;
 
@@ -83,13 +88,19 @@ public class DashboardServiceImpl implements DashboardService {
                                 .build())
                         .toList();
 
-        Long xpPoints = userId == null ? 0L : assessmentResultRepository.sumPassedScoresByUserId(userId);
+        // XP is derived, not stored: completed lessons are worth a flat amount
+        // each (lesson_progress.completed is idempotent, so this can't double-award
+        // for re-watching or re-marking the same lesson complete), plus passed quiz
+        // scores on top so assessments still matter.
+        long quizXp = userId == null ? 0L : Optional.ofNullable(assessmentResultRepository.sumPassedScoresByUserId(userId)).orElse(0L);
+        long lessonXp = userId == null ? 0L : lessonProgressRepository.countByUserIdAndCompletedTrue(userId) * XP_PER_LESSON;
+        long xpPoints = quizXp + lessonXp;
 
         return PublicDashboardResponse.builder()
                 .continueLearning(continueLearning)
                 .recommendedCourses(recommendedCourses)
                 .recentActivities(recentActivities)
-                .xpPoints(xpPoints == null ? 0 : Math.toIntExact(Math.min(xpPoints, Integer.MAX_VALUE)))
+                .xpPoints(Math.toIntExact(Math.min(xpPoints, Integer.MAX_VALUE)))
                 .build();
     }
 

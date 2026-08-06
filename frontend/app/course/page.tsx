@@ -10,6 +10,7 @@ import {
   Lock,
   MessageCircle,
   Share2,
+  Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,11 +19,15 @@ import LearningSidebar from "../components/LearningSidebar";
 import { CardSkeleton } from "../components/Skeleton";
 import {
   AssessmentResponse,
+  ContestResponse,
   CourseProgressResponse,
   CourseResponse,
+  LeaderboardEntryResponse,
   ModuleResponse,
   PublicDashboardResponse,
   UserResponse,
+  getActiveContests,
+  getContestLeaderboard,
   getCourse,
   getCourseAssessments,
   getCourseModules,
@@ -46,11 +51,20 @@ function CourseOverview() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("content");
   const [shareStatus, setShareStatus] = useState("");
+  const [contests, setContests] = useState<ContestResponse[]>([]);
+  const [expandedContestId, setExpandedContestId] = useState<string | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntryResponse[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   useEffect(() => {
     let active = true;
-    const id = decodeParam(new URLSearchParams(window.location.search), "courseId");
+    const params = new URLSearchParams(window.location.search);
+    const id = decodeParam(params, "courseId");
     setCourseId(id);
+    const requestedTab = params.get("tab");
+    if (requestedTab === "overview" || requestedTab === "content" || requestedTab === "grades") {
+      setTab(requestedTab);
+    }
 
     Promise.allSettled([getCurrentUser(), getPublicDashboard()]).then(([userResult, dashboardResult]) => {
       if (!active) return;
@@ -63,12 +77,13 @@ function CourseOverview() {
       return;
     }
 
-    Promise.allSettled([getCourse(id), getCourseModules(id), getCourseAssessments(id)])
-      .then(([courseResult, modulesResult, assessmentsResult]) => {
+    Promise.allSettled([getCourse(id), getCourseModules(id), getCourseAssessments(id), getActiveContests(id)])
+      .then(([courseResult, modulesResult, assessmentsResult, contestsResult]) => {
         if (!active) return;
         setCourse(courseResult.status === "fulfilled" ? courseResult.value : null);
         setModules(modulesResult.status === "fulfilled" ? modulesResult.value : []);
         setAssessments(assessmentsResult.status === "fulfilled" ? assessmentsResult.value : []);
+        setContests(contestsResult.status === "fulfilled" ? contestsResult.value : []);
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -88,6 +103,19 @@ function CourseOverview() {
 
   const totalLessons = useMemo(() => modules.reduce((sum, module) => sum + (module.lessons?.length || 0), 0), [modules]);
   const completion = Math.round(progress?.completionPercentage || 0);
+
+  function toggleLeaderboard(contestId: string) {
+    if (expandedContestId === contestId) {
+      setExpandedContestId(null);
+      return;
+    }
+    setExpandedContestId(contestId);
+    setLeaderboardLoading(true);
+    getContestLeaderboard(contestId)
+      .then(setLeaderboard)
+      .catch(() => setLeaderboard([]))
+      .finally(() => setLeaderboardLoading(false));
+  }
 
   function lessonHref(lessonId: string, moduleId: string) {
     return `/lesson?lessonId=${encodeId(lessonId)}&moduleId=${encodeId(moduleId)}&courseId=${encodeId(courseId || "")}`;
@@ -297,6 +325,48 @@ function CourseOverview() {
                     <p className="admin-empty">No quizzes have been published for this course yet.</p>
                   )}
                 </section>
+
+                <aside className="course-side-panel">
+                  <section className="info-card">
+                    <h2>Active contests</h2>
+                    {contests.length ? (
+                      <div className="module-list">
+                        {contests.map((contest) => (
+                          <article className="module-row" key={contest.id}>
+                            <div className="module-status">
+                              <Trophy size={18} />
+                            </div>
+                            <section>
+                              <h3>{contest.title}</h3>
+                              <p>Ends {new Date(contest.endAt).toLocaleString()}</p>
+                              {expandedContestId === contest.id && (
+                                <div className="lesson-transcript contest-leaderboard-inline">
+                                  {leaderboardLoading ? (
+                                    <CardSkeleton lines={2} />
+                                  ) : leaderboard.length ? (
+                                    leaderboard.map((entry) => (
+                                      <div className="transcript-line" key={entry.userId}>
+                                        <span className="transcript-timestamp">#{entry.rank}</span>
+                                        <span>{entry.userName || "Learner"} - {entry.score ?? "-"}</span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p>No attempts yet.</p>
+                                  )}
+                                </div>
+                              )}
+                            </section>
+                            <button type="button" className="continue" onClick={() => toggleLeaderboard(contest.id)}>
+                              {expandedContestId === contest.id ? "Hide" : "Leaderboard"}
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="session-note is-tight">No contests are running for this course right now.</p>
+                    )}
+                  </section>
+                </aside>
               </div>
             )}
           </>

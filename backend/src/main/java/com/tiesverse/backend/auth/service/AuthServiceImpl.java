@@ -96,6 +96,10 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("Invalid email or password");
         }
 
+        if (!account.isActive()) {
+            throw new UnauthorizedException("This account has been deactivated");
+        }
+
         String accessToken = jwtProvider.generateToken(
                 account.getEmail(),
                 Map.of("role", account.getRole().name())
@@ -116,6 +120,10 @@ public class AuthServiceImpl implements AuthService {
             account.setRefreshToken(null);
             accountRepository.save(account);
             throw new UnauthorizedException("Invalid refresh token");
+        }
+
+        if (!account.isActive()) {
+            throw new UnauthorizedException("This account has been deactivated");
         }
 
         String accessToken = jwtProvider.generateToken(

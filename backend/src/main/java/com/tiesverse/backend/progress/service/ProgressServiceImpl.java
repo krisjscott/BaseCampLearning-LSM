@@ -1,6 +1,10 @@
 package com.tiesverse.backend.progress.service;
 
 import com.tiesverse.backend.common.exception.ResourceNotFoundException;
+import com.tiesverse.backend.course.entity.Course;
+import com.tiesverse.backend.course.entity.Lesson;
+import com.tiesverse.backend.course.repository.CourseRepository;
+import com.tiesverse.backend.course.repository.LessonRepository;
 import com.tiesverse.backend.progress.dto.request.UpdateProgressRequest;
 import com.tiesverse.backend.progress.dto.response.CourseProgressResponse;
 import com.tiesverse.backend.progress.dto.response.LessonProgressResponse;
@@ -23,6 +27,8 @@ public class ProgressServiceImpl implements ProgressService {
 
     private final CourseProgressRepository courseProgressRepository;
     private final LessonProgressRepository lessonProgressRepository;
+    private final CourseRepository courseRepository;
+    private final LessonRepository lessonRepository;
     private final ProgressMapper progressMapper;
 
     @Override
@@ -30,7 +36,17 @@ public class ProgressServiceImpl implements ProgressService {
     public CourseProgressResponse getCourseProgress(UUID userId, UUID courseId) {
         CourseProgress progress = courseProgressRepository.findByUserIdAndCourseId(userId, courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("CourseProgress", "userId and courseId", userId));
-        return progressMapper.toCourseProgressResponse(progress);
+        return enrich(progressMapper.toCourseProgressResponse(progress));
+    }
+
+    private CourseProgressResponse enrich(CourseProgressResponse response) {
+        if (response.getCourseId() != null) {
+            response.setCourseTitle(courseRepository.findById(response.getCourseId()).map(Course::getTitle).orElse(null));
+        }
+        if (response.getLastLessonId() != null) {
+            response.setLastLessonTitle(lessonRepository.findById(response.getLastLessonId()).map(Lesson::getTitle).orElse(null));
+        }
+        return response;
     }
 
     @Override
@@ -68,7 +84,7 @@ public class ProgressServiceImpl implements ProgressService {
         }
 
         courseProgress = courseProgressRepository.save(courseProgress);
-        return progressMapper.toCourseProgressResponse(courseProgress);
+        return enrich(progressMapper.toCourseProgressResponse(courseProgress));
     }
 
     @Override
@@ -76,13 +92,19 @@ public class ProgressServiceImpl implements ProgressService {
     public CourseProgressResponse getResumePoint(UUID userId, UUID courseId) {
         CourseProgress progress = courseProgressRepository.findByUserIdAndCourseId(userId, courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("CourseProgress", "userId and courseId", userId));
-        return progressMapper.toCourseProgressResponse(progress);
+        return enrich(progressMapper.toCourseProgressResponse(progress));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LessonProgressResponse> getLessonProgress(UUID userId, List<UUID> lessonIds) {
         List<LessonProgress> progressList = lessonProgressRepository.findByUserIdAndLessonIdIn(userId, lessonIds);
-        return progressMapper.toLessonProgressResponseList(progressList);
+        List<LessonProgressResponse> responses = progressMapper.toLessonProgressResponseList(progressList);
+        responses.forEach(response -> {
+            if (response.getLessonId() != null) {
+                response.setLessonTitle(lessonRepository.findById(response.getLessonId()).map(Lesson::getTitle).orElse(null));
+            }
+        });
+        return responses;
     }
 }

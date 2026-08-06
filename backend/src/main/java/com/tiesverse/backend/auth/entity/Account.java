@@ -53,4 +53,8 @@ public class Account extends BaseEntity {
 
     @Column(name = "user_id")
     private UUID userId;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
 }

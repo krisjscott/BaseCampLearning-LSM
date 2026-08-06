@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 
-const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+const TURNSTILE_SCRIPT_URL = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+const ENABLED = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED === "true";
+const SCRIPT_ID = "basecamp-turnstile-script";
 
 export type TurnstileWidgetHandle = {
   getToken: () => string | null;
@@ -26,11 +28,12 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle>(function TurnstileWidg
   const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!SITE_KEY) return;
+    if (!ENABLED || !SITE_KEY) return;
     if (!containerRef.current) return;
 
     const render = () => {
       if (!containerRef.current || !window.turnstile) return;
+      if (widgetIdRef.current) return;
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey: SITE_KEY,
         action: "turnstile-spin-v2",
@@ -40,17 +43,24 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle>(function TurnstileWidg
     if (window.turnstile) {
       render();
     } else {
-      const script = document.createElement("script");
-      script.src = TURNSTILE_SCRIPT_URL;
-      script.async = true;
-      script.defer = true;
-      script.onload = render;
-      document.head.appendChild(script);
+      const existingScript = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+      if (existingScript) {
+        existingScript.addEventListener("load", render, { once: true });
+      } else {
+        const script = document.createElement("script");
+        script.id = SCRIPT_ID;
+        script.src = TURNSTILE_SCRIPT_URL;
+        script.async = true;
+        script.defer = true;
+        script.onload = render;
+        document.head.appendChild(script);
+      }
     }
 
     return () => {
       if (widgetIdRef.current && window.turnstile) {
         window.turnstile.remove(widgetIdRef.current);
+        widgetIdRef.current = null;
       }
     };
   }, []);
@@ -67,11 +77,11 @@ const TurnstileWidget = forwardRef<TurnstileWidgetHandle>(function TurnstileWidg
     },
   }));
 
-  if (!SITE_KEY) return null;
+  if (!ENABLED || !SITE_KEY) return null;
 
   return (
     <div className="turnstile-slot">
-      <div ref={containerRef} className="cf-turnstile" data-action="turnstile-spin-v2" />
+      <div ref={containerRef} />
     </div>
   );
 });

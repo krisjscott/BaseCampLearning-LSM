@@ -5752,6 +5752,22 @@ input {
   padding: 16px 20px;
 }
 
+/* Notes cards can expand to show note text, so they can't share the fixed
+   92px height built for the single-line certificate share rows above. */
+.notes-bookmarks-page .certificate-share-list article {
+  height: auto;
+  min-height: 92px;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.notes-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
 .list-row-copy {
   min-width: 0;
   display: flex;
@@ -20877,6 +20893,14 @@ select:focus-visible,
   text-align: center;
 }
 
+.notes-empty {
+  padding: 24px 0;
+  color: #7a7a7a;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: center;
+}
+
 .admin-toolbar {
   display: flex;
   align-items: center;
@@ -21993,6 +22017,98 @@ select:focus-visible,
   margin-top: 16px;
 }
 
+.video-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+  font-weight: 600;
+  background: radial-gradient(65% 65% at 50% 45%, #1f2527 0%, #121719 47%, #080b0c 100%);
+}
+
+.lesson-transcript {
+  display: grid;
+  gap: 4px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.contest-leaderboard-inline {
+  margin-top: 8px;
+  max-height: none;
+}
+
+.transcript-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  color: var(--muted);
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.transcript-line:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--ink);
+}
+
+.transcript-timestamp {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--orange-deep);
+}
+
+.lesson-notes-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.lesson-notes-list {
+  display: grid;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.lesson-note-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.lesson-note-row p {
+  flex: 1;
+  margin: 0;
+  color: var(--ink);
+}
+
+.lesson-note-row button.transcript-timestamp {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.lesson-note-row > button:last-child {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .notification-row.is-read {
   opacity: 0.68;
 }
@@ -22542,6 +22658,189 @@ body.notification-panel-open {
 @media (max-width: 860px) {
   .calendar-content-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.reading-lesson-markdown {
+  word-break: break-word;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.reading-lesson-markdown h1,
+.reading-lesson-markdown h2,
+.reading-lesson-markdown h3 {
+  margin: 20px 0 10px;
+  line-height: 1.3;
+}
+
+.reading-lesson-markdown p {
+  margin: 0 0 14px;
+}
+
+.reading-lesson-markdown ul,
+.reading-lesson-markdown ol {
+  margin: 0 0 14px;
+  padding-left: 22px;
+}
+
+.reading-lesson-markdown code {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.92em;
+}
+
+.reading-lesson-markdown pre {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  padding: 14px;
+  overflow-x: auto;
+}
+
+.reading-lesson-markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.reading-lesson-markdown blockquote {
+  margin: 0 0 14px;
+  padding-left: 14px;
+  border-left: 3px solid var(--orange-deep);
+  color: var(--muted);
+}
+
+.reading-lesson-markdown img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.toast-stack {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: grid;
+  gap: 10px;
+  max-width: 340px;
+}
+
+.toast-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  animation: toast-in 0.18s ease-out;
+}
+
+.toast-item span {
+  flex: 1;
+}
+
+.toast-item button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  opacity: 0.8;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.toast-success {
+  background: #1a7a4c;
+}
+
+.toast-error {
+  background: var(--orange-deep, #e94c17);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Definitive fix for the "Continue learning" card clipping real backend
+   copy: earlier rules force a fixed/viewport-based height with
+   overflow:hidden plus a bottom-pinned absolute button, which cuts off the
+   "next checkpoint" text whenever it's longer than the guessed fixed height.
+   Let the card grow to fit its content instead of clipping it. */
+.featured-course {
+  height: auto !important;
+  min-height: 320px !important;
+  overflow: visible !important;
+  padding-bottom: 100px !important;
+}
+
+.featured-course button {
+  position: absolute !important;
+  right: 34px !important;
+  bottom: 24px !important;
+  left: auto !important;
+  width: auto !important;
+}
+
+@media (max-width: 720px) {
+  .featured-course {
+    padding-bottom: 24px !important;
+  }
+
+  .featured-course button {
+    position: static !important;
+    width: 100% !important;
+    margin-top: 24px !important;
+  }
+}
+
+/* Captions render via our own overlay (.video-caption-overlay), not the
+   browser's native <track> box - the native box's position can't be
+   controlled consistently across browsers and ended up either hidden behind
+   the custom controls bar or floating near the top of the video. This
+   overlay sits just above .video-controls, wherever that bar's actual
+   height ends up at any screen size. */
+.video-caption-overlay {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 100px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.video-caption-overlay span {
+  max-width: 80%;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .video-caption-overlay {
+    bottom: 84px;
+  }
+
+  .video-caption-overlay span {
+    font-size: 13px;
   }
 }
 

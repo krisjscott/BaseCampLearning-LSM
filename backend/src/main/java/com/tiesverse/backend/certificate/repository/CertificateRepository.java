@@ -18,4 +18,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     Optional<Certificate> findByCertificateNumber(String certificateNumber);
 
     long countByCourseId(UUID courseId);
+
+    void deleteByCourseId(UUID courseId);
 }

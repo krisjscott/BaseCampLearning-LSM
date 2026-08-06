@@ -13,15 +13,18 @@ import com.tiesverse.backend.course.dto.response.CategoryResponse;
 import com.tiesverse.backend.course.dto.response.CourseResponse;
 import com.tiesverse.backend.course.dto.response.LessonResponse;
 import com.tiesverse.backend.course.dto.response.ModuleResponse;
+import com.tiesverse.backend.course.dto.response.ReadingContentResponse;
 import com.tiesverse.backend.course.entity.Category;
 import com.tiesverse.backend.course.entity.Course;
 import com.tiesverse.backend.course.entity.CourseModule;
 import com.tiesverse.backend.course.entity.Lesson;
+import com.tiesverse.backend.course.entity.ReadingContent;
 import com.tiesverse.backend.course.mapper.CourseMapper;
 import com.tiesverse.backend.course.repository.CategoryRepository;
 import com.tiesverse.backend.course.repository.CourseModuleRepository;
 import com.tiesverse.backend.course.repository.CourseRepository;
 import com.tiesverse.backend.course.repository.LessonRepository;
+import com.tiesverse.backend.course.repository.ReadingContentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,7 @@ public class CourseServiceImpl implements CourseService {
     private final CategoryRepository categoryRepository;
     private final CourseModuleRepository courseModuleRepository;
     private final LessonRepository lessonRepository;
+    private final ReadingContentRepository readingContentRepository;
     private final CourseMapper courseMapper;
 
     @Override
@@ -221,6 +225,21 @@ public class CourseServiceImpl implements CourseService {
             throw new ResourceNotFoundException("Lesson", "id", id);
         }
         lessonRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReadingContentResponse getLessonReadingContent(UUID lessonId) {
+        ReadingContent content = readingContentRepository.findByLessonId(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("ReadingContent", "lessonId", lessonId));
+        return ReadingContentResponse.builder()
+                .id(content.getId())
+                .title(content.getTitle())
+                .contentHtml(content.getContentHtml())
+                .contentMarkdown(content.getContentMarkdown())
+                .estimatedReadingMinutes(content.getEstimatedReadingMinutes())
+                .lessonId(content.getLessonId())
+                .build();
     }
 
     @Override

@@ -18,6 +18,8 @@ public class LessonResponse {
 
     private String contentUrl;
 
+    private String captionsUrl;
+
     private ContentType contentType;
 
     private Integer durationMinutes;
