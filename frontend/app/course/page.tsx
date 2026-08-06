@@ -2,15 +2,19 @@
 
 import {
   Award,
+  BookOpen,
   Check,
   ClipboardList,
+  Clock,
   Grid2X2,
   GraduationCap,
+  Layers,
   List,
   Lock,
   MessageCircle,
   Share2,
   Trophy,
+  User,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -147,7 +151,7 @@ function CourseOverview() {
   if (!loading && !courseId) {
     return (
       <main className="course-overview">
-        <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={false} user={user} />
+        <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={false} user={user} />
         <section className="course-main">
           <div className="course-hero-copy">
             <h1>No course selected</h1>
@@ -163,7 +167,7 @@ function CourseOverview() {
 
   return (
     <main className="course-overview">
-      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
+      <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="course-main">
         {loading ? (
@@ -194,22 +198,28 @@ function CourseOverview() {
                 <h1>{course.title}</h1>
                 <span>{course.description || "No description provided for this course yet."}</span>
                 <div className="course-facts">
-                  <span>{modules.length} modules</span>
-                  <span>{totalLessons} lessons</span>
-                  <span>{course.durationHours ? `Approx. ${course.durationHours} hours` : "Self-paced"}</span>
-                  <span>{course.instructorName || "BaseCamp instructor"}</span>
+                  <span><Layers size={13} />{modules.length} module{modules.length === 1 ? "" : "s"}</span>
+                  <span><BookOpen size={13} />{totalLessons} lesson{totalLessons === 1 ? "" : "s"}</span>
+                  <span><Clock size={13} />{course.durationHours ? `Approx. ${course.durationHours} hours` : "Self-paced"}</span>
+                  <span><User size={13} />{course.instructorName || "BaseCamp instructor"}</span>
                 </div>
               </div>
 
               <aside className="course-progress-card">
                 <p>Your progress</p>
                 <h2>{completion}% complete</h2>
-                <div aria-label={`${completion} percent complete`}>
-                  <span style={{ width: `${completion}%` }} />
+                <div aria-label={`${completion} percent complete`} style={{ ["--course-progress-fill" as string]: `${completion}%` }}>
+                  <span />
                 </div>
-                <span>{progress?.lastLessonTitle ? `Next: ${progress.lastLessonTitle}` : "Not started yet"}</span>
+                <span>
+                  {completion >= 100
+                    ? "You've completed this course!"
+                    : progress?.lastLessonTitle
+                      ? `Next: ${progress.lastLessonTitle}`
+                      : "Not started yet"}
+                </span>
                 <button type="button" onClick={continueLearning} disabled={!totalLessons}>
-                  <span>{progress?.lastLessonId ? "Continue learning" : "Start learning"}</span>
+                  <span>{completion >= 100 ? "Review course" : progress?.lastLessonId ? "Continue learning" : "Start learning"}</span>
                 </button>
               </aside>
             </section>
@@ -332,34 +342,55 @@ function CourseOverview() {
                     {contests.length ? (
                       <div className="module-list">
                         {contests.map((contest) => (
-                          <article className="module-row" key={contest.id}>
-                            <div className="module-status">
-                              <Trophy size={18} />
-                            </div>
-                            <section>
-                              <h3>{contest.title}</h3>
-                              <p>Ends {new Date(contest.endAt).toLocaleString()}</p>
-                              {expandedContestId === contest.id && (
-                                <div className="lesson-transcript contest-leaderboard-inline">
-                                  {leaderboardLoading ? (
-                                    <CardSkeleton lines={2} />
-                                  ) : leaderboard.length ? (
-                                    leaderboard.map((entry) => (
-                                      <div className="transcript-line" key={entry.userId}>
-                                        <span className="transcript-timestamp">#{entry.rank}</span>
-                                        <span>{entry.userName || "Learner"} - {entry.score ?? "-"}</span>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p>No attempts yet.</p>
-                                  )}
-                                </div>
-                              )}
-                            </section>
-                            <button type="button" className="continue" onClick={() => toggleLeaderboard(contest.id)}>
-                              {expandedContestId === contest.id ? "Hide" : "Leaderboard"}
-                            </button>
-                          </article>
+                          <div className="leaderboard-contest-group" key={contest.id}>
+                            <article className="module-row contest-row">
+                              <div className="module-status contest-badge">
+                                <Trophy size={18} />
+                              </div>
+                              <section>
+                                <h3>{contest.title}</h3>
+                                <p>
+                                  Ends{" "}
+                                  {new Date(contest.endAt).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </p>
+                              </section>
+                              <button type="button" className="continue" onClick={() => toggleLeaderboard(contest.id)}>
+                                {expandedContestId === contest.id ? "Hide" : "Leaderboard"}
+                              </button>
+                            </article>
+                            {expandedContestId === contest.id && (
+                              <div className="leaderboard-panel">
+                                {leaderboardLoading ? (
+                                  <CardSkeleton lines={3} />
+                                ) : leaderboard.length ? (
+                                  <ol className="leaderboard-list">
+                                    {leaderboard.map((entry) => {
+                                      const isYou = !!user && entry.userId === user.id;
+                                      return (
+                                        <li
+                                          key={entry.userId}
+                                          className={`leaderboard-row ${entry.rank <= 3 ? `rank-${entry.rank}` : ""} ${isYou ? "is-you" : ""}`}
+                                        >
+                                          <span className="leaderboard-rank">{entry.rank}</span>
+                                          <span className="leaderboard-name">
+                                            {entry.userName || "Learner"}
+                                            {isYou && <em>You</em>}
+                                          </span>
+                                          <span className="leaderboard-score">{entry.score ?? "-"} pts</span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ol>
+                                ) : (
+                                  <p className="leaderboard-empty">No attempts yet - be the first to take the quiz.</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
                     ) : (

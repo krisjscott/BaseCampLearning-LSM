@@ -21,6 +21,10 @@ export default function AccessRecoveryDesktop() {
 
   async function handleRequestReset(event: FormEvent) {
     event.preventDefault();
+    if (!email.trim()) {
+      setStatus({ tone: "error", message: "Please enter your email address." });
+      return;
+    }
     setSubmitting(true);
     setStatus(null);
     try {
@@ -35,6 +39,14 @@ export default function AccessRecoveryDesktop() {
 
   async function handleResetPassword(event: FormEvent) {
     event.preventDefault();
+    if (!newPassword || !confirmPassword) {
+      setStatus({ tone: "error", message: "Please fill out both password fields." });
+      return;
+    }
+    if (newPassword.length < 8) {
+      setStatus({ tone: "error", message: "Password must be at least 8 characters." });
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setStatus({ tone: "error", message: "Passwords do not match" });
       return;
@@ -84,7 +96,7 @@ export default function AccessRecoveryDesktop() {
                 <Link href="/">Back to log in -&gt;</Link>
               </>
             ) : (
-              <form onSubmit={handleResetPassword} className="compact-inline-form">
+              <form onSubmit={handleResetPassword} className="compact-inline-form" noValidate>
                 <h2>Set a new password</h2>
                 <input
                   type="password"
@@ -120,7 +132,7 @@ export default function AccessRecoveryDesktop() {
               <p>If an account exists for {email}, a reset link is on its way.</p>
             </>
           ) : (
-            <form onSubmit={handleRequestReset} className="compact-inline-form">
+            <form onSubmit={handleRequestReset} className="compact-inline-form" noValidate>
               <h2>Email recovery</h2>
               <p>Enter the email you use for BaseCamp. We&apos;ll send a secure reset link.</p>
               <input

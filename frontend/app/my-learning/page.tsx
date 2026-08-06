@@ -1,17 +1,25 @@
 "use client";
 
-import { BookOpen } from "lucide-react";
+import { BookOpen, CheckCircle2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
 import LearningSidebar from "../components/LearningSidebar";
 import { CardSkeleton } from "../components/Skeleton";
-import { PublicDashboardResponse, UserResponse, getCurrentUser, getPublicDashboard } from "../lib/backendApi";
+import {
+  EnrollmentResponse,
+  PublicDashboardResponse,
+  UserResponse,
+  getCurrentUser,
+  getMyEnrollments,
+  getPublicDashboard,
+} from "../lib/backendApi";
 import { encodeId } from "../lib/idCodec";
 
 function MyLearning() {
   const router = useRouter();
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
+  const [enrollments, setEnrollments] = useState<EnrollmentResponse[]>([]);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +29,12 @@ function MyLearning() {
       .then(([dashboardResult, userResult]) => {
         if (!active) return;
         setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
-        if (userResult.status === "fulfilled" && userResult.value) setUser(userResult.value);
+        if (userResult.status === "fulfilled" && userResult.value) {
+          setUser(userResult.value);
+          getMyEnrollments(userResult.value.id)
+            .then((rows) => active && setEnrollments(rows))
+            .catch(() => undefined);
+        }
       })
       .catch(() => undefined)
       .finally(() => {
@@ -33,23 +46,52 @@ function MyLearning() {
   }, []);
 
   const continueLearning = dashboard?.continueLearning || [];
-  const courseRows = useMemo(() => {
-    return continueLearning.slice(0, 3).map((item) => ({
-      courseId: item.courseId,
-      title: item.courseTitle,
-      meta: `${Math.round(item.completionPercentage || 0)}% complete${item.lastAccessedAt ? ` - Last activity ${new Date(item.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}` : ""}`,
-      action: "Continue ->",
-    }));
+
+  // The dashboard's "continue learning" list deliberately excludes anything
+  // already finished (see DashboardServiceImpl - that's correct for a
+  // "pick up where you left off" widget) and is capped to 4 rows, so it's
+  // the wrong source for "My Learning"'s full course list. Enrollments cover
+  // every course the learner is (or was) in, completed or not; completion %
+  // for the still-in-progress ones is borrowed from the dashboard snapshot
+  // since per-course progress isn't on the enrollment record itself.
+  const liveProgressByCourseId = useMemo(() => {
+    const map = new Map<string, { completion: number; lastAccessedAt?: string | null }>();
+    continueLearning.forEach((item) => {
+      map.set(item.courseId, { completion: item.completionPercentage || 0, lastAccessedAt: item.lastAccessedAt });
+    });
+    return map;
   }, [continueLearning]);
 
+  const courseRows = useMemo(() => {
+    return enrollments
+      .filter((item) => item.status !== "DROPPED" && item.status !== "EXPIRED")
+      .map((item) => {
+        const completed = item.status === "COMPLETED";
+        const live = liveProgressByCourseId.get(item.courseId);
+        const completion = completed ? 100 : Math.round(live?.completion || 0);
+        return {
+          courseId: item.courseId,
+          title: item.courseTitle || "Course",
+          completed,
+          meta: completed
+            ? `Completed${item.completedDate ? ` ${new Date(item.completedDate).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}` : ""}`
+            : `${completion}% complete${live?.lastAccessedAt ? ` - Last activity ${new Date(live.lastAccessedAt).toLocaleDateString("en-US", { month: "short", day: "2-digit" })}` : ""}`,
+          action: completed ? "Review ->" : "Continue ->",
+        };
+      })
+      .sort((a, b) => Number(a.completed) - Number(b.completed));
+  }, [enrollments, liveProgressByCourseId]);
+
   const summaryStats = useMemo(() => {
+    const active = enrollments.filter((item) => item.status === "ACTIVE").length;
+    const completed = enrollments.filter((item) => item.status === "COMPLETED").length;
     const primary = Math.round(continueLearning[0]?.completionPercentage || 0);
     return [
-      [String(continueLearning.length), "Active courses"],
+      [String(active), "Active courses"],
       [`${primary}%`, "Primary path"],
-      [String(continueLearning.filter((item) => (item.completionPercentage || 0) >= 100).length), "Completed"],
+      [String(completed), "Completed"],
     ] as const;
-  }, [continueLearning]);
+  }, [enrollments, continueLearning]);
 
   const featured = continueLearning[0];
 
@@ -104,10 +146,13 @@ function MyLearning() {
             {loading ? Array.from({ length: 3 }, (_, index) => (
               <CardSkeleton key={index} lines={2} />
             )) : courseRows.length ? courseRows.map((row) => (
-              <article key={row.courseId}>
+              <article key={row.courseId} className={row.completed ? "done" : ""}>
                 <div>
                   <h3>{row.title}</h3>
-                  <p>{row.meta}</p>
+                  <p>
+                    {row.completed && <CheckCircle2 size={14} />}
+                    {row.meta}
+                  </p>
                 </div>
                 <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(row.courseId)}`)}>{row.action}</button>
               </article>

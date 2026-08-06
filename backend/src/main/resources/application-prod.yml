@@ -26,9 +26,6 @@ spring:
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
 
-  autoconfigure:
-    exclude:
-
 logging:
   level:
     com.tiesverse: INFO

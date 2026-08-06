@@ -15,6 +15,7 @@ import com.tiesverse.backend.user.repository.UserRepository;
 import com.tiesverse.backend.user.repository.UserSettingsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -51,20 +52,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UserSettings getSettings(UUID accountId) {
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return userSettingsRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Settings not found"));
+                .orElseGet(() -> createDefaultSettings(user.getId()));
     }
 
     @Override
+    @Transactional
     public UserSettings updateSettings(UUID accountId, UpdateSettingsRequest request) {
         User user = userRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserSettings settings = userSettingsRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Settings not found"));
+                .orElseGet(() -> createDefaultSettings(user.getId()));
 
         settings.setEmailNotifications(request.isEmailNotifications());
         settings.setPushNotifications(request.isPushNotifications());
@@ -72,6 +75,20 @@ public class UserServiceImpl implements UserService {
         settings.setTimezone(request.getTimezone());
 
         return userSettingsRepository.save(settings);
+    }
+
+    // Accounts created before UserSettings rows were provisioned at
+    // registration time (or any account whose row was otherwise never
+    // created) used to hard-fail every settings read/write with a 500 -
+    // self-heal by creating sane defaults on first access instead.
+    private UserSettings createDefaultSettings(UUID userId) {
+        return userSettingsRepository.save(UserSettings.builder()
+                .userId(userId)
+                .emailNotifications(true)
+                .pushNotifications(true)
+                .language("en")
+                .timezone("Asia/Kolkata")
+                .build());
     }
 
     @Override

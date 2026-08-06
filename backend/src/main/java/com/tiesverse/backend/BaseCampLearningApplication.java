@@ -2,12 +2,12 @@ package com.tiesverse.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 
-// Google sign-in (AuthProvider.GOOGLE) is not wired to Spring Security's
-// managed OAuth2 login flow, so this autoconfiguration is unused - and left
-// enabled it hard-fails startup whenever GOOGLE_CLIENT_ID/SECRET are unset,
-// which is the default for local/dev environments.
+// Google sign-in is now wired to Spring Security's oauth2Login() flow (see
+// SecurityConfig) - this used to be excluded because it hard-failed startup
+// whenever GOOGLE_CLIENT_ID/SECRET were unset; application.yml/-dev.yml now
+// default both to a non-blank placeholder so the app still boots without
+// real credentials, it just can't complete a real Google sign-in until they're set.
 @SpringBootApplication
 public class BaseCampLearningApplication {
 

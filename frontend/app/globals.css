@@ -6440,7 +6440,7 @@ input {
 
 .course-progress-card div span {
   display: block;
-  width: 58%;
+  width: var(--course-progress-fill, 0%);
   height: 100%;
   border-radius: inherit;
   background: var(--bc-color-bg-accent);
@@ -14299,36 +14299,33 @@ body:has(.auth-page) {
 .course-facts {
   display: flex !important;
   flex-wrap: wrap !important;
-  gap: 0 !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
   margin-top: clamp(1.55rem, 2.6vh, 2rem) !important;
   color: #dde1e1 !important;
 }
 
+/* Pills, not a bullet-separated text row - each fact is its own self-
+   contained chip (icon + value), so it reads cleanly no matter how it wraps
+   at any viewport width, and no separator logic is needed at all. */
 .course-facts span {
-  position: relative !important;
-  padding: 0 clamp(0.8rem, 0.85vw, 1rem) !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  padding: 0.4rem 0.85rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
   color: #dde1e1 !important;
-  font-size: clamp(0.95rem, 0.95vw, 1.05rem) !important;
+  font-size: clamp(0.82rem, 0.82vw, 0.92rem) !important;
   font-weight: 700 !important;
+  white-space: nowrap !important;
 }
 
-.course-facts span:first-child {
-  padding-left: 0 !important;
-}
-
-.course-facts span + span::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 0.25rem;
-  height: 0.25rem;
-  border-radius: 999px;
-  background: #777f82;
-  transform: translate(-50%, -50%);
+.course-facts span svg {
+  flex-shrink: 0;
+  color: #ff8a4d;
 }
 
 .course-progress-card {
@@ -14358,8 +14355,12 @@ body:has(.auth-page) {
 }
 
 .course-progress-card div span {
-  width: 58% !important;
+  display: block !important;
+  width: var(--course-progress-fill, 0%) !important;
+  height: 100% !important;
+  border-radius: inherit !important;
   background: #ff5a1f !important;
+  transition: width 0.3s ease !important;
 }
 
 .course-progress-card > span {
@@ -14423,7 +14424,7 @@ body:has(.auth-page) {
 
 .course-content-grid {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) clamp(24rem, 23vw, 28.25rem) !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, clamp(24rem, 23vw, 28.25rem)) !important;
   gap: clamp(2rem, 3vw, 3.5rem) !important;
   margin-top: clamp(1.65rem, 2.5vh, 2rem) !important;
 }
@@ -22849,3 +22850,868 @@ body.notification-panel-open {
     font-size: 13px;
   }
 }
+
+/* .lesson-stage is pinned to a viewport-relative height with overflow:hidden
+   (see the !important rule earlier in this file) so the video player fits
+   without scrolling on a typical lesson. But a long transcript, a full notes
+   list, or a long description can exceed that height - scroll internally
+   instead of silently clipping the tab content and the "continue to next
+   lesson" button below it. This has to win against that earlier !important
+   rule, so it's appended last and also marked !important. */
+.lesson-stage {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* .lesson-lower now holds only the tabs nav (the active tab's content and the
+   continue button were pulled out into their own normal-flow blocks below,
+   see .lesson-panel-area / .lesson-continue-row) - it no longer needs the
+   fixed height forced on it by an earlier !important rule, which used to
+   squeeze the tabs/content/button into one ~64px row and clip whatever
+   didn't fit. */
+.lesson-lower {
+  height: auto !important;
+  margin-top: 18px !important;
+}
+
+.lesson-panel-area {
+  margin-top: 4px;
+}
+
+.lesson-continue-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+/* The completion / next-lesson button is the primary call to action once a
+   lesson is finished - give it the accent treatment instead of the neutral
+   outline it shares with every other secondary button on this page, so it's
+   unmistakable rather than just another button in the row. */
+.lesson-continue-row .mark-complete {
+  min-width: 240px;
+  justify-content: center;
+}
+
+.lesson-continue-row .mark-complete.is-primary {
+  border-color: transparent;
+  background: var(--bc-color-bg-accent, #ff5a1f);
+  color: var(--bc-color-text-inverse, #fff);
+}
+
+.lesson-continue-row .mark-complete.is-primary:hover {
+  filter: brightness(1.05);
+}
+
+.lesson-continue-row .mark-complete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .lesson-continue-row {
+    justify-content: stretch;
+  }
+
+  .lesson-continue-row .mark-complete {
+    width: 100%;
+  }
+}
+
+/* Contest leaderboard. Deliberately NOT nested inside .module-row - that class
+   is pinned to a fixed height (see the !important rule elsewhere in this
+   file), so an expandable panel inside it would get clipped or overflow the
+   row. It's rendered as a normal-flow sibling below the row instead. */
+.leaderboard-contest-group {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderboard-panel {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bc-color-bg-subtle, #eeeeea);
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.leaderboard-rank {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.08);
+  color: var(--bc-color-text-secondary);
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.leaderboard-row.rank-1 .leaderboard-rank {
+  background: #f6c453;
+  color: #5c3d00;
+}
+
+.leaderboard-row.rank-2 .leaderboard-rank {
+  background: #d6dade;
+  color: #33383d;
+}
+
+.leaderboard-row.rank-3 .leaderboard-rank {
+  background: #e3b088;
+  color: #4a2a10;
+}
+
+.leaderboard-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--bc-color-text-primary);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.leaderboard-name em {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--bc-color-bg-accent, #ff5a1f);
+  color: var(--bc-color-text-inverse, #fff);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.leaderboard-score {
+  flex-shrink: 0;
+  color: var(--bc-color-text-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-row.is-you {
+  background: rgba(255, 90, 31, 0.08);
+}
+
+.leaderboard-empty {
+  margin: 0;
+  padding: 8px 2px;
+  color: var(--bc-color-text-secondary);
+  font-size: 13px;
+}
+
+/* The contest teaser row reuses .module-row (built for a plain numbered
+   course-module listing), which left it looking like just another module -
+   a flat gray circle behind the trophy icon and no visual sense that this
+   is a contest, not a lesson. Give it its own amber/trophy treatment. */
+.contest-row {
+  border-color: rgba(246, 196, 83, 0.55) !important;
+  background: linear-gradient(100deg, rgba(246, 196, 83, 0.12) 0%, rgba(255, 255, 255, 0.64) 62%) !important;
+}
+
+.contest-badge {
+  background: linear-gradient(150deg, #f6c453 0%, #f0a93a 100%) !important;
+  color: #5c3d00 !important;
+  box-shadow: 0 4px 10px rgba(240, 169, 58, 0.35) !important;
+}
+
+/* Notes composer: course + lesson pickers side by side. */
+.notes-composer-selects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .notes-composer-selects {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Note cards now show their content directly (no more click-to-expand), so
+   give the title/date/body a bit more breathing room than the default
+   .certificate-share-list article padding. */
+.note-card-date {
+  margin: 2px 0 8px;
+  color: var(--bc-color-text-secondary);
+  font-size: 12px;
+}
+
+.note-card-content {
+  margin: 0;
+  color: var(--bc-color-text-primary);
+  font-size: 13.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.note-card .inline-textarea {
+  margin-top: 4px;
+}
+
+/* ==========================================================================
+   Lesson screen: decisive overrides.
+   This file has many duplicate, !important-layered rules for the lesson
+   screen selectors below (added across several earlier redesign passes,
+   never cleaned up) - the topbar ends up an almost-invisible ~25% opacity
+   white gradient with no backdrop behind it to actually show through, and
+   the playlist's "not yet played" rows render fully transparent, making them
+   look blank/unreadable. Rather than untangle every prior layer, this block
+   is appended last (and uses !important throughout) so it always wins the
+   cascade - it's the single source of truth for how the lesson screen looks.
+   ========================================================================== */
+
+.lesson-topbar {
+  height: 72px !important;
+  flex-basis: 72px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line) !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 0 rgba(15, 18, 20, 0.04) !important;
+  animation: none !important;
+}
+
+.lesson-brand-block strong {
+  color: var(--ink) !important;
+}
+
+.lesson-brand-block p,
+.lesson-top-actions p {
+  color: var(--muted) !important;
+}
+
+.lesson-top-actions button {
+  border: 1px solid var(--line) !important;
+  background: #fff !important;
+  color: var(--ink) !important;
+}
+
+.lesson-top-actions button:hover {
+  background: var(--field) !important;
+}
+
+.lesson-playlist {
+  background: #fafafa !important;
+  border-left: 1px solid var(--line) !important;
+  animation: none !important;
+}
+
+.lesson-playlist header p {
+  color: var(--orange-deep) !important;
+  font-weight: 800 !important;
+}
+
+.lesson-playlist header h2 {
+  color: var(--ink) !important;
+}
+
+.lesson-playlist header span {
+  color: var(--muted) !important;
+}
+
+/* Every row gets a visible card, not just the currently-playing one - an
+   "upcoming" row with no border/background at all is what made the sidebar
+   look blank. */
+.playlist-row {
+  border: 1px solid var(--line) !important;
+  background: #fff !important;
+}
+
+.playlist-row:hover {
+  border-color: rgba(255, 90, 31, 0.4) !important;
+}
+
+.playlist-row.playing {
+  border-color: var(--orange-deep) !important;
+  background: rgba(255, 90, 31, 0.06) !important;
+}
+
+.playlist-row.done {
+  border-color: rgba(53, 194, 122, 0.35) !important;
+  background: rgba(53, 194, 122, 0.06) !important;
+}
+
+.playlist-row h3 {
+  color: var(--ink) !important;
+}
+
+.playlist-row p {
+  color: var(--muted) !important;
+}
+
+/* Lesson content cards: reading (ARTICLE/DOCUMENT) and assignment submission,
+   rendered in the same slot the video player occupies for VIDEO lessons -
+   this is the one lesson screen, no separate reading/assignment page. */
+.reading-card,
+.assignment-card {
+  display: grid;
+  gap: 18px;
+  margin-top: 14px;
+  padding: 28px 32px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.reading-card-body {
+  max-height: 52dvh;
+  overflow-y: auto;
+}
+
+.reading-document-cta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--field);
+}
+
+.reading-document-cta svg {
+  color: var(--orange-deep);
+  flex-shrink: 0;
+}
+
+.reading-document-cta h3 {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reading-document-cta p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.reading-document-cta a {
+  flex-shrink: 0;
+  padding: 9px 16px;
+  border-radius: 9px;
+  background: var(--bc-color-bg-accent, #ff5a1f);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.assignment-feedback {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+}
+
+.assignment-feedback p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.assignment-feedback p:first-child {
+  margin-top: 0;
+}
+
+.reading-card .mark-complete,
+.assignment-card .mark-complete {
+  justify-self: start;
+}
+
+/* Previous / next row: two buttons, previous secondary, next primary. */
+.lesson-continue-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between !important;
+  gap: 12px;
+}
+
+.lesson-continue-row .mark-complete {
+  min-width: 0;
+}
+
+/* Enabled vs. disabled must read as visually distinct states, not just a
+   slightly-dimmer copy of each other - an earlier !important rule (see
+   ".mark-complete" above, mid-file) painted every one of these buttons the
+   same flat gray regardless of state, so "Previous lesson" and a disabled
+   "Continue to next lesson" looked identical. This is the decisive version:
+   plain enabled = white/outlined and clearly clickable, primary enabled
+   (the actionable "continue" action) = solid accent, and any disabled button
+   drops to a muted, unmistakably-inert gray with a not-allowed cursor. */
+.lesson-player .mark-complete {
+  border: 1px solid var(--line) !important;
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.lesson-player .mark-complete:not(.is-primary):not(:disabled):hover {
+  border-color: rgba(255, 90, 31, 0.45) !important;
+  background: var(--field) !important;
+}
+
+.lesson-player .mark-complete.is-primary {
+  border-color: transparent !important;
+  background: var(--orange-deep, #ff5a1f) !important;
+  color: #ffffff !important;
+}
+
+.lesson-player .mark-complete.is-primary:not(:disabled):hover {
+  background: #e64e19 !important;
+}
+
+.lesson-player .mark-complete:disabled {
+  border-color: var(--line) !important;
+  background: #f0f0ee !important;
+  color: #a7adb2 !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  filter: none !important;
+}
+
+@media (max-width: 760px) {
+  .lesson-continue-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
+
+/* Full responsive pass for the lesson screen shell: two columns on desktop,
+   stacked and naturally scrolling (not viewport-clipped) below 1024px. */
+@media (max-width: 1024px) {
+  .lesson-shell {
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+
+  .lesson-stage {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 20px 18px !important;
+  }
+
+  .lesson-playlist {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border-left: 0 !important;
+    border-top: 1px solid var(--line) !important;
+    padding: 20px 18px !important;
+  }
+
+  .video-surface {
+    height: clamp(220px, 60vw, 380px) !important;
+  }
+
+  .reading-card,
+  .assignment-card {
+    padding: 20px !important;
+  }
+
+  .reading-card-body {
+    max-height: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .lesson-topbar {
+    height: auto !important;
+    flex-basis: auto !important;
+    flex-wrap: wrap !important;
+    gap: 10px;
+    padding: 14px 16px !important;
+  }
+
+  .lesson-brand-block img {
+    width: 88px !important;
+    height: 46px !important;
+  }
+
+  .lesson-heading h1 {
+    font-size: 22px !important;
+  }
+
+  .lesson-tabs {
+    overflow-x: auto;
+  }
+
+  .reading-document-cta {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+/* ==========================================================================
+   Auth page: password visibility toggle + Google sign-in. ".google-action"
+   and ".divider" already existed in the design system (sized/spaced by the
+   auth page's responsive rules above) but were never wired to an actual
+   button - this just puts real markup behind them.
+   ========================================================================== */
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 46px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: var(--field);
+  color: var(--ink);
+}
+
+.google-action svg {
+  flex-shrink: 0;
+}
+
+/* Themed stand-in for the browser's native "Please fill out this field"
+   validation bubble - the form uses noValidate and does its own check (see
+   handleSubmit in page.tsx) so that popup never appears; this is what marks
+   the empty field instead, in the same orange tone as .auth-status. */
+.auth-form input.field-invalid {
+  border-color: #e6591a !important;
+  background: rgb(255 89 31 / 6%) !important;
+}
+
+.auth-form input.field-invalid:focus {
+  box-shadow: 0 0 0 4px rgb(255 89 31 / 16%) !important;
+}
+
+/* Public certificate verification page - deliberately standalone, no app
+   shell (see the comment at the top of verify-credential/page.tsx). Reuses
+   the certificate-detail-hero/-stats/-share-list card styles for visual
+   consistency with the rest of the site, just without the sidebar grid they
+   normally sit inside. */
+.verify-bare-page {
+  min-height: 100dvh;
+  padding: clamp(2rem, 5vh, 3.5rem) clamp(1.25rem, 5vw, 3rem);
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 85, 34, 0.08), transparent 32rem),
+    var(--bc-system-page);
+  color: var(--bc-system-text, #111315);
+}
+
+.verify-bare-header {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  max-width: 46rem;
+  margin: 0 auto clamp(1.75rem, 4vh, 2.5rem);
+}
+
+.verify-bare-header img {
+  width: 5.2rem;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.verify-bare-header h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+  font-weight: 850;
+}
+
+.verify-bare-header p {
+  margin: 0.2rem 0 0;
+  color: var(--bc-system-muted, #7f8991);
+  font-size: 0.92rem;
+}
+
+.verify-bare-body {
+  max-width: 46rem;
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(1.25rem, 2.5vh, 1.75rem);
+}
+
+.verify-bare-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.verify-bare-footnote {
+  margin: -0.5rem 0 0;
+  color: var(--bc-system-muted, #7f8991);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Sidebar sign-out: the learner-profile card at the bottom of the sidebar
+   used to be pinned there via `margin-top: auto` on the card itself (it's a
+   direct flex child of .learning-sidebar's flex column) - now that it's
+   wrapped in .learner-profile-wrap so a sign-out button can sit alongside
+   it, that auto-margin has to move to the wrapper (only a flex ITEM's own
+   auto margin gets the "push to the far edge" behavior; the same margin on
+   a nested non-flex-item child is just margin-top:0 in practice). */
+.learner-profile-wrap {
+  position: relative;
+  margin-top: auto;
+}
+
+.learner-profile-wrap .learner-profile {
+  margin-top: 0 !important;
+}
+
+.learner-profile-signout {
+  position: absolute;
+  top: 0.9rem;
+  right: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 1px solid rgba(18, 28, 38, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--muted, #7a7a7a);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.learner-profile-signout:hover:not(:disabled) {
+  border-color: rgba(220, 60, 30, 0.35);
+  background: rgba(220, 60, 30, 0.08);
+  color: #c23d1a;
+}
+
+.learner-profile-signout:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Profile & Preferences hero: same dark-card pill treatment as the course
+   hero facts row, replacing the "email - code - phone" dash-separated line. */
+.profile-identity-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.9rem;
+}
+
+.profile-identity-pills span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.profile-identity-pills span svg {
+  flex-shrink: 0;
+  color: #ff8a4d;
+}
+
+.oauth-callback-page {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  background: linear-gradient(90deg, #f5f9fc 0%, #fff0e5 100%);
+}
+
+.oauth-callback-card {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  max-width: 22rem;
+  padding: 2.25rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(26, 38, 51, 0.14);
+  text-align: center;
+}
+
+.oauth-callback-card h1 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.oauth-callback-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.oauth-callback-card svg {
+  color: var(--orange-deep);
+}
+
+.oauth-callback-card button {
+  margin-top: 6px;
+  height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--orange);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.oauth-callback-card button:hover {
+  background: var(--orange-deep);
+}
+
+.oauth-callback-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--line);
+  border-top-color: var(--orange);
+  border-radius: 999px;
+  animation: oauth-spin 0.8s linear infinite;
+}
+
+@keyframes oauth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Quiz anti-cheat deterrents: disable text selection on the question/option
+   text and show a nudge banner if DevTools looks open. Deterrents only - see
+   the comment above blockClipboardEvent() in quiz/page.tsx for why this
+   can't be real prevention (DevTools can always read the DOM/network, and no
+   website can block an OS-level screenshot). */
+.question-card.no-copy {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.question-card.no-copy img {
+  -webkit-user-drag: none;
+}
+
+.quiz-devtools-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(230, 89, 26, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 140, 66, 0.12);
+  color: #a3460f;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.quiz-devtools-banner svg {
+  flex-shrink: 0;
+  color: #e6591a;
+}
+
+/* Course page module/contest/leaderboard rows: nothing should ever be able
+   to push these cards wider than their column or spill past their rounded
+   corners, no matter how long a title/name/score turns out to be. A grid
+   track sized by a bare length (not minmax(0, length)) still lets an
+   unbreakable child force it wider - fixed above on .course-content-grid -
+   but the row/title/name text itself also needs an explicit shrink+truncate
+   path, since none of these had one. */
+.module-row {
+  min-width: 0 !important;
+}
+
+.module-row h3,
+.module-row p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.leaderboard-panel,
+.leaderboard-contest-group {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.leaderboard-row {
+  min-width: 0 !important;
+}
+
+.leaderboard-score {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* My Learning / Progress: completed-course rows get a green accent + check
+   icon next to the "Completed ..." meta text, so a finished course reads as
+   done at a glance instead of looking identical to an in-progress one. */
+.my-course-list article.done,
+.course-progress-list article.done {
+  border-color: rgba(53, 194, 122, 0.4) !important;
+}
+
+.my-course-list article.done h3,
+.course-progress-list article.done h3 {
+  color: var(--bc-system-text) !important;
+}
+
+.my-course-list article.done p,
+.course-progress-list article.done p {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  color: #1f9d5c !important;
+  font-weight: 700 !important;
+}
+

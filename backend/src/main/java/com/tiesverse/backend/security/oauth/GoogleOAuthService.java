@@ -11,8 +11,6 @@ import com.tiesverse.backend.user.entity.UserSettings;
 import com.tiesverse.backend.user.repository.UserRepository;
 import com.tiesverse.backend.user.repository.UserSettingsRepository;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class GoogleOAuthService {
 
     private final AccountRepository accountRepository;
@@ -29,19 +28,14 @@ public class GoogleOAuthService {
     private final JwtProvider jwtProvider;
     private final PasswordEncoder passwordEncoder;
 
-    public GoogleOAuthService(AccountRepository accountRepository,
-                              UserRepository userRepository,
-                              UserSettingsRepository userSettingsRepository,
-                              JwtProvider jwtProvider,
-                              @Lazy PasswordEncoder passwordEncoder) {
-        this.accountRepository = accountRepository;
-        this.userRepository = userRepository;
-        this.userSettingsRepository = userSettingsRepository;
-        this.jwtProvider=jwtProvider;
-        this.passwordEncoder=passwordEncoder;
-
-    }
-
+    /**
+     * Finds or creates the account behind a Google sign-in - links the Google
+     * id onto a matching local account on first use (so someone who
+     * registered with email/password can also sign in with the same Google
+     * email), issues real JWTs the same way the password login endpoint
+     * does, and reports whether this was a brand-new account so the caller
+     * can route new sign-ups to onboarding, matching the register endpoint.
+     */
     @Transactional
     public GoogleAuthentication authenticate(String googleId, String email, String fullName, String pictureUrl) {
         Account account = accountRepository.findByGoogleId(googleId).orElse(null);
@@ -61,11 +55,12 @@ public class GoogleOAuthService {
                 account = accountRepository.save(account);
 
                 User user = userRepository.save(User.builder()
-                        .fullName(fullName)
+                        .fullName(fullName != null ? fullName : email)
                         .profilePictureUrl(pictureUrl)
                         .accountId(account.getId())
                         .build());
                 account.setUserId(user.getId());
+
                 userSettingsRepository.save(UserSettings.builder()
                         .userId(user.getId())
                         .emailNotifications(true)
@@ -92,6 +87,7 @@ public class GoogleOAuthService {
         String resolvedName = userRepository.findById(account.getUserId())
                 .map(User::getFullName)
                 .orElse(fullName);
+
         return new GoogleAuthentication(AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)

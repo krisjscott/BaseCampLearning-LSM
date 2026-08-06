@@ -1,15 +1,6 @@
 "use client";
 
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Compass,
-  Home,
-  LogOut,
-  Trophy,
-  UserCheck,
-} from "lucide-react";
+import { IdCard, LogOut, Mail, Phone, UserCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   PublicDashboardResponse,
@@ -23,22 +14,8 @@ import {
   updateCurrentUserSettings,
 } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
-import { CardSkeleton, SidebarSkeleton } from "../components/Skeleton";
-
-const navItems = [
-  ["Learning Home", Home, true],
-  ["My Learning", BookOpen, false],
-  ["Explore", Compass, false],
-  ["Achievements", Trophy, false],
-  ["Certificates", Award, false],
-  ["Progress", BarChart3, false],
-] as const;
-
-const settings = [
-  ["Personal information", "Name, photo and profile summary", "Edit"],
-  ["Learning interests", "Project management, content and design", "Update"],
-  ["Language & accessibility", "English", "Manage"],
-] as const;
+import LearningSidebar from "../components/LearningSidebar";
+import { CardSkeleton } from "../components/Skeleton";
 
 function displayName(user: UserResponse | null) {
   return user?.fullName || user?.email?.split("@")[0] || "Learner";
@@ -105,29 +82,39 @@ function ProfilePreferencesDesktop() {
     setIsSaving(true);
     setStatus("");
 
-    try {
-      const [updatedUser, updatedSettings] = await Promise.all([
-        updateCurrentUser({
-          fullName: form.fullName,
-          phone: form.phone,
-          bio: form.bio,
-          address: form.address,
-        }),
-        updateCurrentUserSettings({
-          emailNotifications: form.emailNotifications,
-          pushNotifications: form.pushNotifications,
-          language: form.language,
-          timezone: form.timezone,
-        }),
-      ]);
-      if (updatedUser) setUser(updatedUser);
-      if (updatedSettings) setSettingsState(updatedSettings);
+    // allSettled, not all: the profile fields and the settings fields save
+    // through two independent backend calls - if one fails, the other
+    // should still be reported as saved rather than the whole action
+    // silently looking like it did nothing.
+    const [profileResult, settingsResult] = await Promise.allSettled([
+      updateCurrentUser({
+        fullName: form.fullName,
+        phone: form.phone,
+        bio: form.bio,
+        address: form.address,
+      }),
+      updateCurrentUserSettings({
+        emailNotifications: form.emailNotifications,
+        pushNotifications: form.pushNotifications,
+        language: form.language,
+        timezone: form.timezone,
+      }),
+    ]);
+
+    if (profileResult.status === "fulfilled" && profileResult.value) setUser(profileResult.value);
+    if (settingsResult.status === "fulfilled" && settingsResult.value) setSettingsState(settingsResult.value);
+
+    if (profileResult.status === "fulfilled" && settingsResult.status === "fulfilled") {
       setStatus("Saved to backend");
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Could not save profile");
-    } finally {
-      setIsSaving(false);
+    } else if (profileResult.status === "rejected" && settingsResult.status === "rejected") {
+      setStatus("Could not save profile or preferences");
+    } else if (profileResult.status === "rejected") {
+      setStatus(profileResult.reason instanceof Error ? profileResult.reason.message : "Could not save profile details");
+    } else {
+      setStatus(settingsResult.status === "rejected" && settingsResult.reason instanceof Error ? settingsResult.reason.message : "Could not save preferences");
     }
+
+    setIsSaving(false);
   }
 
   async function handleSignOut() {
@@ -136,11 +123,6 @@ function ProfilePreferencesDesktop() {
   }
 
   const name = displayName(user);
-  const initial = name.charAt(0).toUpperCase();
-  const progressRows = (dashboard?.continueLearning || []).slice(0, 3).map((item) => [
-    item.courseTitle,
-    `${Math.round(item.completionPercentage || 0)}%`,
-  ] as const);
   const statRows = useMemo(() => {
     const activeCourses = dashboard?.continueLearning?.length || 0;
     return [
@@ -149,58 +131,10 @@ function ProfilePreferencesDesktop() {
       ["Public", "Profile visibility"],
     ] as const;
   }, [dashboard]);
-  const settingsRows = useMemo(() => {
-    if (!user) return settings;
-    return [
-      ["Personal information", user.email || "Name, photo and profile summary", "Saved to backend"] as const,
-      ["Learning interests", form.bio || "Add a short learning focus", "Saved to backend"] as const,
-      ["Language & accessibility", `${form.language.toUpperCase()} - ${form.timezone}`, "Saved to backend"] as const,
-    ];
-  }, [form.bio, form.language, form.timezone, user]);
 
   return (
     <main className="certificate-detail-page profile-preferences-page">
-      <aside className="learning-sidebar">
-        <img src="/basecamp-logo.png" alt="BaseCamp" className="learning-sidebar-logo" />
-
-        <nav className="learning-nav" aria-label="Learning sections">
-          {navItems.map(([label, Icon, active]) => (
-            <a
-              href={({
-                "Learning Home": "/learning",
-                "My Learning": "/my-learning",
-                Explore: "/explore",
-                Achievements: "/achievements",
-                Certificates: "/certificates",
-                Progress: "/progress",
-              } as const)[label]}
-              className={active ? "active" : ""}
-              key={label}
-            >
-              <Icon size={22} strokeWidth={1.8} />
-              <span>{label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <section className="recent-trails" aria-label="Recent trails">
-          <p>Recent trails</p>
-          {loading ? <SidebarSkeleton /> : progressRows.length ? progressRows.map(([trailName, progress]) => (
-            <div key={trailName}>
-              <span>{trailName}</span>
-              <strong>{progress}</strong>
-            </div>
-          )) : <small>No course progress yet</small>}
-        </section>
-        <section className="learner-profile" aria-label="Learner profile">
-          <div>{initial}</div>
-          <section>
-            <strong>{name}</strong>
-            <span>{user?.role || "Learner"}</span>
-            <small>{user?.learnerCode || "Profile code pending"}</small>
-          </section>
-        </section>
-      </aside>
+      <LearningSidebar activeHref="/profile-preferences" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">
@@ -218,8 +152,11 @@ function ProfilePreferencesDesktop() {
           {loading ? <CardSkeleton lines={3} /> : (
             <>
               <h2>{name}</h2>
-              <p>{user?.email || "Account email unavailable"} - {user?.learnerCode || "Profile code pending"} - {form.phone || "Phone not added"}</p>
-              <button type="button">View public profile -&gt;</button>
+              <div className="profile-identity-pills">
+                <span><Mail size={13} />{user?.email || "Account email unavailable"}</span>
+                <span><IdCard size={13} />{user?.learnerCode || "Profile code pending"}</span>
+                <span><Phone size={13} />{form.phone || "Phone not added"}</span>
+              </div>
             </>
           )}
         </section>
@@ -318,23 +255,6 @@ function ProfilePreferencesDesktop() {
                 </>
               )}
             </article>
-            {loading ? Array.from({ length: 3 }, (_, index) => (
-              <CardSkeleton key={index} lines={2} />
-            )) : settingsRows.map(([title, description, action]) => (
-              <article key={title}>
-                <div>
-                  <h3>{title}</h3>
-                  <p>
-                    {title === "Language & accessibility" ? (
-                      <>English - Captions enabled</>
-                    ) : (
-                      description
-                    )}
-                  </p>
-                </div>
-                <button type="button">{action} -&gt;</button>
-              </article>
-            ))}
           </section>
 
           <aside className="verification-card">

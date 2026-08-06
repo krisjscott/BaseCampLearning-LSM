@@ -14,5 +14,7 @@ public interface CertificateService {
 
     CertificateResponse getCertificateByNumber(String number);
 
-    String downloadCertificate(UUID certificateId, Account requester);
+    CertificateResponse getCertificateById(UUID certificateId, Account requester);
+
+    CertificateDownload downloadCertificatePdf(UUID certificateId, Account requester);
 }

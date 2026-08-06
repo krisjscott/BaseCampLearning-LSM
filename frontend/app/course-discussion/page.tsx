@@ -103,7 +103,7 @@ function DiscussionForum() {
 
   return (
     <main className="certificate-detail-page course-discussion-page">
-      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
+      <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         <header className="certificate-detail-header">

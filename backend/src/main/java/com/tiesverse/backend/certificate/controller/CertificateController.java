@@ -1,10 +1,13 @@
 package com.tiesverse.backend.certificate.controller;
 
 import com.tiesverse.backend.certificate.dto.response.CertificateResponse;
+import com.tiesverse.backend.certificate.service.CertificateDownload;
 import com.tiesverse.backend.certificate.service.CertificateService;
 import com.tiesverse.backend.common.response.ApiResponse;
 import com.tiesverse.backend.security.AuthContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,8 +34,7 @@ public class CertificateController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CertificateResponse>> getCertificate(Principal principal, @PathVariable UUID id) {
-        String fileUrl = certificateService.downloadCertificate(id, authContext.currentAccount(principal));
-        CertificateResponse response = CertificateResponse.builder().fileUrl(fileUrl).build();
+        CertificateResponse response = certificateService.getCertificateById(id, authContext.currentAccount(principal));
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
@@ -43,8 +45,11 @@ public class CertificateController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<ApiResponse<String>> downloadCertificate(Principal principal, @PathVariable UUID id) {
-        String fileUrl = certificateService.downloadCertificate(id, authContext.currentAccount(principal));
-        return ResponseEntity.ok(ApiResponse.success(fileUrl));
+    public ResponseEntity<byte[]> downloadCertificate(Principal principal, @PathVariable UUID id) {
+        CertificateDownload download = certificateService.downloadCertificatePdf(id, authContext.currentAccount(principal));
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + download.filename() + "\"")
+                .body(download.pdfBytes());
     }
 }

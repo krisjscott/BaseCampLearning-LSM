@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
@@ -8,10 +8,12 @@ import LearningSidebar from "../components/LearningSidebar";
 import { CardSkeleton } from "../components/Skeleton";
 import {
   CertificateResponse,
+  EnrollmentResponse,
   PublicDashboardResponse,
   UserResponse,
   getCertificates,
   getCurrentUser,
+  getMyEnrollments,
   getPublicDashboard,
 } from "../lib/backendApi";
 import { encodeId } from "../lib/idCodec";
@@ -22,6 +24,7 @@ function ProgressContent() {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [certificates, setCertificates] = useState<CertificateResponse[]>([]);
+  const [enrollments, setEnrollments] = useState<EnrollmentResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +32,12 @@ function ProgressContent() {
     Promise.allSettled([getCurrentUser(), getPublicDashboard(), getCertificates()])
       .then(([userResult, dashboardResult, certificateResult]) => {
         if (!active) return;
-        if (userResult.status === "fulfilled") setUser(userResult.value);
+        if (userResult.status === "fulfilled" && userResult.value) {
+          setUser(userResult.value);
+          getMyEnrollments(userResult.value.id)
+            .then((rows) => active && setEnrollments(rows))
+            .catch(() => undefined);
+        }
         setDashboard(dashboardResult.status === "fulfilled" ? dashboardResult.value : null);
         setCertificates(certificateResult.status === "fulfilled" ? certificateResult.value : []);
       })
@@ -42,17 +50,40 @@ function ProgressContent() {
     };
   }, []);
 
-  const courses = dashboard?.continueLearning || [];
+  // Same reasoning as My Learning: dashboard.continueLearning intentionally
+  // drops anything already completed, so it can't be the source for a full
+  // "progress by course" list or an honest completed-courses count.
+  const liveProgressByCourseId = useMemo(() => {
+    const map = new Map<string, { completion: number }>();
+    (dashboard?.continueLearning || []).forEach((item) => {
+      map.set(item.courseId, { completion: item.completionPercentage || 0 });
+    });
+    return map;
+  }, [dashboard]);
+
+  const courses = useMemo(() => {
+    return enrollments
+      .filter((item) => item.status !== "DROPPED" && item.status !== "EXPIRED")
+      .map((item) => {
+        const completed = item.status === "COMPLETED";
+        return {
+          courseId: item.courseId,
+          courseTitle: item.courseTitle || "Course",
+          completed,
+          completionPercentage: completed ? 100 : liveProgressByCourseId.get(item.courseId)?.completion || 0,
+        };
+      });
+  }, [enrollments, liveProgressByCourseId]);
   const recommendations = dashboard?.recommendedCourses || [];
   const activities = dashboard?.recentActivities || [];
   const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
   const level = getLevelProgress(xpPoints);
   const averageProgress = courses.length
-    ? Math.round(courses.reduce((sum, item) => sum + (item.completionPercentage || 0), 0) / courses.length)
+    ? Math.round(courses.reduce((sum, item) => sum + item.completionPercentage, 0) / courses.length)
     : 0;
-  const completedCourses = courses.filter((course) => (course.completionPercentage || 0) >= 100).length;
+  const completedCourses = courses.filter((course) => course.completed).length;
   const stats = [
-    [courses.length.toLocaleString(), "Active courses"],
+    [courses.length.toLocaleString(), "Enrolled courses"],
     [`${averageProgress}%`, "Average completion"],
     [certificates.length.toLocaleString(), "Certificates"],
   ] as const;
@@ -104,12 +135,15 @@ function ProgressContent() {
         <div className="progress-dashboard-grid">
           <section className="course-progress-list" aria-label="Progress by course">
             {loading ? Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} lines={2} />) : courses.length ? courses.map((course) => {
-              const progress = Math.round(course.completionPercentage || 0);
+              const progress = Math.round(course.completionPercentage);
               return (
-                <article key={course.courseId}>
+                <article key={course.courseId} className={course.completed ? "done" : ""}>
                   <div>
                     <h3>{course.courseTitle}</h3>
-                    <p>{progress}% - {progress >= 100 ? "Completed" : progress > 0 ? "In progress" : "Ready to start"}</p>
+                    <p>
+                      {course.completed && <CheckCircle2 size={14} />}
+                      {course.completed ? "Completed" : progress > 0 ? `${progress}% - In progress` : "Ready to start"}
+                    </p>
                   </div>
                   <button type="button" onClick={() => router.push(`/course?courseId=${encodeId(course.courseId)}`)}>Details -&gt;</button>
                 </article>

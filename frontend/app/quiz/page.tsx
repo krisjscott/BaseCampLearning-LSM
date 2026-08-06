@@ -1,13 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, ClipboardList, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, CheckCircle2, Circle, ClipboardList, X } from "lucide-react";
 import { AssessmentResponse, getAssessment } from "../lib/backendApi";
 import { CardSkeleton, Skeleton } from "../components/Skeleton";
 import AuthGuard from "../components/AuthGuard";
 import { courseExitHref, saveQuizSession } from "../lib/quizSession";
 import { decodeParam, encodeId } from "../lib/idCodec";
+
+// Blocks the easy, casual routes to lifting question/option text - right-click
+// "copy", Ctrl+C, and text selection. This is a deterrent, not real security:
+// anyone with DevTools open can still read the DOM or the network response,
+// and no website can block an OS-level screenshot. See the devtools-open
+// banner below, which is the honest version of this - it nudges rather than
+// claims to enforce.
+function blockClipboardEvent(event: SyntheticEvent) {
+  event.preventDefault();
+}
 
 function CompulsoryQuiz() {
   const router = useRouter();
@@ -16,6 +26,21 @@ function CompulsoryQuiz() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
+  const [devtoolsSuspected, setDevtoolsSuspected] = useState(false);
+
+  useEffect(() => {
+    // Heuristic only: a docked DevTools panel reliably widens the gap between
+    // the outer browser chrome and the inner viewport past ~200px. It can
+    // false-positive on unusual browser chrome/zoom and does nothing against
+    // an undocked DevTools window - it's a nudge, not a lock.
+    const threshold = 200;
+    const interval = setInterval(() => {
+      const widthGap = window.outerWidth - window.innerWidth;
+      const heightGap = window.outerHeight - window.innerHeight;
+      setDevtoolsSuspected(widthGap > threshold || heightGap > threshold);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const assessmentId = decodeParam(new URLSearchParams(window.location.search), "assessmentId");
@@ -118,11 +143,22 @@ function CompulsoryQuiz() {
             </section>
           </header>
 
-          <section className="question-card">
+          <section
+            className="question-card no-copy"
+            onCopy={blockClipboardEvent}
+            onCut={blockClipboardEvent}
+            onContextMenu={blockClipboardEvent}
+          >
             {loading ? (
               <CardSkeleton lines={7} />
             ) : (
               <>
+                {devtoolsSuspected && (
+                  <div className="quiz-devtools-banner" role="alert">
+                    <AlertTriangle size={16} />
+                    <span>Developer tools appear to be open. Close them to keep working on this assessment.</span>
+                  </div>
+                )}
                 <div className="question-meta">
                   <p>Question {currentQuestion ? currentIndex + 1 : 0} of {totalQuestions}</p>
                   <span>{currentQuestion?.points || 0} point</span>

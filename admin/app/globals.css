@@ -21367,7 +21367,8 @@ select:focus-visible,
   gap: 6px;
 }
 
-.admin-course-card-actions button {
+.admin-course-card-actions button,
+.admin-course-card-actions a {
   display: grid;
   place-items: center;
   width: 32px;
@@ -21379,7 +21380,8 @@ select:focus-visible,
   cursor: pointer;
 }
 
-.admin-course-card-actions button:hover {
+.admin-course-card-actions button:hover,
+.admin-course-card-actions a:hover {
   background: rgba(255, 90, 31, 0.12);
   color: var(--orange-deep);
 }
@@ -22829,5 +22831,471 @@ body.notification-panel-open {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Certificate template editor */
+
+.cert-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 20px;
+  margin: 20px 0;
+  border: 1.5px dashed rgba(14, 15, 17, 0.18);
+  border-radius: 14px;
+  color: rgba(14, 15, 17, 0.6);
+  text-align: center;
+}
+
+.cert-upload-dropzone label.admin-primary-btn {
+  cursor: pointer;
+}
+
+.cert-editor-shell {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
+.cert-editor-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Toolbar: a single card surface, buttons grouped by purpose (create / view /
+   save) with a spacer pushing the destructive action to its own corner, so
+   it isn't sitting next to the buttons someone clicks constantly. */
+.cert-editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  margin-bottom: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(14, 15, 17, 0.08);
+}
+
+.cert-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cert-toolbar-divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 2px;
+  background: rgba(14, 15, 17, 0.1);
+}
+
+.cert-toolbar-spacer {
+  flex: 1;
+}
+
+.cert-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #d1d4d6);
+  background: #fff;
+  color: var(--ink, #14171a);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cert-toolbar-btn:hover {
+  background: rgba(14, 15, 17, 0.04);
+}
+
+.cert-toolbar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #fff;
+}
+
+.cert-toolbar-btn.primary {
+  border-color: transparent;
+  background: var(--ink, #0c1112);
+  color: #fff;
+}
+
+.cert-toolbar-btn.primary:hover {
+  background: #000;
+}
+
+.cert-toolbar-btn.primary:disabled {
+  background: rgba(14, 15, 17, 0.14);
+  color: rgba(14, 15, 17, 0.4);
+}
+
+.cert-toolbar-btn.danger {
+  width: 36px;
+  padding: 0;
+  justify-content: center;
+  border-color: transparent;
+  background: rgba(233, 76, 23, 0.08);
+  color: var(--orange-deep, #e94c17);
+}
+
+.cert-toolbar-btn.danger:hover {
+  background: rgba(233, 76, 23, 0.18);
+}
+
+/* Only the canvas scrolls horizontally when it's wider than the available
+   space - the toolbar above must stay put, not scroll away with it. */
+.cert-editor-canvas-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.cert-editor-canvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid rgba(14, 15, 17, 0.08);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink, #14171a);
+}
+
+.cert-editor-canvas-dims {
+  font-weight: 500;
+  color: rgba(14, 15, 17, 0.45);
+}
+
+.cert-editor-canvas-wrap {
+  position: relative;
+  background: #f4f4f5;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(14, 15, 17, 0.08);
+}
+
+.cert-pdf-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(14, 15, 17, 0.55);
+}
+
+.cert-pdf-error {
+  color: #b3261e;
+}
+
+.cert-editor-hint {
+  margin-top: 10px;
+  font-size: 11.5px;
+  color: rgba(14, 15, 17, 0.45);
+}
+
+.cert-editor-pdf-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.cert-element {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1.5px dashed rgba(255, 90, 31, 0.55);
+  background: rgba(255, 90, 31, 0.06);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: move;
+  user-select: none;
+  transition: border-color 0.1s ease, background 0.1s ease;
+}
+
+.cert-element:hover {
+  border-color: rgba(255, 90, 31, 0.85);
+}
+
+.cert-element.is-selected {
+  border-style: solid;
+  border-color: var(--orange-deep, #e94c17);
+  background: rgba(255, 90, 31, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 90, 31, 0.15);
+}
+
+.cert-element-qr-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(14, 15, 17, 0.55);
+}
+
+.cert-element-resize-handle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  border: 2px solid #fff;
+  background: var(--orange-deep, #e94c17);
+  cursor: nwse-resize;
+}
+
+.cert-editor-panel {
+  width: 300px;
+  flex-shrink: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(14, 15, 17, 0.08);
+}
+
+.cert-layers-list {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(14, 15, 17, 0.1);
+}
+
+.cert-layers-list h3,
+.cert-inspector-section-label {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(14, 15, 17, 0.45);
+}
+
+.cert-layer-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 3px;
+  border-radius: 7px;
+  transition: background 0.1s ease;
+}
+
+.cert-layer-row:hover {
+  background: rgba(14, 15, 17, 0.03);
+}
+
+.cert-layer-row.is-selected {
+  background: rgba(255, 90, 31, 0.09);
+}
+
+.cert-layer-actions {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.cert-layer-actions button {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  color: rgba(14, 15, 17, 0.45);
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.cert-layer-actions button:hover {
+  background: rgba(14, 15, 17, 0.08);
+  color: #0e0f11;
+}
+
+.cert-layer-actions button:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.cert-layer-actions button:disabled:hover {
+  background: transparent;
+}
+
+.cert-layer-select {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  color: #0e0f11;
+  cursor: pointer;
+}
+
+.cert-layer-select svg {
+  flex-shrink: 0;
+  color: rgba(14, 15, 17, 0.4);
+}
+
+.cert-layer-row.is-selected .cert-layer-select {
+  color: var(--orange-deep, #e94c17);
+  font-weight: 700;
+}
+
+.cert-layer-row.is-selected .cert-layer-select svg {
+  color: var(--orange-deep, #e94c17);
+}
+
+.cert-layer-select span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cert-inspector h3 {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cert-inspector label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(14, 15, 17, 0.55);
+}
+
+.cert-inspector input,
+.cert-inspector select,
+.cert-inspector textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border-radius: 7px;
+  border: 1px solid var(--line, #d1d4d6);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink, #14171a);
+}
+
+.cert-inspector input:focus,
+.cert-inspector select:focus,
+.cert-inspector textarea:focus {
+  outline: none;
+  border-color: var(--orange-deep, #e94c17);
+  box-shadow: 0 0 0 3px rgba(233, 76, 23, 0.12);
+}
+
+.cert-inspector input[type="color"] {
+  padding: 3px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.cert-inline-checkbox {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 7px !important;
+}
+
+.cert-inline-checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--orange-deep, #e94c17);
+}
+
+.cert-variable-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.cert-variable-chips button {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(14, 15, 17, 0.05);
+  color: var(--ink, #14171a);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cert-variable-chips button:hover {
+  border-color: rgba(233, 76, 23, 0.3);
+  color: var(--orange-deep, #e94c17);
+  background: rgba(233, 76, 23, 0.08);
+}
+
+.cert-inspector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.cert-inspector-grid label {
+  margin-bottom: 0;
+}
+
+/* Alignment is the lone field in its row (Bold lives outside the grid, as
+   its own full-width row) - span both columns instead of leaving a gap. */
+.cert-inspector-grid-top label:nth-child(3) {
+  grid-column: 1 / -1;
+}
+
+.cert-inspector-section-label-bordered {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(14, 15, 17, 0.08);
+}
+
+.cert-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(14, 15, 17, 0.6);
+  margin-bottom: 12px;
+}
+
+.cert-delete-element {
+  /* .admin-icon-danger sets display:grid for a single icon-only child - with
+     an icon + text label here, grid's default auto-flow stacks them in
+     separate rows instead of side by side, so switch back to flex. */
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: auto;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 9px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12.5px;
+  border: 1px solid rgba(233, 76, 23, 0.25);
+  background: rgba(233, 76, 23, 0.1);
+}
+
+.cert-delete-element:hover {
+  background: rgba(233, 76, 23, 0.18);
+  border-color: rgba(233, 76, 23, 0.4);
 }
 
