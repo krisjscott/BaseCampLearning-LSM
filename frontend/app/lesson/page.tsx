@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlignLeft,
+  Bookmark,
+  BookmarkCheck,
   Captions,
   Check,
   Folder,
@@ -11,6 +14,7 @@ import {
   Pause,
   Play,
   StickyNote,
+  Trash2,
   Volume2,
   VolumeX,
   X,
@@ -18,15 +22,25 @@ import {
 import {
   LessonResponse,
   ModuleResponse,
+  NoteResponse,
+  createBookmark,
+  createNote,
+  deleteBookmark,
+  deleteNote,
   getCourseModules,
   getCurrentUser,
   getLesson,
   getLessonsProgress,
+  getMyBookmarks,
+  getMyNotes,
+  resolveMediaUrl,
   updateCourseProgress,
 } from "../lib/backendApi";
 import AuthGuard from "../components/AuthGuard";
 import { CardSkeleton, Skeleton } from "../components/Skeleton";
+import { useToast } from "../components/Toast";
 import { decodeParam, encodeId } from "../lib/idCodec";
+import { TranscriptCue, parseVtt } from "../lib/vtt";
 
 const playbackRates = [1, 1.25, 1.5, 2] as const;
 
@@ -40,10 +54,11 @@ function formatTime(value: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-type Tab = "overview" | "resources" | "notes";
+type Tab = "overview" | "resources" | "transcript" | "notes";
 
 function LessonPlayer() {
   const router = useRouter();
+  const toast = useToast();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const cardRef = useRef<HTMLElement | null>(null);
 
@@ -57,7 +72,12 @@ function LessonPlayer() {
   const [loadingLesson, setLoadingLesson] = useState(true);
   const [markedComplete, setMarkedComplete] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
-  const [notes, setNotes] = useState("");
+  const [savedNotes, setSavedNotes] = useState<NoteResponse[]>([]);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [transcript, setTranscript] = useState<TranscriptCue[]>([]);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -66,8 +86,12 @@ function LessonPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
 
-  const videoUrl = lesson?.contentUrl || "/lesson-sample.mp4";
+  const videoUrl = resolveMediaUrl(lesson?.contentUrl);
+  const captionsUrl = resolveMediaUrl(lesson?.captionsUrl);
   const fallbackDuration = lesson?.durationMinutes ? lesson.durationMinutes * 60 : 24;
+  const activeCaption = captionsEnabled
+    ? transcript.find((cue) => currentTime >= cue.start && currentTime < cue.end)?.text || null
+    : null;
   const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
   const watchedPercent = Math.min(100, Math.round(progress));
   const isComplete = markedComplete || watchedPercent >= 100;
@@ -114,6 +138,91 @@ function LessonPlayer() {
   useEffect(() => {
     setDuration(fallbackDuration);
   }, [fallbackDuration]);
+
+  useEffect(() => {
+    if (!lesson) return;
+    const type = (lesson.contentType || "").toUpperCase();
+    if (type === "ARTICLE" || type === "DOCUMENT") {
+      router.replace(`/reading-lesson?lessonId=${encodeId(lesson.id)}&courseId=${encodeId(courseId || "")}`);
+    } else if (type === "ASSIGNMENT") {
+      router.replace(`/assignment-submission?assignmentId=${encodeId(lesson.id)}&courseId=${encodeId(courseId || "")}`);
+    } else if (type === "QUIZ") {
+      router.replace(courseId ? `/course?courseId=${encodeId(courseId)}&tab=grades` : "/learning");
+    }
+  }, [lesson, courseId, router]);
+
+  useEffect(() => {
+    if (!lessonId || !courseId) return;
+    getMyNotes(courseId, lessonId).then(setSavedNotes).catch(() => undefined);
+    getMyBookmarks()
+      .then((rows) => setBookmarked(rows.some((row) => row.lessonId === lessonId)))
+      .catch(() => undefined);
+  }, [lessonId, courseId]);
+
+  async function saveNote() {
+    const content = noteDraft.trim();
+    if (!content || !courseId || !lessonId) return;
+    setSavingNote(true);
+    try {
+      const created = await createNote({ courseId, lessonId, content, timestampSeconds: Math.floor(currentTime) });
+      if (created) setSavedNotes((prev) => [created, ...prev]);
+      setNoteDraft("");
+      toast.success("Note saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save this note.");
+    } finally {
+      setSavingNote(false);
+    }
+  }
+
+  async function removeNote(noteId: string) {
+    try {
+      await deleteNote(noteId);
+      setSavedNotes((prev) => prev.filter((note) => note.id !== noteId));
+    } catch {
+      toast.error("Could not delete this note.");
+    }
+  }
+
+  async function toggleBookmark() {
+    if (!courseId || !lessonId) return;
+    try {
+      if (bookmarked) {
+        await deleteBookmark(lessonId);
+        setBookmarked(false);
+        toast.success("Bookmark removed");
+      } else {
+        await createBookmark(courseId, lessonId);
+        setBookmarked(true);
+        toast.success("Lesson bookmarked");
+      }
+    } catch {
+      toast.error("Could not update this bookmark.");
+    }
+  }
+
+  useEffect(() => {
+    if (!captionsUrl) {
+      setTranscript([]);
+      return;
+    }
+    let active = true;
+    setTranscriptLoading(true);
+    fetch(captionsUrl)
+      .then((response) => response.text())
+      .then((text) => {
+        if (active) setTranscript(parseVtt(text));
+      })
+      .catch(() => {
+        if (active) setTranscript([]);
+      })
+      .finally(() => {
+        if (active) setTranscriptLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [captionsUrl]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -181,8 +290,12 @@ function LessonPlayer() {
     const video = videoRef.current;
     if (!video) return;
     const next = !captionsEnabled;
+    // Captions render via our own overlay (driven by the parsed transcript,
+    // positioned reliably above the controls bar) rather than the browser's
+    // native <track> box, whose position can't be controlled consistently
+    // across browsers. Keep the native track disabled so it never doubles up.
     Array.from(video.textTracks).forEach((track) => {
-      track.mode = next ? "hidden" : "disabled";
+      track.mode = "disabled";
     });
     setCaptionsEnabled(next);
   };
@@ -275,29 +388,43 @@ function LessonPlayer() {
           </div>
 
           <section className="video-card" aria-label="Video lesson player" ref={cardRef}>
-            <video
-              ref={videoRef}
-              className="lesson-video-media"
-              preload="metadata"
-              poster="/basecamp-logo.png"
-              playsInline
-              onClick={togglePlayback}
-              key={videoUrl}
-            >
-              <source src={videoUrl} type="video/mp4" />
-              <track src="/lesson-sample.vtt" kind="captions" srcLang="en" label="English" />
-            </video>
-            <button
-              type="button"
-              className={`video-surface ${isPlaying ? "is-playing" : ""}`}
-              onClick={togglePlayback}
-              aria-label={isPlaying ? "Pause lesson video" : "Play lesson video"}
-            >
-              <span className="play-badge">
-                {isPlaying ? <Pause size={24} fill="none" /> : <Play size={24} fill="none" />}
-              </span>
-              <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson" : `Resume from ${formatTime(currentTime)}`}</strong>
-            </button>
+            {!loadingLesson && !videoUrl ? (
+              <div className="video-empty-state">
+                <p>No video has been uploaded for this lesson yet.</p>
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                className="lesson-video-media"
+                preload="metadata"
+                poster="/basecamp-logo.png"
+                playsInline
+                onClick={togglePlayback}
+                key={videoUrl}
+              >
+                {videoUrl && <source src={videoUrl} type="video/mp4" />}
+                {captionsUrl && <track src={captionsUrl} kind="captions" srcLang="en" label="English" />}
+              </video>
+            )}
+            {(loadingLesson || videoUrl) && (
+              <button
+                type="button"
+                className={`video-surface ${isPlaying ? "is-playing" : ""}`}
+                onClick={togglePlayback}
+                aria-label={isPlaying ? "Pause lesson video" : "Play lesson video"}
+              >
+                <span className="play-badge">
+                  {isPlaying ? <Pause size={24} fill="none" /> : <Play size={24} fill="none" />}
+                </span>
+                <strong>{loadingLesson ? "Loading lesson..." : isPlaying ? "Playing lesson" : `Resume from ${formatTime(currentTime)}`}</strong>
+              </button>
+            )}
+            {activeCaption && (
+              <div className="video-caption-overlay" aria-live="polite">
+                <span>{activeCaption}</span>
+              </div>
+            )}
+            {(loadingLesson || videoUrl) && (
             <div className="video-controls">
               <div className="video-progress" aria-label="Video progress">
                 <span style={{ width: `${progress}%` }} />
@@ -326,6 +453,14 @@ function LessonPlayer() {
                   <button type="button" aria-label="Captions" className={captionsEnabled ? "active" : ""} onClick={toggleCaptions}>
                     <Captions size={17} />
                   </button>
+                  <button
+                    type="button"
+                    aria-label={bookmarked ? "Remove bookmark" : "Bookmark this lesson"}
+                    className={bookmarked ? "active" : ""}
+                    onClick={toggleBookmark}
+                  >
+                    {bookmarked ? <BookmarkCheck size={17} /> : <Bookmark size={17} />}
+                  </button>
                   <button type="button" aria-label="Playback speed" onClick={cyclePlaybackRate}>
                     <span>{playbackRate}x</span>
                   </button>
@@ -335,6 +470,7 @@ function LessonPlayer() {
                 </div>
               </div>
             </div>
+            )}
           </section>
 
           <section className="lesson-lower">
@@ -347,6 +483,12 @@ function LessonPlayer() {
                 <Folder size={16} />
                 <span>Resources</span>
               </button>
+              {captionsUrl && (
+                <button type="button" className={tab === "transcript" ? "active" : ""} onClick={() => setTab("transcript")}>
+                  <AlignLeft size={16} />
+                  <span>Transcript</span>
+                </button>
+              )}
               <button type="button" className={tab === "notes" ? "active" : ""} onClick={() => setTab("notes")}>
                 <StickyNote size={16} />
                 <span>Notes</span>
@@ -358,22 +500,64 @@ function LessonPlayer() {
             )}
             {tab === "resources" && (
               <p className="lesson-tab-panel">
-                {lesson?.contentUrl ? (
-                  <a href={lesson.contentUrl} target="_blank" rel="noreferrer">Open lesson resource -&gt;</a>
+                {videoUrl ? (
+                  <a href={videoUrl} target="_blank" rel="noreferrer">Open lesson resource -&gt;</a>
                 ) : (
                   "No downloadable resources for this lesson."
                 )}
               </p>
             )}
+            {tab === "transcript" && (
+              <div className="lesson-tab-panel lesson-transcript">
+                {transcriptLoading ? (
+                  <CardSkeleton lines={4} />
+                ) : transcript.length ? (
+                  transcript.map((cue, index) => (
+                    <button
+                      type="button"
+                      key={index}
+                      className="transcript-line"
+                      onClick={() => seekTo(cue.start)}
+                    >
+                      <span className="transcript-timestamp">{formatTime(cue.start)}</span>
+                      <span>{cue.text}</span>
+                    </button>
+                  ))
+                ) : (
+                  <p>No transcript available for this lesson.</p>
+                )}
+              </div>
+            )}
             {tab === "notes" && (
-              <div className="lesson-tab-panel">
+              <div className="lesson-tab-panel lesson-notes-panel">
                 <textarea
                   className="inline-textarea"
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
-                  placeholder="Jot down notes for this lesson (kept for this session only)"
-                  rows={5}
+                  value={noteDraft}
+                  onChange={(event) => setNoteDraft(event.target.value)}
+                  placeholder={`Add a note at ${formatTime(currentTime)}...`}
+                  rows={3}
                 />
+                <button type="button" className="mark-complete" onClick={saveNote} disabled={!noteDraft.trim() || savingNote}>
+                  <StickyNote size={16} />
+                  <span>{savingNote ? "Saving..." : "Save note"}</span>
+                </button>
+                <div className="lesson-notes-list">
+                  {savedNotes.length ? (
+                    savedNotes.map((note) => (
+                      <div className="lesson-note-row" key={note.id}>
+                        <button type="button" className="transcript-timestamp" onClick={() => note.timestampSeconds != null && seekTo(note.timestampSeconds)}>
+                          {note.timestampSeconds != null ? formatTime(note.timestampSeconds) : ""}
+                        </button>
+                        <p>{note.content}</p>
+                        <button type="button" aria-label="Delete note" onClick={() => removeNote(note.id)}>
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No notes yet for this lesson.</p>
+                  )}
+                </div>
               </div>
             )}
 

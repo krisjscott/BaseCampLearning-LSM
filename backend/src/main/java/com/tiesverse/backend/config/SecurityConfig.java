@@ -49,6 +49,7 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/**").permitAll()
@@ -64,6 +65,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
                         .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
+                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/api/v1/admin/**")
                         .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/enrollments/assign", "/api/v1/enrollments/learning-paths")
                         .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")

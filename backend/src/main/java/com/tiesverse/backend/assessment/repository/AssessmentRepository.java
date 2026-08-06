@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface AssessmentRepository extends JpaRepository<Assessment, UUID> {
 
     List<Assessment> findByCourseId(UUID courseId);
+
+    void deleteByCourseId(UUID courseId);
 }

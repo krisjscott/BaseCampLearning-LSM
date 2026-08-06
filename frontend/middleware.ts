@@ -8,7 +8,6 @@ const PROTECTED_ROUTES = [
   "/profile-preferences",
   "/notifications",
   "/certificates",
-  "/admin-7f3k9x2q",
 ];
 
 const SESSION_COOKIE = "basecamp_session";

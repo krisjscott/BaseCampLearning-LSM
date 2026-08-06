@@ -32,6 +32,9 @@ public class Lesson extends BaseEntity {
     @Column(name = "content_url")
     private String contentUrl;
 
+    @Column(name = "captions_url")
+    private String captionsUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "content_type")
     private ContentType contentType;

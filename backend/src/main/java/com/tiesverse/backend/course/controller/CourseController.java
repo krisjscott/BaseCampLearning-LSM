@@ -11,6 +11,7 @@ import com.tiesverse.backend.course.dto.response.CategoryResponse;
 import com.tiesverse.backend.course.dto.response.CourseResponse;
 import com.tiesverse.backend.course.dto.response.LessonResponse;
 import com.tiesverse.backend.course.dto.response.ModuleResponse;
+import com.tiesverse.backend.course.dto.response.ReadingContentResponse;
 import com.tiesverse.backend.course.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -167,6 +168,11 @@ public class CourseController {
     public ApiResponse<Void> deleteLesson(@PathVariable UUID id) {
         courseService.deleteLesson(id);
         return ApiResponse.success("Lesson deleted", null);
+    }
+
+    @GetMapping("/lessons/{id}/reading-content")
+    public ApiResponse<ReadingContentResponse> getLessonReadingContent(@PathVariable UUID id) {
+        return ApiResponse.success(courseService.getLessonReadingContent(id));
     }
 
     @PostMapping("/categories")

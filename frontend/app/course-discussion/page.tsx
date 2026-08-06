@@ -1,25 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trash2 } from "lucide-react";
 import AuthGuard from "../components/AuthGuard";
 import LearningSidebar from "../components/LearningSidebar";
 import {
   CourseResponse,
+  DiscussionPostResponse,
   PublicDashboardResponse,
   UserResponse,
+  createDiscussionPost,
+  deleteDiscussionPost,
   getCourse,
   getCurrentUser,
+  getDiscussionPosts,
   getPublicDashboard,
 } from "../lib/backendApi";
 import { decodeParam } from "../lib/idCodec";
-
-type LocalPost = {
-  id: string;
-  author: string;
-  text: string;
-  createdAt: string;
-};
 
 function DiscussionForum() {
   const [user, setUser] = useState<UserResponse | null>(null);
@@ -30,8 +27,9 @@ function DiscussionForum() {
   const [course, setCourse] = useState<CourseResponse | null>(null);
   const [courseLoading, setCourseLoading] = useState(false);
 
-  const [posts, setPosts] = useState<LocalPost[]>([]);
+  const [posts, setPosts] = useState<DiscussionPostResponse[]>([]);
   const [draft, setDraft] = useState("");
+  const [posting, setPosting] = useState(false);
   const [guidelinesOpen, setGuidelinesOpen] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -48,9 +46,15 @@ function DiscussionForum() {
     setCourseId(id);
     if (id) {
       setCourseLoading(true);
-      getCourse(id)
-        .then((result) => active && setCourse(result))
-        .catch(() => active && setCourse(null))
+      Promise.all([
+        getCourse(id).catch(() => null),
+        getDiscussionPosts(id).catch(() => []),
+      ])
+        .then(([courseResult, postsResult]) => {
+          if (!active) return;
+          setCourse(courseResult);
+          setPosts(postsResult);
+        })
         .finally(() => active && setCourseLoading(false));
     }
 
@@ -59,19 +63,29 @@ function DiscussionForum() {
     };
   }, []);
 
-  function submitPost() {
+  async function submitPost() {
     const text = draft.trim();
-    if (!text) return;
-    setPosts((prev) => [
-      {
-        id: `post-${Date.now()}`,
-        author: user?.fullName?.trim().split(/\s+/)[0] || "You",
-        text,
-        createdAt: new Date().toLocaleString(),
-      },
-      ...prev,
-    ]);
-    setDraft("");
+    if (!text || !courseId) return;
+    setPosting(true);
+    try {
+      const created = await createDiscussionPost(courseId, text);
+      if (created) setPosts((prev) => [created, ...prev]);
+      setDraft("");
+    } catch {
+      // keep the draft so the user can retry
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  async function removePost(postId: string) {
+    if (!window.confirm("Delete this post?")) return;
+    try {
+      await deleteDiscussionPost(postId);
+      setPosts((prev) => prev.filter((post) => post.id !== postId));
+    } catch {
+      // no-op
+    }
   }
 
   function focusComposer() {
@@ -117,9 +131,6 @@ function DiscussionForum() {
         </section>
 
         <h2 className="share-certificate-title">Start a discussion</h2>
-        <p className="session-note">
-          Discussion is local to this session until comments are supported.
-        </p>
         <div className="certificate-detail-grid">
           <section className="certificate-share-list" aria-label="New post composer">
             <div className="inline-composer-card">
@@ -132,23 +143,30 @@ function DiscussionForum() {
                 rows={4}
               />
               <div className="composer-actions">
-                <button type="button" onClick={submitPost} disabled={!draft.trim()}>
-                  Post
+                <button type="button" onClick={submitPost} disabled={!draft.trim() || !courseId || posting}>
+                  {posting ? "Posting..." : "Post"}
                 </button>
               </div>
             </div>
 
-            {posts.length ? (
+            {courseLoading ? (
+              <p className="admin-empty">Loading discussion...</p>
+            ) : posts.length ? (
               posts.map((post) => (
                 <article key={post.id}>
                   <div>
-                    <h3>{post.text}</h3>
-                    <p>{post.author} - {post.createdAt}</p>
+                    <h3>{post.content}</h3>
+                    <p>{post.userName || "Learner"} - {post.createdAt ? new Date(post.createdAt).toLocaleString() : ""}</p>
                   </div>
+                  {user?.id === post.userId && (
+                    <button type="button" className="is-ghost" aria-label="Delete post" onClick={() => removePost(post.id)}>
+                      <Trash2 size={15} />
+                    </button>
+                  )}
                 </article>
               ))
             ) : (
-              <p className="admin-empty">No posts yet this session. Be the first to start the discussion.</p>
+              <p className="admin-empty">No posts yet. Be the first to start the discussion.</p>
             )}
           </section>
 

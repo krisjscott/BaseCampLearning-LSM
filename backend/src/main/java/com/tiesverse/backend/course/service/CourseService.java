@@ -9,6 +9,7 @@ import com.tiesverse.backend.course.dto.response.CategoryResponse;
 import com.tiesverse.backend.course.dto.response.CourseResponse;
 import com.tiesverse.backend.course.dto.response.LessonResponse;
 import com.tiesverse.backend.course.dto.response.ModuleResponse;
+import com.tiesverse.backend.course.dto.response.ReadingContentResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -56,6 +57,8 @@ public interface CourseService {
     LessonResponse updateLesson(UUID id, CreateLessonRequest request);
 
     void deleteLesson(UUID id);
+
+    ReadingContentResponse getLessonReadingContent(UUID lessonId);
 
     CategoryResponse createCategory(CreateCategoryRequest request);
 

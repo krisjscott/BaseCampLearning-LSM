@@ -34,3 +34,6 @@ frontend/node_modules/
 #Frontend
 tsconfig.tsbuildinfo
 
+# Claude Code local session/tooling state
+.claude/
+

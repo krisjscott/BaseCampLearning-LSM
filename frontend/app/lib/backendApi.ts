@@ -58,6 +58,7 @@ export type LessonResponse = {
   title: string;
   description?: string | null;
   contentUrl?: string | null;
+  captionsUrl?: string | null;
   contentType?: string | null;
   durationMinutes?: number | null;
   orderIndex?: number | null;
@@ -201,6 +202,17 @@ const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/ap
 const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
 const API_BASE_URL = configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : "";
 
+/**
+ * Uploaded media (lesson videos, captions) is served by the backend under
+ * `/uploads/**`, not by Next.js - relative paths returned by the API need the
+ * backend origin prefixed before they can be used in <video>/<track>/fetch.
+ */
+export function resolveMediaUrl(path?: string | null): string {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE_URL}${path}`;
+}
+
 let refreshPromise: Promise<string | null> | null = null;
 
 function getSessionCookie(): string | null {
@@ -304,7 +316,7 @@ export async function backendRequest<T>(
   const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_STORAGE_KEYS.accessToken) : null;
   const headers = new Headers(options.headers);
 
-  if (options.body && !headers.has("Content-Type")) {
+  if (options.body && !headers.has("Content-Type") && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -543,6 +555,26 @@ export async function getLesson(lessonId: string): Promise<LessonResponse | null
   return response.data || null;
 }
 
+export type ReadingContentResponse = {
+  id: string;
+  title: string;
+  contentHtml?: string | null;
+  contentMarkdown?: string | null;
+  estimatedReadingMinutes?: number | null;
+  lessonId?: string | null;
+};
+
+export async function getLessonReadingContent(lessonId: string): Promise<ReadingContentResponse | null> {
+  try {
+    const response = await backendRequest<ReadingContentResponse>(`/api/v1/courses/lessons/${lessonId}/reading-content`, {
+      headers: { Accept: "application/json" },
+    });
+    return response.data || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getAssessment(assessmentId: string): Promise<AssessmentResponse | null> {
   const response = await backendRequest<AssessmentResponse>(`/api/v1/assessments/${assessmentId}`, {
     headers: { Accept: "application/json" },
@@ -668,4 +700,190 @@ export function getAuthSession() {
 export function clearAuthSession(): void {
   Object.values(AUTH_STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
   clearSessionCookie();
+}
+
+// ---------------------------------------------------------------------------
+// Notes
+// ---------------------------------------------------------------------------
+
+export type NoteResponse = {
+  id: string;
+  courseId: string;
+  courseTitle?: string | null;
+  lessonId?: string | null;
+  lessonTitle?: string | null;
+  content: string;
+  timestampSeconds?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+};
+
+export async function getMyNotes(courseId?: string, lessonId?: string): Promise<NoteResponse[]> {
+  const params = new URLSearchParams();
+  if (courseId) params.set("courseId", courseId);
+  if (lessonId) params.set("lessonId", lessonId);
+  const query = params.toString();
+  const response = await backendRequest<NoteResponse[]>(`/api/v1/notes${query ? `?${query}` : ""}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function createNote(payload: { courseId: string; lessonId?: string; content: string; timestampSeconds?: number }): Promise<NoteResponse | null> {
+  const response = await backendRequest<NoteResponse>("/api/v1/notes", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return response.data || null;
+}
+
+export async function updateNote(noteId: string, content: string): Promise<NoteResponse | null> {
+  const response = await backendRequest<NoteResponse>(`/api/v1/notes/${noteId}`, {
+    method: "PUT",
+    body: JSON.stringify({ content }),
+  });
+  return response.data || null;
+}
+
+export async function deleteNote(noteId: string): Promise<void> {
+  await backendRequest<void>(`/api/v1/notes/${noteId}`, { method: "DELETE" });
+}
+
+// ---------------------------------------------------------------------------
+// Bookmarks
+// ---------------------------------------------------------------------------
+
+export type BookmarkResponse = {
+  id: string;
+  courseId: string;
+  courseTitle?: string | null;
+  lessonId: string;
+  lessonTitle?: string | null;
+  createdAt?: string | null;
+};
+
+export async function getMyBookmarks(): Promise<BookmarkResponse[]> {
+  const response = await backendRequest<BookmarkResponse[]>("/api/v1/bookmarks", {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function createBookmark(courseId: string, lessonId: string): Promise<BookmarkResponse | null> {
+  const response = await backendRequest<BookmarkResponse>("/api/v1/bookmarks", {
+    method: "POST",
+    body: JSON.stringify({ courseId, lessonId }),
+  });
+  return response.data || null;
+}
+
+export async function deleteBookmark(lessonId: string): Promise<void> {
+  await backendRequest<void>(`/api/v1/bookmarks/lesson/${lessonId}`, { method: "DELETE" });
+}
+
+// ---------------------------------------------------------------------------
+// Course discussion
+// ---------------------------------------------------------------------------
+
+export type DiscussionPostResponse = {
+  id: string;
+  courseId: string;
+  userId: string;
+  userName?: string | null;
+  parentId?: string | null;
+  content: string;
+  createdAt?: string | null;
+};
+
+export async function getDiscussionPosts(courseId: string): Promise<DiscussionPostResponse[]> {
+  const response = await backendRequest<DiscussionPostResponse[]>(`/api/v1/discussions?courseId=${courseId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function createDiscussionPost(courseId: string, content: string, parentId?: string): Promise<DiscussionPostResponse | null> {
+  const response = await backendRequest<DiscussionPostResponse>("/api/v1/discussions", {
+    method: "POST",
+    body: JSON.stringify({ courseId, content, parentId }),
+  });
+  return response.data || null;
+}
+
+export async function deleteDiscussionPost(postId: string): Promise<void> {
+  await backendRequest<void>(`/api/v1/discussions/${postId}`, { method: "DELETE" });
+}
+
+// ---------------------------------------------------------------------------
+// Assignment submissions
+// ---------------------------------------------------------------------------
+
+export type AssignmentSubmissionResponse = {
+  id: string;
+  lessonId: string;
+  submissionText?: string | null;
+  fileUrl?: string | null;
+  status: "SUBMITTED" | "GRADED";
+  score?: number | null;
+  feedback?: string | null;
+  gradedByName?: string | null;
+  gradedAt?: string | null;
+  createdAt?: string | null;
+};
+
+export async function getMyAssignmentSubmission(lessonId: string): Promise<AssignmentSubmissionResponse | null> {
+  const response = await backendRequest<AssignmentSubmissionResponse>(`/api/v1/assignments/${lessonId}/my-submission`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || null;
+}
+
+export async function submitAssignment(lessonId: string, text?: string, file?: File): Promise<AssignmentSubmissionResponse | null> {
+  const formData = new FormData();
+  if (text) formData.set("text", text);
+  if (file) formData.set("file", file);
+  const response = await backendRequest<AssignmentSubmissionResponse>(`/api/v1/assignments/${lessonId}/submit`, {
+    method: "POST",
+    body: formData,
+  });
+  return response.data || null;
+}
+
+// ---------------------------------------------------------------------------
+// Contests
+// ---------------------------------------------------------------------------
+
+export type ContestResponse = {
+  id: string;
+  title: string;
+  description?: string | null;
+  assessmentId: string;
+  assessmentTitle?: string | null;
+  courseId: string;
+  courseTitle?: string | null;
+  startAt: string;
+  endAt: string;
+  status: "UPCOMING" | "ACTIVE" | "ENDED";
+};
+
+export type LeaderboardEntryResponse = {
+  rank: number;
+  userId: string;
+  userName?: string | null;
+  score?: number | null;
+  submittedAt?: string | null;
+};
+
+export async function getActiveContests(courseId: string): Promise<ContestResponse[]> {
+  const response = await backendRequest<ContestResponse[]>(`/api/v1/contests/active?courseId=${courseId}`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
+}
+
+export async function getContestLeaderboard(contestId: string): Promise<LeaderboardEntryResponse[]> {
+  const response = await backendRequest<LeaderboardEntryResponse[]>(`/api/v1/contests/${contestId}/leaderboard`, {
+    headers: { Accept: "application/json" },
+  });
+  return response.data || [];
 }

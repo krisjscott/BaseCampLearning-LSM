@@ -3,10 +3,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import AuthGuard from "../components/AuthGuard";
 import { CardSkeleton } from "../components/Skeleton";
-import { LessonResponse, getCurrentUser, getLesson, updateCourseProgress } from "../lib/backendApi";
+import {
+  LessonResponse,
+  ReadingContentResponse,
+  getCurrentUser,
+  getLesson,
+  getLessonReadingContent,
+  resolveMediaUrl,
+  updateCourseProgress,
+} from "../lib/backendApi";
 import { decodeParam, encodeId } from "../lib/idCodec";
+import { sanitizeLessonHtml } from "../lib/sanitizeHtml";
 
 function ReadingLesson() {
   const router = useRouter();
@@ -14,6 +27,7 @@ function ReadingLesson() {
   const [courseId, setCourseId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [lesson, setLesson] = useState<LessonResponse | null>(null);
+  const [readingContent, setReadingContent] = useState<ReadingContentResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [markedComplete, setMarkedComplete] = useState(false);
   const [savingProgress, setSavingProgress] = useState(false);
@@ -32,19 +46,32 @@ function ReadingLesson() {
       return;
     }
 
-    getLesson(id)
-      .then(setLesson)
-      .catch(() => setLesson(null))
+    Promise.all([
+      getLesson(id).catch(() => null),
+      getLessonReadingContent(id).catch(() => null),
+    ])
+      .then(([lessonResult, readingResult]) => {
+        setLesson(lessonResult);
+        setReadingContent(readingResult);
+      })
       .finally(() => setLoading(false));
   }, []);
 
+  const sanitizedHtml = useMemo(
+    () => (!readingContent?.contentMarkdown && readingContent?.contentHtml ? sanitizeLessonHtml(readingContent.contentHtml) : ""),
+    [readingContent],
+  );
+
   const sections = useMemo(() => {
+    if (readingContent) return [];
     const description = lesson?.description || "";
     return description
       .split(/\n{2,}/)
       .map((part) => part.trim())
       .filter(Boolean);
-  }, [lesson]);
+  }, [lesson, readingContent]);
+
+  const estimatedMinutes = readingContent?.estimatedReadingMinutes ?? lesson?.durationMinutes ?? null;
 
   async function markComplete() {
     if (markedComplete || savingProgress) return;
@@ -57,7 +84,7 @@ function ReadingLesson() {
       await updateCourseProgress(courseId, userId, {
         lessonId,
         completed: true,
-        timeSpentMinutes: lesson?.durationMinutes || undefined,
+        timeSpentMinutes: estimatedMinutes || undefined,
       });
       setMarkedComplete(true);
     } catch {
@@ -118,9 +145,9 @@ function ReadingLesson() {
         ) : (
           <>
             <section className="certificate-detail-hero">
-              <h2>{lesson.title}</h2>
+              <h2>{readingContent?.title || lesson.title}</h2>
               <p>
-                {lesson.durationMinutes ? `Estimated reading time: ${lesson.durationMinutes} minutes` : "Reading lesson"}
+                {estimatedMinutes ? `Estimated reading time: ${estimatedMinutes} minutes` : "Reading lesson"}
                 {markedComplete ? " - Completed" : ""}
               </p>
               <button type="button" onClick={continueReading}>Continue reading -&gt;</button>
@@ -128,7 +155,7 @@ function ReadingLesson() {
 
             <section className="certificate-detail-stats" aria-label="Reading lesson summary">
               <article>
-                <strong>{lesson.durationMinutes ? `${lesson.durationMinutes} min` : "-"}</strong>
+                <strong>{estimatedMinutes ? `${estimatedMinutes} min` : "-"}</strong>
                 <p>Estimated</p>
               </article>
               <article>
@@ -145,7 +172,29 @@ function ReadingLesson() {
 
             <div className="certificate-detail-grid">
               <section className="certificate-share-list" aria-label="Lesson sections">
-                {sections.length ? (
+                {lesson.contentType === "DOCUMENT" && lesson.contentUrl ? (
+                  <article id="reading-section-0">
+                    <div>
+                      <h3>{lesson.title}</h3>
+                      <p>This lesson's material is a downloadable document.</p>
+                    </div>
+                    <a href={resolveMediaUrl(lesson.contentUrl)} target="_blank" rel="noreferrer">
+                      Open document -&gt;
+                    </a>
+                  </article>
+                ) : readingContent?.contentMarkdown ? (
+                  <article id="reading-section-0">
+                    <div className="reading-lesson-markdown">
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {readingContent.contentMarkdown}
+                      </ReactMarkdown>
+                    </div>
+                  </article>
+                ) : sanitizedHtml ? (
+                  <article id="reading-section-0">
+                    <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} />
+                  </article>
+                ) : sections.length ? (
                   sections.map((section, index) => (
                     <article key={index} id={`reading-section-${index}`}>
                       <div>

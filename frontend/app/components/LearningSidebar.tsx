@@ -34,6 +34,7 @@ export default function LearningSidebar({
   const xpPoints = Math.max(0, Math.round(dashboard?.xpPoints || 0));
   const level = getLevelProgress(xpPoints);
   const trails = (dashboard?.continueLearning || []).slice(0, 3).map((item) => ({
+    id: item.courseId,
     title: item.courseTitle,
     progress: `${Math.round(item.completionPercentage || 0)}%`,
   }));
@@ -58,8 +59,8 @@ export default function LearningSidebar({
         {loading ? (
           <SidebarSkeleton />
         ) : trails.length ? (
-          trails.map(({ title, progress }) => (
-            <div key={title}>
+          trails.map(({ id, title, progress }) => (
+            <div key={id}>
               <span>{title}</span>
               <strong>{progress}</strong>
             </div>

@@ -16,4 +16,6 @@ public interface ContentRepository extends JpaRepository<Content, UUID> {
     List<Content> findByContentType(ContentType contentType);
 
     List<Content> findByUploadedById(UUID uploadedById);
+
+    void deleteByCourseId(UUID courseId);
 }

@@ -20,4 +20,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, UUID> {
     List<Enrollment> findByUserIdAndStatus(UUID userId, com.tiesverse.backend.common.enums.EnrollmentStatus status);
 
     long countByCourseId(UUID courseId);
+
+    long countByStatus(com.tiesverse.backend.common.enums.EnrollmentStatus status);
+
+    void deleteByCourseId(UUID courseId);
 }
