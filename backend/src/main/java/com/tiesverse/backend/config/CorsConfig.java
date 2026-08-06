@@ -32,7 +32,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         List<String> allowedOrigins = new ArrayList<>();
 
-        if (true || allowsLocalDevelopmentOrigins()) {
+        if (allowsLocalDevelopmentOrigins()) {
             allowedOrigins.addAll(List.of(
                     "http://localhost:*",
                     "http://127.0.0.1:*",

@@ -2,6 +2,8 @@ package com.tiesverse.backend.config;
 
 import com.tiesverse.backend.security.jwt.JwtAuthenticationEntryPoint;
 import com.tiesverse.backend.security.jwt.JwtFilter;
+import com.tiesverse.backend.security.oauth.OAuthFailureHandler;
+import com.tiesverse.backend.security.oauth.OAuthSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -22,10 +24,19 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final OAuthSuccessHandler oAuthSuccessHandler;
+    private final OAuthFailureHandler oAuthFailureHandler;
 
-    public SecurityConfig(JwtFilter jwtFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
+    public SecurityConfig(
+            JwtFilter jwtFilter,
+            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+            OAuthSuccessHandler oAuthSuccessHandler,
+            OAuthFailureHandler oAuthFailureHandler
+    ) {
         this.jwtFilter = jwtFilter;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
+        this.oAuthSuccessHandler = oAuthSuccessHandler;
+        this.oAuthFailureHandler = oAuthFailureHandler;
     }
 
     @Bean
@@ -36,7 +47,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                         .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/register",
@@ -46,6 +57,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/verify-email",
                                 "/api/v1/auth/verify-otp",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
@@ -80,6 +93,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/dashboard/employee").hasAnyRole("EMPLOYEE", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuthSuccessHandler)
+                        .failureHandler(oAuthFailureHandler))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
