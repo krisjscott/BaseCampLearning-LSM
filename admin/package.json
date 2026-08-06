@@ -1,0 +1,25 @@
+{
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "dev:local": "next dev -H 127.0.0.1 -p 3101",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1",
+    "start:local": "next start -H 127.0.0.1 -p 3101"
+  },
+  "dependencies": {
+    "katex": "^0.18.1",
+    "lucide-react": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "^5.9.2"
+  }
+}
