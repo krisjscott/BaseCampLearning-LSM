@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:prod}
+    active: ${SPRING_PROFILES_ACTIVE:cloud}
 
   jpa:
     properties:
@@ -49,9 +49,9 @@ server:
   port: ${SERVER_PORT:8081}
 
 app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3100}
   storage:
     root: ${STORAGE_ROOT:./uploads}
-  frontend-url: ${FRONTEND_URL:http://localhost:3100}
 
 springdoc:
   api-docs:

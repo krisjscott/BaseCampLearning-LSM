@@ -189,7 +189,7 @@ export default function AuthScreen() {
             </button>
           </form>
 
-          <div className="divider">
+          <div className="divider" aria-hidden="true">
             <span />
             <p>OR</p>
             <span />

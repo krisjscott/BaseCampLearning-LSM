@@ -95,7 +95,26 @@ cd admin && npm install && npm run dev:local        # -> :3101
 
 Copy `backend/.env.example` to `backend/.env` and fill in a real Postgres `DB_URL`/`DB_USERNAME`/`DB_PASSWORD` (Flyway runs automatically on startup). Everything else in that file (Turnstile, Google OAuth, SMTP, Redis, RabbitMQ) is optional for local dev - **Google OAuth in particular can be left blank**: the client autoconfiguration is explicitly excluded in `BaseCampLearningApplication` because nothing wires it into Spring Security's login flow, and leaving it enabled with an empty `GOOGLE_CLIENT_ID` used to hard-crash startup.
 
-`frontend/` and `admin/` each proxy `/api/v1/**` and `/uploads/**` to the backend via Next.js rewrites (see `next.config.ts` in each app) - `NEXT_PUBLIC_API_BASE_URL` only needs to be set if the backend isn't on `localhost:8081`.
+`frontend/` and `admin/` each proxy `/api/v1/**` and `/uploads/**` to the backend via Next.js rewrites (see `next.config.ts` in each app). If `NEXT_PUBLIC_API_BASE_URL` is set, it must point to the running backend - for the local stack use `http://localhost:8081`, never the `https://api.your-basecamp-domain.com` example placeholder. Restart the frontend after changing a `NEXT_PUBLIC_*` value.
+
+### Google sign-up
+
+Google sign-up is available through Spring Security OAuth2. Configure the following values before starting the backend:
+
+```env
+# backend/.env
+GOOGLE_CLIENT_ID=<google-oauth-client-id>
+GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
+FRONTEND_URL=http://localhost:3100
+
+# frontend/.env.local
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
+NEXT_PUBLIC_GOOGLE_SIGN_UP_URL=http://localhost:8081/oauth2/authorization/google
+```
+
+In Google Cloud Console, register `http://localhost:8081/login/oauth2/code/google` as an authorized redirect URI (use the deployed backend URL in production). A successful Google authorization creates a new `PUBLIC_USER` account and user settings, or links Google to an existing account with the same email. New users go to onboarding; returning users go to learning.
+
+The OAuth authorization request needs an HTTP session, so the security configuration uses `SessionCreationPolicy.IF_REQUIRED` rather than a fully stateless policy. `GoogleOAuthService` injects `PasswordEncoder` with `@Lazy`: the OAuth success handler is created by `SecurityConfig`, which also declares the password-encoder bean, and lazy injection breaks that otherwise circular dependency.
 
 ---
 
@@ -161,4 +180,4 @@ All endpoints are under `/api/v1/`. Learner-facing endpoints require a valid JWT
 - **The admin app's bulk CSS cleanup was scoped down.** `admin/app/globals.css` looks like it's ~90% duplicated from the learner frontend's stylesheet, but it is **not** dead code - the admin app's own auth/onboarding pages reuse those unprefixed classes for a consistent look. A full audit (there are 5 more `:root` blocks scattered through the file besides the one at the top) was out of scope for this pass; a targeted overlap bug in the mobile course-list layout was found and fixed instead (see the CSS trim-and-revert in the `admin/app/courses` styles history if you want the story).
 - **`organization`/`department`/`team`/`employee`** backend domain is untouched and still fully functional at the API level - it's just no longer exposed in the admin UI (the Learners page and dashboard now use org-independent endpoints). Nothing else in the system depends on it being removed, so it was left in place rather than deleted.
 - **The `TRAINER` role has no admin UI.** The backend authorizes trainers for the full `/api/v1/admin/**` surface, but `admin/app/components/AdminGuard.tsx` only allows `HR_ADMIN`/`ORGANIZATION_ADMIN`/`SUPER_ADMIN` into the console itself. A trainer today would need direct API access or a role upgrade.
-- **Google OAuth is unimplemented.** `AuthProvider.GOOGLE` exists as an enum value and the config keys exist in `.env.example`, but there's no controller wiring it up, and the Spring OAuth2 client autoconfiguration is explicitly excluded (see [Environment](#environment)) since it isn't used.
+- **Google OAuth tokens are passed through the browser callback.** The OAuth callback currently redirects to the learner frontend with BaseCamp tokens in the query string, which the callback page immediately stores and replaces with an in-app route. A production hardening pass should replace this with a short-lived, one-time server-side exchange code or secure same-site cookies.

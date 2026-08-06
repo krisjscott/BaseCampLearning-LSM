@@ -28,7 +28,7 @@ export default function OAuthCallbackPage() {
     }
 
     saveAuth({ accessToken, refreshToken, email, role, fullName: params.get("fullName") });
-    router.replace("/learning");
+    router.replace(params.get("newUser") === "true" ? "/onboarding" : "/learning");
   }, [router]);
 
   return (
