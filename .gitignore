@@ -34,6 +34,6 @@ frontend/node_modules/
 #Frontend
 tsconfig.tsbuildinfo
 
-# Claude Code session-local runtime state (not project config)
-.claude/scheduled_tasks.lock
+# Claude Code local session/tooling state
+.claude/
 
