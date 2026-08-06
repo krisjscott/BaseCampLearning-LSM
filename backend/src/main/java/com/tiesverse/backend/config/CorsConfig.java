@@ -1,11 +1,15 @@
 package com.tiesverse.backend.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.util.pattern.PathPatternParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,12 +24,15 @@ public class CorsConfig {
     @Value("${spring.profiles.active:}")
     private String activeProfiles;
 
+    @Autowired
+    private Environment environment;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         List<String> allowedOrigins = new ArrayList<>();
 
-        if (allowsLocalDevelopmentOrigins()) {
+        if (true || allowsLocalDevelopmentOrigins()) {
             allowedOrigins.addAll(List.of(
                     "http://localhost:*",
                     "http://127.0.0.1:*",
@@ -46,7 +53,7 @@ public class CorsConfig {
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         source.registerCorsConfiguration("/**", config);
         return source;
     }
