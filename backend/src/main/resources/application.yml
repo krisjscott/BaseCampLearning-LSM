@@ -17,8 +17,15 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:}
-            client-secret: ${GOOGLE_CLIENT_SECRET:}
+            # Spring Boot only builds a ClientRegistrationRepository bean (needed for
+            # oauth2Login()/"/oauth2/authorization/google" to exist at all) when a
+            # registration has a non-blank client-id/secret - an empty default would
+            # make the whole app fail to start. These placeholders keep the app
+            # booting with Google sign-in wired up but non-functional (Google will
+            # reject the placeholder id) until real GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET
+            # are set.
+            client-id: ${GOOGLE_CLIENT_ID:unconfigured-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:unconfigured-google-client-secret}
             scope: openid,profile,email
 
   mail:
@@ -44,6 +51,7 @@ server:
 app:
   storage:
     root: ${STORAGE_ROOT:./uploads}
+  frontend-url: ${FRONTEND_URL:http://localhost:3100}
 
 springdoc:
   api-docs:

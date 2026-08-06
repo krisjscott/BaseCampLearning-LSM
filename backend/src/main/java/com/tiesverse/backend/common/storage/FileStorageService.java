@@ -62,6 +62,14 @@ public class FileStorageService {
         return "/uploads/" + subDirectory + "/" + filename;
     }
 
+    /** Resolves a public "/uploads/..." URL previously returned by {@link #store} back to its on-disk path. */
+    public Path resolve(String publicUrl) {
+        if (publicUrl == null || !publicUrl.startsWith("/uploads/")) {
+            throw new BadRequestException("Not a storage-managed file URL: " + publicUrl);
+        }
+        return Paths.get(storageRoot, publicUrl.substring("/uploads/".length()));
+    }
+
     public static String extensionOf(String filename) {
         if (filename == null) return "";
         int dot = filename.lastIndexOf('.');

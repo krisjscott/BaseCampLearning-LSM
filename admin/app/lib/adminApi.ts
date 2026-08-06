@@ -1,7 +1,89 @@
-import { backendRequest, LessonResponse, PageResponse } from "./backendApi";
+import { backendFetchBlob, backendRequest, LessonResponse, PageResponse } from "./backendApi";
 
 export const ADMIN_ROLES = ["HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN"] as const;
 export const SUPER_ADMIN_ROLE = "SUPER_ADMIN";
+
+// ---------------------------------------------------------------------------
+// Certificate template editor - backed by /api/v1/admin/certificate-templates
+// ---------------------------------------------------------------------------
+
+export type CertificateElementType = "TEXT" | "QR";
+export type CertificateTextAlign = "LEFT" | "CENTER" | "RIGHT";
+
+export const CERTIFICATE_VARIABLES = [
+  { key: "recipient_name", label: "Recipient name" },
+  { key: "course_name", label: "Course name" },
+  { key: "certificate_number", label: "Certificate number" },
+  { key: "issued_date", label: "Issued date" },
+  { key: "issuer_name", label: "Issuer name" },
+] as const;
+
+export type CertificateTemplateElement = {
+  id?: string;
+  elementType: CertificateElementType;
+  content?: string | null;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontFamily?: string | null;
+  fontSize?: number | null;
+  fontColor?: string | null;
+  bold?: boolean | null;
+  textAlign?: CertificateTextAlign | null;
+  orderIndex?: number | null;
+};
+
+export type CertificateTemplateResponse = {
+  id: string;
+  courseId: string;
+  originalPdfUrl: string;
+  originalFilename?: string | null;
+  pageWidth: number;
+  pageHeight: number;
+  elements: CertificateTemplateElement[];
+};
+
+export async function getCertificateTemplate(courseId: string): Promise<CertificateTemplateResponse | null> {
+  try {
+    const response = await backendRequest<CertificateTemplateResponse>(
+      `/api/v1/admin/certificate-templates/course/${courseId}`,
+      { headers: { Accept: "application/json" } },
+    );
+    return response.data || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function uploadCertificateTemplate(courseId: string, file: File): Promise<CertificateTemplateResponse | null> {
+  const formData = new FormData();
+  formData.set("file", file);
+  const response = await backendRequest<CertificateTemplateResponse>(
+    `/api/v1/admin/certificate-templates/course/${courseId}`,
+    { method: "POST", body: formData },
+  );
+  return response.data || null;
+}
+
+export async function saveCertificateTemplateLayout(
+  templateId: string,
+  elements: CertificateTemplateElement[],
+): Promise<CertificateTemplateResponse | null> {
+  const response = await backendRequest<CertificateTemplateResponse>(
+    `/api/v1/admin/certificate-templates/${templateId}/layout`,
+    { method: "PUT", body: JSON.stringify({ elements }) },
+  );
+  return response.data || null;
+}
+
+export async function previewCertificateTemplate(templateId: string): Promise<Blob> {
+  return backendFetchBlob(`/api/v1/admin/certificate-templates/${templateId}/preview`);
+}
+
+export async function deleteCertificateTemplate(templateId: string): Promise<void> {
+  await backendRequest<void>(`/api/v1/admin/certificate-templates/${templateId}`, { method: "DELETE" });
+}
 
 export type CategoryResponse = {
   id: string;

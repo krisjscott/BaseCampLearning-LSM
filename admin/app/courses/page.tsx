@@ -4,6 +4,7 @@ import {
   Archive,
   ArrowDown,
   ArrowUp,
+  BadgeCheck,
   BookOpen,
   ChevronDown,
   ChevronRight,
@@ -17,6 +18,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -951,6 +953,9 @@ function CoursesContent() {
                     <button type="button" onClick={() => openEdit(course)} aria-label="Edit course">
                       <Pencil size={15} strokeWidth={1.8} />
                     </button>
+                    <Link href={`/certificate-template?courseId=${course.id}`} aria-label="Certificate template">
+                      <BadgeCheck size={15} strokeWidth={1.8} />
+                    </Link>
                     {(course.status || "").toUpperCase() !== "PUBLISHED" && (
                       <button type="button" onClick={() => handlePublish(course)} aria-label="Publish course">
                         <Rocket size={15} strokeWidth={1.8} />

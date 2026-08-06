@@ -15,6 +15,10 @@ import com.tiesverse.backend.enrollment.mapper.EnrollmentMapper;
 import com.tiesverse.backend.enrollment.repository.EnrollmentRepository;
 import com.tiesverse.backend.enrollment.repository.LearningPathCourseRepository;
 import com.tiesverse.backend.enrollment.repository.LearningPathRepository;
+import com.tiesverse.backend.course.entity.Course;
+import com.tiesverse.backend.course.repository.CourseRepository;
+import com.tiesverse.backend.user.entity.User;
+import com.tiesverse.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final LearningPathRepository learningPathRepository;
     private final LearningPathCourseRepository learningPathCourseRepository;
     private final EnrollmentMapper enrollmentMapper;
+    private final CourseRepository courseRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -50,7 +56,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .build();
 
         enrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toEnrollmentResponse(enrollment);
+        return enrich(enrollmentMapper.toEnrollmentResponse(enrollment));
     }
 
     @Override
@@ -71,21 +77,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .build();
 
         enrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toEnrollmentResponse(enrollment);
+        return enrich(enrollmentMapper.toEnrollmentResponse(enrollment));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<EnrollmentResponse> getEnrollmentsByUser(UUID userId) {
         List<Enrollment> enrollments = enrollmentRepository.findByUserId(userId);
-        return enrollmentMapper.toEnrollmentResponseList(enrollments);
+        return enrollmentMapper.toEnrollmentResponseList(enrollments).stream()
+                .map(this::enrich)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<EnrollmentResponse> getEnrollmentsByCourse(UUID courseId) {
         List<Enrollment> enrollments = enrollmentRepository.findByCourseId(courseId);
-        return enrollmentMapper.toEnrollmentResponseList(enrollments);
+        return enrollmentMapper.toEnrollmentResponseList(enrollments).stream()
+                .map(this::enrich)
+                .toList();
     }
 
     @Override
@@ -100,7 +110,22 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         enrollment = enrollmentRepository.save(enrollment);
-        return enrollmentMapper.toEnrollmentResponse(enrollment);
+        return enrich(enrollmentMapper.toEnrollmentResponse(enrollment));
+    }
+
+    private EnrollmentResponse enrich(EnrollmentResponse response) {
+        if (response.getCourseId() != null) {
+            courseRepository.findById(response.getCourseId()).ifPresent(course -> {
+                response.setCourseTitle(course.getTitle());
+                response.setCourseThumbnail(course.getThumbnailUrl());
+            });
+        }
+        if (response.getUserId() != null) {
+            userRepository.findById(response.getUserId())
+                    .map(User::getFullName)
+                    .ifPresent(response::setUserName);
+        }
+        return response;
     }
 
     @Override

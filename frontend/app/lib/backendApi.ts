@@ -303,10 +303,25 @@ async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   }
 
   if (!response.ok) {
-    throw new Error(body?.message || response.statusText || "Backend request failed");
+    const error = new Error(body?.message || response.statusText || "Backend request failed") as Error & { status?: number };
+    error.status = response.status;
+    throw error;
   }
 
   return body as ApiEnvelope<T>;
+}
+
+/** For endpoints that stream a binary file (e.g. a rendered certificate PDF) instead of the usual JSON envelope. */
+export async function backendFetchBlob(path: string): Promise<Blob> {
+  const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_STORAGE_KEYS.accessToken) : null;
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers });
+  if (!response.ok) {
+    throw new Error(`Backend request failed: ${response.status} ${response.statusText}`);
+  }
+  return response.blob();
 }
 
 export async function backendRequest<T>(
@@ -349,6 +364,16 @@ export async function backendRequest<T>(
   }
 
   return parseResponse<T>(response);
+}
+
+/**
+ * Kicks off the backend's Spring Security oauth2Login flow for Google. The
+ * backend handles the whole round trip with Google and redirects the browser
+ * back to /oauth/callback with tokens in the query string once it's done -
+ * this isn't an API call, just the URL the browser should navigate to.
+ */
+export function getGoogleOAuthUrl(): string {
+  return `${API_BASE_URL}/oauth2/authorization/google`;
 }
 
 export async function login(email: string, password: string, turnstileToken?: string | null): Promise<AuthPayload> {
@@ -604,11 +629,8 @@ export async function getCertificates(): Promise<CertificateResponse[]> {
   return response.data || [];
 }
 
-export async function downloadCertificate(certificateId: string): Promise<string | null> {
-  const response = await backendRequest<string>(`/api/v1/certificates/${certificateId}/download`, {
-    headers: { Accept: "application/json" },
-  });
-  return response.data || null;
+export async function downloadCertificate(certificateId: string): Promise<Blob> {
+  return backendFetchBlob(`/api/v1/certificates/${certificateId}/download`);
 }
 
 export async function verifyCertificate(certificateNumber: string): Promise<CertificateResponse | null> {

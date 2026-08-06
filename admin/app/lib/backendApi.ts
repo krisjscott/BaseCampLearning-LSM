@@ -165,6 +165,19 @@ async function parseResponse<T>(response: Response): Promise<ApiEnvelope<T>> {
   return body as ApiEnvelope<T>;
 }
 
+/** For endpoints that stream a binary file (e.g. a rendered PDF) instead of the usual JSON envelope. */
+export async function backendFetchBlob(path: string): Promise<Blob> {
+  const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_STORAGE_KEYS.accessToken) : null;
+  const headers = new Headers();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, { headers });
+  if (!response.ok) {
+    throw new Error(`Backend request failed: ${response.status} ${response.statusText}`);
+  }
+  return response.blob();
+}
+
 export async function backendRequest<T>(
   path: string,
   options: RequestInit = {},

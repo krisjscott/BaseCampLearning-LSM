@@ -1,10 +1,15 @@
 package com.tiesverse.backend.progress.service;
 
+import com.tiesverse.backend.certificate.service.CertificateIssuanceService;
+import com.tiesverse.backend.common.enums.EnrollmentStatus;
 import com.tiesverse.backend.common.exception.ResourceNotFoundException;
 import com.tiesverse.backend.course.entity.Course;
+import com.tiesverse.backend.course.entity.CourseModule;
 import com.tiesverse.backend.course.entity.Lesson;
+import com.tiesverse.backend.course.repository.CourseModuleRepository;
 import com.tiesverse.backend.course.repository.CourseRepository;
 import com.tiesverse.backend.course.repository.LessonRepository;
+import com.tiesverse.backend.enrollment.repository.EnrollmentRepository;
 import com.tiesverse.backend.progress.dto.request.UpdateProgressRequest;
 import com.tiesverse.backend.progress.dto.response.CourseProgressResponse;
 import com.tiesverse.backend.progress.dto.response.LessonProgressResponse;
@@ -17,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +35,9 @@ public class ProgressServiceImpl implements ProgressService {
     private final LessonProgressRepository lessonProgressRepository;
     private final CourseRepository courseRepository;
     private final LessonRepository lessonRepository;
+    private final CourseModuleRepository courseModuleRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final CertificateIssuanceService certificateIssuanceService;
     private final ProgressMapper progressMapper;
 
     @Override
@@ -83,8 +92,44 @@ public class ProgressServiceImpl implements ProgressService {
             courseProgress.setTimeSpentMinutes(currentMinutes + request.getTimeSpentMinutes());
         }
 
+        recomputeCompletion(userId, courseId, courseProgress);
+
         courseProgress = courseProgressRepository.save(courseProgress);
         return enrich(progressMapper.toCourseProgressResponse(courseProgress));
+    }
+
+    /**
+     * There is no other "course completed" signal anywhere in the app — completing the last
+     * lesson is the only trigger, so it doubles as the point where the enrollment is marked
+     * COMPLETED and, if the course has a certificate template configured, a certificate is
+     * auto-issued.
+     */
+    private void recomputeCompletion(UUID userId, UUID courseId, CourseProgress courseProgress) {
+        List<CourseModule> modules = courseModuleRepository.findByCourseIdOrderByOrderIndex(courseId);
+        if (modules.isEmpty()) return;
+        List<UUID> moduleIds = modules.stream().map(CourseModule::getId).toList();
+
+        List<Lesson> lessons = lessonRepository.findByModuleIdInOrderByOrderIndex(moduleIds);
+        if (lessons.isEmpty()) return;
+        List<UUID> lessonIds = lessons.stream().map(Lesson::getId).toList();
+
+        List<LessonProgress> progressList = lessonProgressRepository.findByUserIdAndLessonIdIn(userId, lessonIds);
+        long completedCount = progressList.stream().filter(LessonProgress::isCompleted).count();
+
+        double percentage = (completedCount * 100.0) / lessons.size();
+        courseProgress.setCompletionPercentage(percentage);
+
+        if (completedCount < lessons.size()) return;
+
+        enrollmentRepository.findByUserIdAndCourseId(userId, courseId).ifPresent(enrollment -> {
+            if (enrollment.getStatus() != EnrollmentStatus.COMPLETED) {
+                enrollment.setStatus(EnrollmentStatus.COMPLETED);
+                enrollment.setCompletedDate(LocalDate.now());
+                enrollmentRepository.save(enrollment);
+            }
+        });
+
+        certificateIssuanceService.issueIfEligible(userId, courseId);
     }
 
     @Override

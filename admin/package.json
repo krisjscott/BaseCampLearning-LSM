@@ -13,6 +13,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-markdown": "^10.1.0",
+    "react-pdf": "^9.2.1",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0"
   },

@@ -1,8 +1,9 @@
 "use client";
 
-import { Award, BarChart3, BookOpen, Compass, Home, Trophy } from "lucide-react";
+import { Award, BarChart3, BookOpen, Compass, Home, LogOut, Trophy } from "lucide-react";
 import Link from "next/link";
-import { PublicDashboardResponse, UserResponse } from "../lib/backendApi";
+import { MouseEvent, useState } from "react";
+import { PublicDashboardResponse, UserResponse, logout } from "../lib/backendApi";
 import { getLevelProgress } from "../lib/levelProgress";
 import { SidebarSkeleton, Skeleton } from "./Skeleton";
 
@@ -38,6 +39,14 @@ export default function LearningSidebar({
     title: item.courseTitle,
     progress: `${Math.round(item.completionPercentage || 0)}%`,
   }));
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    setSigningOut(true);
+    await logout();
+  }
 
   return (
     <aside className="learning-sidebar">
@@ -70,25 +79,39 @@ export default function LearningSidebar({
         )}
       </section>
 
-      <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
-        {loading ? (
-          <>
-            <div>
-              <Skeleton className="skeleton-pill" />
-            </div>
-            <SidebarSkeleton />
-          </>
-        ) : (
-          <>
-            <div>{learnerName.charAt(0).toUpperCase()}</div>
-            <section>
-              <strong>{learnerName}</strong>
-              <span>{level.current.name} - {xpPoints.toLocaleString()} XP</span>
-              <small>{user?.learnerCode || "Profile code pending"}</small>
-            </section>
-          </>
+      <div className="learner-profile-wrap">
+        <Link href="/profile-preferences" className="learner-profile" aria-label="Open profile preferences">
+          {loading ? (
+            <>
+              <div>
+                <Skeleton className="skeleton-pill" />
+              </div>
+              <SidebarSkeleton />
+            </>
+          ) : (
+            <>
+              <div>{learnerName.charAt(0).toUpperCase()}</div>
+              <section>
+                <strong>{learnerName}</strong>
+                <span>{level.current.name} - {xpPoints.toLocaleString()} XP</span>
+                <small>{user?.learnerCode || "Profile code pending"}</small>
+              </section>
+            </>
+          )}
+        </Link>
+        {!loading && (
+          <button
+            type="button"
+            className="learner-profile-signout"
+            onClick={handleSignOut}
+            disabled={signingOut}
+            aria-label={signingOut ? "Signing out..." : "Sign out"}
+            title={signingOut ? "Signing out..." : "Sign out"}
+          >
+            <LogOut size={16} />
+          </button>
         )}
-      </Link>
+      </div>
     </aside>
   );
 }

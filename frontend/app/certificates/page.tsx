@@ -71,13 +71,19 @@ function CertificatesWallet() {
 
   const heroCertificate = backendCertificates[0];
 
-  async function openCertificateFile(certificateId: string, fallbackUrl?: string | null) {
+  async function openCertificateFile(certificateId: string, certificateNumber?: string | null) {
     try {
-      const freshUrl = await downloadCertificate(certificateId);
-      const url = freshUrl || fallbackUrl;
-      if (url) window.open(url, "_blank");
+      const blob = await downloadCertificate(certificateId);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${certificateNumber || "certificate"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
-      if (fallbackUrl) window.open(fallbackUrl, "_blank");
+      // download failed - the button remains available to retry
     }
   }
 
@@ -118,7 +124,7 @@ function CertificatesWallet() {
                 type="button"
                 onClick={() =>
                   heroCertificate
-                    ? openCertificateFile(heroCertificate.id, heroCertificate.fileUrl)
+                    ? openCertificateFile(heroCertificate.id, heroCertificate.certificateNumber)
                     : router.push("/explore")
                 }
               >
@@ -159,7 +165,7 @@ function CertificatesWallet() {
                         <h3>{certificate.title || certificate.courseName || "Certificate"}</h3>
                         <p>{status ? `${meta} - ${status}` : meta}</p>
                       </div>
-                      <button type="button" onClick={() => openCertificateFile(certificate.id, certificate.fileUrl)}>
+                      <button type="button" onClick={() => openCertificateFile(certificate.id, certificate.certificateNumber)}>
                         {actionLabel} -&gt;
                       </button>
                     </article>

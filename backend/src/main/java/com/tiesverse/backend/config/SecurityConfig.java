@@ -2,6 +2,8 @@ package com.tiesverse.backend.config;
 
 import com.tiesverse.backend.security.jwt.JwtAuthenticationEntryPoint;
 import com.tiesverse.backend.security.jwt.JwtFilter;
+import com.tiesverse.backend.security.oauth.OAuthFailureHandler;
+import com.tiesverse.backend.security.oauth.OAuthSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -10,8 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -20,23 +20,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
-    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-
-    public SecurityConfig(JwtFilter jwtFilter, JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) {
-        this.jwtFilter = jwtFilter;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-    }
+    // Deliberately injected as @Bean method parameters below, not through this
+    // class's own constructor: JwtFilter/OAuthSuccessHandler/OAuthFailureHandler
+    // all resolve down to AccountRepository, and constructor-injecting them
+    // here forced that whole JPA repository chain to be built while
+    // SecurityConfig itself is still being constructed - which, once
+    // oauth2Login() was added below, started racing the JPA
+    // EntityManagerFactory's own startup and failing with "Not a managed
+    // type: Account". Method-parameter injection lets Spring resolve these
+    // through the normal bean graph at @Bean-method-call time instead.
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter,
+                                                     JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
+                                                     OAuthSuccessHandler oAuthSuccessHandler,
+                                                     OAuthFailureHandler oAuthFailureHandler) throws Exception {
         http
                         .csrf(AbstractHttpConfigurer::disable)
                         .cors(cors -> {})
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        // Google's oauth2Login handshake stores its "state" parameter in the
+                        // HTTP session (CSRF protection for the redirect back from Google) -
+                        // STATELESS would drop that mid-flow. IF_REQUIRED only creates a
+                        // session when something actually asks for one (the OAuth dance);
+                        // every JWT-bearer API request still never triggers a session.
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuthSuccessHandler)
+                        .failureHandler(oAuthFailureHandler))
                         .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/v1/auth/register",
@@ -46,10 +59,13 @@ public class SecurityConfig {
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/verify-email",
                                 "/api/v1/auth/verify-otp",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/certificates/verify/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/**").permitAll()
@@ -83,10 +99,5 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

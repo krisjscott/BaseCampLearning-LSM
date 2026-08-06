@@ -31,6 +31,9 @@ public class Certificate extends BaseEntity {
     @Column(name = "assessment_result_id")
     private UUID assessmentResultId;
 
+    @Column(name = "certificate_template_id")
+    private UUID certificateTemplateId;
+
     @Column(name = "certificate_number", unique = true, nullable = false)
     private String certificateNumber;
 

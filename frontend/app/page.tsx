@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
-import { ArrowRight, BookOpenCheck, CalendarDays, CheckCircle2 } from "lucide-react";
-import { login, register } from "./lib/backendApi";
+import { ArrowRight, BookOpenCheck, CalendarDays, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { getGoogleOAuthUrl, login, register } from "./lib/backendApi";
 import TurnstileWidget, { TurnstileWidgetHandle } from "./components/TurnstileWidget";
+import GoogleIcon from "./components/GoogleIcon";
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -13,13 +14,31 @@ export default function AuthScreen() {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [status, setStatus] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ fullName?: boolean; email?: boolean; password?: boolean }>({});
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("");
+
+    // The form uses noValidate so the browser's own "Please fill out this
+    // field" bubble never shows - it looks like a stray OS tooltip next to
+    // this app's own themed design. This is the themed replacement: same
+    // check, styled like every other inline error on this page.
+    const nextFieldErrors = {
+      fullName: mode === "register" && !fullName.trim(),
+      email: !email.trim(),
+      password: !password.trim(),
+    };
+    setFieldErrors(nextFieldErrors);
+    if (nextFieldErrors.fullName || nextFieldErrors.email || nextFieldErrors.password) {
+      setStatus("Please fill out the highlighted field" + (Object.values(nextFieldErrors).filter(Boolean).length > 1 ? "s" : "") + ".");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const turnstileToken = turnstileRef.current?.getToken() ?? null;
@@ -82,20 +101,20 @@ export default function AuthScreen() {
             <button
               type="button"
               className={mode === "login" ? "active" : ""}
-              onClick={() => setMode("login")}
+              onClick={() => { setMode("login"); setFieldErrors({}); setStatus(""); }}
             >
               Log in
             </button>
             <button
               type="button"
               className={mode === "register" ? "active" : ""}
-              onClick={() => setMode("register")}
+              onClick={() => { setMode("register"); setFieldErrors({}); setStatus(""); }}
             >
               Create
             </button>
           </div>
 
-          <form className="auth-form" onSubmit={handleSubmit}>
+          <form className="auth-form" onSubmit={handleSubmit} noValidate>
             {mode === "register" ? (
               <>
                 <label htmlFor="fullName">Full name</label>
@@ -104,8 +123,12 @@ export default function AuthScreen() {
                   name="fullName"
                   placeholder="Your name"
                   value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
+                  onChange={(event) => {
+                    setFullName(event.target.value);
+                    if (fieldErrors.fullName) setFieldErrors((current) => ({ ...current, fullName: false }));
+                  }}
                   autoComplete="name"
+                  className={fieldErrors.fullName ? "field-invalid" : ""}
                 />
               </>
             ) : null}
@@ -116,24 +139,42 @@ export default function AuthScreen() {
               name="email"
               placeholder="name@email.com"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (fieldErrors.email) setFieldErrors((current) => ({ ...current, email: false }));
+              }}
               autoComplete="email"
               type="email"
-              required
+              className={fieldErrors.email ? "field-invalid" : ""}
             />
 
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              placeholder="Enter password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-              type="password"
-              minLength={mode === "register" ? 8 : undefined}
-              required
-            />
+            <div className="password-field">
+              <input
+                id="password"
+                name="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  if (fieldErrors.password) setFieldErrors((current) => ({ ...current, password: false }));
+                }}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                type={passwordVisible ? "text" : "password"}
+                minLength={mode === "register" ? 8 : undefined}
+                className={fieldErrors.password ? "field-invalid" : ""}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setPasswordVisible((visible) => !visible)}
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                aria-pressed={passwordVisible}
+                tabIndex={-1}
+              >
+                {passwordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             {mode === "login" && (
               <a href="/recover-access" className="forgot-password-link">Forgot your password?</a>
@@ -147,6 +188,17 @@ export default function AuthScreen() {
               <span>{isSubmitting ? "Connecting..." : "Continue"}</span>
             </button>
           </form>
+
+          <div className="divider">
+            <span />
+            <p>OR</p>
+            <span />
+          </div>
+
+          <button type="button" className="google-action" onClick={() => { window.location.href = getGoogleOAuthUrl(); }}>
+            <GoogleIcon size={18} />
+            <span>Continue with Google</span>
+          </button>
 
           <p className="legal-copy">
             By continuing, you agree to the Terms of Use and Privacy Policy.

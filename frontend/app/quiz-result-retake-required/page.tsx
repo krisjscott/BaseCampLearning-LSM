@@ -55,7 +55,7 @@ function QuizResultRetakeRequired() {
 
   return (
     <main className="certificate-detail-page quiz-result-retake-required-page">
-      <LearningSidebar activeHref="/learning" dashboard={dashboard} loading={loading} user={user} />
+      <LearningSidebar activeHref="/my-learning" dashboard={dashboard} loading={loading} user={user} />
 
       <section className="certificate-detail-main">
         {!ready ? (

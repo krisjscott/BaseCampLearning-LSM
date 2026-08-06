@@ -1,23 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bookmark as BookmarkIcon, StickyNote, Trash2 } from "lucide-react";
+import { Bookmark as BookmarkIcon, Check, Pencil, StickyNote, Trash2, X } from "lucide-react";
 import AuthGuard from "../components/AuthGuard";
 import LearningSidebar from "../components/LearningSidebar";
+import { useToast } from "../components/Toast";
 import {
   BookmarkResponse,
   EnrollmentResponse,
+  LessonResponse,
+  ModuleResponse,
   NoteResponse,
   PublicDashboardResponse,
   UserResponse,
   createNote,
   deleteBookmark,
   deleteNote,
+  getCourseModules,
   getCurrentUser,
   getMyBookmarks,
   getMyEnrollments,
   getMyNotes,
   getPublicDashboard,
+  updateNote,
 } from "../lib/backendApi";
 import { encodeId } from "../lib/idCodec";
 import { useRouter } from "next/navigation";
@@ -26,6 +31,7 @@ type SectionTab = "notes" | "bookmarks";
 
 function NotesBookmarks() {
   const router = useRouter();
+  const toast = useToast();
   const [user, setUser] = useState<UserResponse | null>(null);
   const [dashboard, setDashboard] = useState<PublicDashboardResponse | null>(null);
   const [enrollments, setEnrollments] = useState<EnrollmentResponse[]>([]);
@@ -37,9 +43,13 @@ function NotesBookmarks() {
   const [bookmarks, setBookmarks] = useState<BookmarkResponse[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [formCourseId, setFormCourseId] = useState("");
+  const [formLessonId, setFormLessonId] = useState("");
+  const [formLessons, setFormLessons] = useState<LessonResponse[]>([]);
   const [formText, setFormText] = useState("");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const composerToggleRef = useRef<HTMLButtonElement>(null);
 
   const loadAll = useCallback(() => {
@@ -74,9 +84,22 @@ function NotesBookmarks() {
 
   useEffect(() => loadAll(), [loadAll]);
 
+  useEffect(() => {
+    setFormLessonId("");
+    if (!formCourseId) {
+      setFormLessons([]);
+      return;
+    }
+    getCourseModules(formCourseId)
+      .then((modules: ModuleResponse[]) => setFormLessons(modules.flatMap((m) => m.lessons || [])))
+      .catch(() => setFormLessons([]));
+  }, [formCourseId]);
+
   function closeComposer() {
     setFormOpen(false);
     setFormCourseId("");
+    setFormLessonId("");
+    setFormLessons([]);
     setFormText("");
     composerToggleRef.current?.focus();
   }
@@ -86,23 +109,52 @@ function NotesBookmarks() {
     if (!content || !formCourseId) return;
     setSaving(true);
     try {
-      const created = await createNote({ courseId: formCourseId, content });
+      const created = await createNote({ courseId: formCourseId, lessonId: formLessonId || undefined, content });
       if (created) setNotes((prev) => [created, ...prev]);
       closeComposer();
-    } catch {
-      // keep the composer open so the user can retry
+      toast.success("Note saved");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save this note.");
     } finally {
       setSaving(false);
     }
   }
 
+  function startEdit(note: NoteResponse) {
+    setEditingId(note.id);
+    setEditText(note.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditText("");
+  }
+
+  async function saveEdit(noteId: string) {
+    const content = editText.trim();
+    if (!content) return;
+    setSavingEdit(true);
+    try {
+      const updated = await updateNote(noteId, content);
+      setNotes((prev) => prev.map((note) => (note.id === noteId ? (updated ?? { ...note, content }) : note)));
+      setEditingId(null);
+      setEditText("");
+      toast.success("Note updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update this note.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   async function handleDeleteNote(noteId: string) {
-    if (!window.confirm("Delete this note?")) return;
+    if (!window.confirm("Delete this note? This cannot be undone.")) return;
     try {
       await deleteNote(noteId);
       setNotes((prev) => prev.filter((note) => note.id !== noteId));
-    } catch {
-      // no-op
+      toast.success("Note deleted");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not delete this note.");
     }
   }
 
@@ -110,9 +162,15 @@ function NotesBookmarks() {
     try {
       await deleteBookmark(bookmark.lessonId);
       setBookmarks((prev) => prev.filter((item) => item.id !== bookmark.id));
-    } catch {
-      // no-op
+      toast.success("Bookmark removed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove this bookmark.");
     }
+  }
+
+  function openNoteLesson(note: NoteResponse) {
+    if (!note.lessonId) return;
+    router.push(`/lesson?lessonId=${encodeId(note.lessonId)}&courseId=${encodeId(note.courseId)}`);
   }
 
   function formatDate(value?: string | null) {
@@ -138,6 +196,7 @@ function NotesBookmarks() {
               aria-controls="notes-composer"
               onClick={() => (formOpen ? closeComposer() : setFormOpen(true))}
               disabled={!enrollments.length}
+              title={!enrollments.length ? "Enroll in a course to start taking notes" : undefined}
             >
               <StickyNote size={18} />
               <span>New note</span>
@@ -165,21 +224,36 @@ function NotesBookmarks() {
 
         {tab === "notes" && (
           <div className="certificate-detail-grid">
-            <section className="certificate-share-list" aria-label="Notes">
+            <section className="certificate-share-list notes-list" aria-label="Notes">
               {formOpen && (
                 <div className="inline-composer-card" id="notes-composer">
-                  <select
-                    className="inline-text-input"
-                    value={formCourseId}
-                    onChange={(event) => setFormCourseId(event.target.value)}
-                  >
-                    <option value="">Choose a course</option>
-                    {enrollments.map((enrollment) => (
-                      <option key={enrollment.courseId} value={enrollment.courseId}>
-                        {enrollment.courseTitle || "Untitled course"}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="notes-composer-selects">
+                    <select
+                      className="inline-text-input"
+                      value={formCourseId}
+                      onChange={(event) => setFormCourseId(event.target.value)}
+                    >
+                      <option value="">Choose a course</option>
+                      {enrollments.map((enrollment) => (
+                        <option key={enrollment.courseId} value={enrollment.courseId}>
+                          {enrollment.courseTitle || "Untitled course"}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      className="inline-text-input"
+                      value={formLessonId}
+                      onChange={(event) => setFormLessonId(event.target.value)}
+                      disabled={!formCourseId || !formLessons.length}
+                    >
+                      <option value="">General note (no specific lesson)</option>
+                      {formLessons.map((lesson) => (
+                        <option key={lesson.id} value={lesson.id}>
+                          {lesson.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <textarea
                     className="inline-textarea"
                     value={formText}
@@ -198,26 +272,67 @@ function NotesBookmarks() {
 
               {notes.length ? (
                 notes.map((note) => (
-                  <article key={note.id}>
+                  <article className="note-card" key={note.id}>
                     <div>
                       <h3>{note.courseTitle || "Untitled course"}{note.lessonTitle ? ` — ${note.lessonTitle}` : ""}</h3>
-                      <p>{formatDate(note.createdAt)}</p>
-                      {expandedId === note.id && <p>{note.content}</p>}
+                      <p className="note-card-date">{formatDate(note.createdAt)}</p>
+                      {editingId === note.id ? (
+                        <textarea
+                          className="inline-textarea"
+                          value={editText}
+                          onChange={(event) => setEditText(event.target.value)}
+                          rows={3}
+                          autoFocus
+                        />
+                      ) : (
+                        <p className="note-card-content">{note.content}</p>
+                      )}
                     </div>
                     <div className="notes-row-actions">
-                      <button type="button" onClick={() => setExpandedId((prev) => (prev === note.id ? null : note.id))}>
-                        {expandedId === note.id ? "Hide" : "Open ->"}
-                      </button>
-                      <button type="button" className="is-ghost" aria-label="Delete note" onClick={() => handleDeleteNote(note.id)}>
-                        <Trash2 size={15} />
-                      </button>
+                      {editingId === note.id ? (
+                        <>
+                          <button
+                            type="button"
+                            aria-label="Save changes"
+                            onClick={() => saveEdit(note.id)}
+                            disabled={!editText.trim() || savingEdit}
+                          >
+                            <Check size={15} />
+                          </button>
+                          <button type="button" className="is-ghost" aria-label="Cancel editing" onClick={cancelEdit}>
+                            <X size={15} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          {note.lessonId && (
+                            <button type="button" onClick={() => openNoteLesson(note)}>Open lesson -&gt;</button>
+                          )}
+                          <button type="button" className="is-ghost" aria-label="Edit note" onClick={() => startEdit(note)}>
+                            <Pencil size={15} />
+                          </button>
+                          <button type="button" className="is-ghost" aria-label="Delete note" onClick={() => handleDeleteNote(note.id)}>
+                            <Trash2 size={15} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </article>
                 ))
               ) : (
-                <p className="notes-empty">
-                  {enrollments.length ? "No notes saved yet." : "Enroll in a course to start taking notes."}
-                </p>
+                <article className="empty-state-card">
+                  <div>
+                    <h3>{enrollments.length ? "No notes saved yet" : "Enroll in a course to start taking notes"}</h3>
+                    <p>
+                      {enrollments.length
+                        ? "Notes you save here, or from a lesson's video player, will show up in this list."
+                        : "Browse the catalog and enroll in a course to unlock notes."}
+                    </p>
+                  </div>
+                  {!enrollments.length && (
+                    <button type="button" onClick={() => router.push("/explore")}>Browse courses -&gt;</button>
+                  )}
+                </article>
               )}
             </section>
           </div>
@@ -247,7 +362,12 @@ function NotesBookmarks() {
                   </article>
                 ))
               ) : (
-                <p className="notes-empty">No bookmarked lessons yet - bookmark a lesson from its video player.</p>
+                <article className="empty-state-card">
+                  <div>
+                    <h3>No bookmarked lessons yet</h3>
+                    <p>Bookmark a lesson from its video player to save it here for quick access later.</p>
+                  </div>
+                </article>
               )}
             </section>
           </div>

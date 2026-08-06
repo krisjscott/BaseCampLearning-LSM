@@ -72,11 +72,17 @@ function CertificateDetailContent() {
   async function downloadPdf() {
     if (!certificate) return;
     try {
-      const freshUrl = await downloadCertificate(certificate.id);
-      const url = freshUrl || certificate.fileUrl;
-      if (url) window.open(url, "_blank");
+      const blob = await downloadCertificate(certificate.id);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${certificate.certificateNumber || "certificate"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch {
-      if (certificate.fileUrl) window.open(certificate.fileUrl, "_blank");
+      // download failed - the button remains available to retry
     }
   }
 
