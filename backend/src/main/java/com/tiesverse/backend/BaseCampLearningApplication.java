@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAu
 // managed OAuth2 login flow, so this autoconfiguration is unused - and left
 // enabled it hard-fails startup whenever GOOGLE_CLIENT_ID/SECRET are unset,
 // which is the default for local/dev environments.
-@SpringBootApplication(exclude = OAuth2ClientAutoConfiguration.class)
+@SpringBootApplication
 public class BaseCampLearningApplication {
 
     public static void main(String[] args) {

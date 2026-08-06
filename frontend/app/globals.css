@@ -491,12 +491,18 @@ input {
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.google-action:hover {
+  border-color: #b8bcc1;
+  background: #fafafa;
 }
 
 .google-mark {
-  color: #336be5;
-  font-size: 14px;
-  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
 }
 
 .organisation-note {
@@ -22843,4 +22849,3 @@ body.notification-panel-open {
     font-size: 13px;
   }
 }
-
