@@ -11,7 +11,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
-
+  flyway:
+    out-of-order: true
   security:
     oauth2:
       client:
