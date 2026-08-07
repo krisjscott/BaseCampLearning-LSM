@@ -3,6 +3,10 @@ import type { NextRequest } from "next/server";
 
 const PUBLIC_ROUTES = ["/login", "/recover-access"];
 
+// This cookie is a UX marker only ("has this browser logged in before"), not a session
+// token - it carries no data and isn't validated here. The real auth boundary is the
+// Bearer access token AdminGuard checks client-side and every backend call re-validates
+// server-side with @PreAuthorize/hasRole. Do not treat this middleware as an auth gate.
 const SESSION_COOKIE = "basecamp_session";
 
 export function middleware(request: NextRequest) {

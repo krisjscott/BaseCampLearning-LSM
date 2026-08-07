@@ -39,8 +39,8 @@ public class EnrollmentController {
     }
 
     @PostMapping("/assign")
-    public ApiResponse<EnrollmentResponse> assignCourse(@Valid @RequestBody AssignCourseRequest request) {
-        return ApiResponse.success("Course assigned successfully", enrollmentService.assignCourse(request));
+    public ApiResponse<EnrollmentResponse> assignCourse(Principal principal, @Valid @RequestBody AssignCourseRequest request) {
+        return ApiResponse.success("Course assigned successfully", enrollmentService.assignCourse(request, principal));
     }
 
     @GetMapping("/user/{userId}")
@@ -56,9 +56,11 @@ public class EnrollmentController {
 
     @PutMapping("/{enrollmentId}/status")
     public ApiResponse<EnrollmentResponse> updateStatus(
+            Principal principal,
             @PathVariable UUID enrollmentId,
             @RequestParam EnrollmentStatus status) {
-        return ApiResponse.success("Status updated successfully", enrollmentService.updateStatus(enrollmentId, status));
+        return ApiResponse.success("Status updated successfully",
+                enrollmentService.updateStatus(enrollmentId, status, principal));
     }
 
     @PostMapping("/learning-paths")

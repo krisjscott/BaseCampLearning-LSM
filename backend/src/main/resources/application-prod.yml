@@ -1,3 +1,8 @@
+server:
+  # Trust X-Forwarded-Proto/-For from the platform's TLS-terminating proxy so
+  # request.isSecure() (used for the Secure cookie flag) reflects the real client scheme.
+  forward-headers-strategy: framework
+
 spring:
   datasource:
     url: ${DB_URL}

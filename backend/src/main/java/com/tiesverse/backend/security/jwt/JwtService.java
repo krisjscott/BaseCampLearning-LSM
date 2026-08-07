@@ -48,7 +48,13 @@ public class JwtService {
 
     public boolean isValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        // Only an access-typed token may authenticate an API request - a refresh token is
+        // otherwise a validly-signed, unexpired JWT for the same subject and would
+        // otherwise work as a bearer credential on every endpoint for its full 7x-longer
+        // lifetime, surviving logout/password-change (see JwtProvider.TYPE_CLAIM).
+        String type = extractClaim(token, claims -> claims.get(JwtProvider.TYPE_CLAIM, String.class));
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(token)
+                && JwtProvider.TYPE_ACCESS.equals(type);
     }
 
     public String generateToken(UserDetails userDetails) {

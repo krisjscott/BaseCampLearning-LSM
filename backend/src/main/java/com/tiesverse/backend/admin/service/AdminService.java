@@ -108,5 +108,5 @@ public interface AdminService {
     List<LeaderboardEntryResponse> getContestLeaderboard(UUID contestId);
 
     // Learners directory (organization-independent)
-    PageResponse<AdminLearnerResponse> getLearners(int page, int size, String search);
+    PageResponse<AdminLearnerResponse> getLearners(int page, int size, String search, Principal principal);
 }

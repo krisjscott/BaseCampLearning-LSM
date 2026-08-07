@@ -32,9 +32,17 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         String fullName = oAuth2User.getAttribute("name");
         String pictureUrl = oAuth2User.getAttribute("picture");
         String phoneNumber = oAuth2User.getAttribute("phone_number");
+        Boolean emailVerified = oAuth2User.getAttribute("email_verified");
 
         if (email == null || googleId == null) {
             redirectWithError(response, "Google did not share an email address for this account.");
+            return;
+        }
+        // If Google's own claim doesn't confirm this Google identity actually owns the
+        // email, don't let it auto-link to (and thereafter log into) whatever local
+        // account already holds that address.
+        if (!Boolean.TRUE.equals(emailVerified)) {
+            redirectWithError(response, "Google did not verify this email address.");
             return;
         }
 

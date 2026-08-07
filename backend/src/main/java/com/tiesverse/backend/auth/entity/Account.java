@@ -54,6 +54,12 @@ public class Account extends BaseEntity {
     @Column(name = "user_id")
     private UUID userId;
 
+    // Scopes an HR_ADMIN/ORGANIZATION_ADMIN account's data access to a single
+    // organization. Null means unrestricted (SUPER_ADMIN always is; any other admin with
+    // no organization assigned keeps today's platform-wide access - see OrganizationScope).
+    @Column(name = "organization_id")
+    private UUID organizationId;
+
     @Builder.Default
     @Column(nullable = false)
     private boolean active = true;

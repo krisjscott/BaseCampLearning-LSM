@@ -5,6 +5,7 @@ import com.tiesverse.backend.auth.entity.Account;
 import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
+import com.tiesverse.backend.common.util.TokenHashUtil;
 import com.tiesverse.backend.security.jwt.JwtProvider;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.entity.UserSettings;
@@ -102,7 +103,7 @@ public class GoogleOAuthService {
         }
         String accessToken = jwtProvider.generateToken(account.getEmail(), java.util.Map.of("role", account.getRole().name()));
         String refreshToken = jwtProvider.generateRefreshToken(account.getEmail());
-        account.setRefreshToken(refreshToken);
+        account.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
         accountRepository.save(account);
         String fullName = userRepository.findById(account.getUserId()).map(User::getFullName).orElse(account.getEmail());
         return AuthResponse.builder()

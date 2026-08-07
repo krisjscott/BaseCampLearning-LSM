@@ -78,6 +78,9 @@ import com.tiesverse.backend.enrollment.repository.EnrollmentRepository;
 import com.tiesverse.backend.progress.repository.CourseProgressRepository;
 import com.tiesverse.backend.progress.repository.LessonProgressRepository;
 import com.tiesverse.backend.security.AuthContext;
+import com.tiesverse.backend.organization.entity.Employee;
+import com.tiesverse.backend.organization.repository.EmployeeRepository;
+import com.tiesverse.backend.organization.repository.OrganizationRepository;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +132,8 @@ public class AdminServiceImpl implements AdminService {
     private final AuditLogRepository auditLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthContext authContext;
+    private final EmployeeRepository employeeRepository;
+    private final OrganizationRepository organizationRepository;
     private final FileStorageService fileStorageService;
     private final AssignmentService assignmentService;
     private final ContestService contestService;
@@ -781,6 +786,9 @@ public class AdminServiceImpl implements AdminService {
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email already registered");
         }
+        if (request.getOrganizationId() != null && !organizationRepository.existsById(request.getOrganizationId())) {
+            throw new BadRequestException("Organization not found");
+        }
 
         Account account = Account.builder()
                 .email(request.getEmail())
@@ -789,6 +797,7 @@ public class AdminServiceImpl implements AdminService {
                 .authProvider(AuthProvider.LOCAL)
                 .emailVerified(true)
                 .active(true)
+                .organizationId(request.getOrganizationId())
                 .build();
         Account savedAccount = accountRepository.save(account);
 
@@ -918,16 +927,31 @@ public class AdminServiceImpl implements AdminService {
     }
 
     // =========================================================================
-    // Learners directory (organization-independent)
+    // Learners directory
     // =========================================================================
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<AdminLearnerResponse> getLearners(int page, int size, String search) {
+    public PageResponse<AdminLearnerResponse> getLearners(int page, int size, String search, Principal principal) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), size <= 0 ? 20 : size);
-        Page<User> userPage = StringUtils.hasText(search)
-                ? userRepository.findByFullNameContainingIgnoreCase(search, pageable)
-                : userRepository.findAll(pageable);
+        Account caller = authContext.currentAccount(principal);
+
+        Page<User> userPage;
+        if (caller.getRole() != Role.SUPER_ADMIN && caller.getOrganizationId() != null) {
+            // Org-scoped admin: the learner directory is otherwise platform-wide, so an
+            // organization_id being set on this admin's own account is what turns this
+            // filtering on - see OrganizationScope.
+            List<UUID> orgUserIds = employeeRepository.findByOrganizationId(caller.getOrganizationId()).stream()
+                    .map(Employee::getUserId)
+                    .toList();
+            userPage = StringUtils.hasText(search)
+                    ? userRepository.findByIdInAndFullNameContainingIgnoreCase(orgUserIds, search, pageable)
+                    : userRepository.findByIdIn(orgUserIds, pageable);
+        } else {
+            userPage = StringUtils.hasText(search)
+                    ? userRepository.findByFullNameContainingIgnoreCase(search, pageable)
+                    : userRepository.findAll(pageable);
+        }
 
         List<AdminLearnerResponse> content = userPage.getContent().stream()
                 .map(user -> {
@@ -1141,6 +1165,7 @@ public class AdminServiceImpl implements AdminService {
                 .email(account.getEmail())
                 .role(account.getRole())
                 .active(account.isActive())
+                .organizationId(account.getOrganizationId())
                 .createdAt(account.getCreatedAt())
                 .build();
     }

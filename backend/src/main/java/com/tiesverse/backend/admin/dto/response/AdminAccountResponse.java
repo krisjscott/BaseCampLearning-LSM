@@ -16,5 +16,6 @@ public class AdminAccountResponse {
     private String email;
     private Role role;
     private boolean active;
+    private UUID organizationId;
     private LocalDateTime createdAt;
 }

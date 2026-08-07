@@ -17,6 +17,7 @@ import com.tiesverse.backend.common.exception.ResourceNotFoundException;
 import com.tiesverse.backend.common.util.IdCodec;
 import com.tiesverse.backend.course.entity.Course;
 import com.tiesverse.backend.course.repository.CourseRepository;
+import com.tiesverse.backend.security.OrganizationScope;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
 public class CertificateServiceImpl implements CertificateService {
 
     private static final Set<Role> ADMIN_ROLES = Set.of(Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
+    private static final SecureRandom CERTIFICATE_NUMBER_RANDOM = new SecureRandom();
 
     private final CertificateRepository certificateRepository;
     private final CertificateMapper certificateMapper;
@@ -44,6 +46,7 @@ public class CertificateServiceImpl implements CertificateService {
     private final CertificateTemplateRepository certificateTemplateRepository;
     private final CertificateTemplateElementRepository certificateTemplateElementRepository;
     private final CertificatePdfRenderService certificatePdfRenderService;
+    private final OrganizationScope organizationScope;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -64,8 +67,18 @@ public class CertificateServiceImpl implements CertificateService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course", "id", courseId));
 
-        String certificateNumber = "CERT-" + System.currentTimeMillis() + "-"
-                + ThreadLocalRandom.current().nextInt(1000, 9999);
+        // The public verify-credential page looks certificates up by this number with no
+        // other auth factor, so it must not be brute-forceable: a timestamp + 4-digit
+        // random suffix is only ~9000 possibilities within any known time window. 128 bits
+        // of SecureRandom-backed entropy (encoded as 26 hex chars) is what makes it safe to
+        // treat this identifier as a bearer credential for verification.
+        byte[] randomBytes = new byte[16];
+        CERTIFICATE_NUMBER_RANDOM.nextBytes(randomBytes);
+        StringBuilder randomHex = new StringBuilder(randomBytes.length * 2);
+        for (byte b : randomBytes) {
+            randomHex.append(String.format("%02X", b));
+        }
+        String certificateNumber = "CERT-" + randomHex;
 
         Certificate certificate = Certificate.builder()
                 .userId(userId)
@@ -135,10 +148,13 @@ public class CertificateServiceImpl implements CertificateService {
     private Certificate findOwnedCertificate(UUID certificateId, Account requester) {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Certificate", "id", certificateId));
-        boolean canRead = requester != null
-                && (certificate.getUserId().equals(requester.getUserId()) || ADMIN_ROLES.contains(requester.getRole()));
-        if (!canRead) {
+        boolean isOwner = requester != null && certificate.getUserId().equals(requester.getUserId());
+        boolean isAdmin = requester != null && ADMIN_ROLES.contains(requester.getRole());
+        if (!isOwner && !isAdmin) {
             throw new ForbiddenException("You can only access your own certificates");
+        }
+        if (!isOwner) {
+            organizationScope.requireSameOrganizationAsUser(requester, certificate.getUserId());
         }
         return certificate;
     }

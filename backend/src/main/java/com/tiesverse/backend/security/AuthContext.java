@@ -19,6 +19,7 @@ public class AuthContext {
     private static final Set<Role> ADMIN_ROLES = Set.of(Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
 
     private final AccountRepository accountRepository;
+    private final OrganizationScope organizationScope;
 
     public Account currentAccount(Principal principal) {
         if (principal == null || principal.getName() == null) {
@@ -43,8 +44,12 @@ public class AuthContext {
     public void requireSelfOrAdmin(Principal principal, UUID requestedUserId) {
         Account account = currentAccount(principal);
         UUID currentUserId = account.getUserId();
-        if (currentUserId == null || (!currentUserId.equals(requestedUserId) && !isAdmin(account))) {
+        if (currentUserId != null && currentUserId.equals(requestedUserId)) {
+            return;
+        }
+        if (!isAdmin(account)) {
             throw new ForbiddenException("You can only access your own learner data");
         }
+        organizationScope.requireSameOrganizationAsUser(account, requestedUserId);
     }
 }

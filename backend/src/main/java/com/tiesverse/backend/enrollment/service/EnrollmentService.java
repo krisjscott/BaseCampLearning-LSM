@@ -7,6 +7,7 @@ import com.tiesverse.backend.enrollment.dto.request.EnrollRequest;
 import com.tiesverse.backend.enrollment.dto.response.EnrollmentResponse;
 import com.tiesverse.backend.enrollment.dto.response.LearningPathResponse;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,13 +15,13 @@ public interface EnrollmentService {
 
     EnrollmentResponse enroll(EnrollRequest request);
 
-    EnrollmentResponse assignCourse(AssignCourseRequest request);
+    EnrollmentResponse assignCourse(AssignCourseRequest request, Principal principal);
 
     List<EnrollmentResponse> getEnrollmentsByUser(UUID userId);
 
     List<EnrollmentResponse> getEnrollmentsByCourse(UUID courseId);
 
-    EnrollmentResponse updateStatus(UUID enrollmentId, EnrollmentStatus status);
+    EnrollmentResponse updateStatus(UUID enrollmentId, EnrollmentStatus status, Principal principal);
 
     LearningPathResponse createLearningPath(CreateLearningPathRequest request);
 

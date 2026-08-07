@@ -35,10 +35,19 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    // Blocked regardless of caller: these execute if opened directly from the
-    // /uploads/** static origin, turning an upload endpoint into stored XSS.
-    private static final Set<String> BLOCKED_EXTENSIONS = Set.of(
-            "html", "htm", "svg", "js", "mjs", "jsp", "php", "exe", "sh", "bat", "cmd", "com", "msi");
+    // Allowlisted per subdirectory rather than a denylist of dangerous extensions: a
+    // denylist has to enumerate every server-executable extension a future deployment
+    // topology might interpret (.phtml, .jar, .aspx, .cgi, ...), and any one it misses
+    // is a stored-RCE/XSS risk the moment /uploads/** is ever fronted by something that
+    // executes files by extension. An allowlist of the file types each feature actually
+    // needs has no such gap.
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "mov", "m4v", "ogv");
+    private static final Set<String> DOCUMENT_EXTENSIONS = Set.of(
+            "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "csv");
+    private static final Set<String> SUBMISSION_EXTENSIONS = Set.of(
+            "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "txt", "csv", "zip",
+            "png", "jpg", "jpeg", "gif");
+    private static final Set<String> CERTIFICATE_TEMPLATE_EXTENSIONS = Set.of("png", "jpg", "jpeg", "pdf");
 
     @Value("${app.storage.root:./uploads}")
     private String storageRoot;
@@ -69,8 +78,8 @@ public class FileStorageService {
             throw new BadRequestException("No file was uploaded");
         }
         String extension = extensionOf(file.getOriginalFilename());
-        if (BLOCKED_EXTENSIONS.contains(extension)) {
-            throw new BadRequestException("Files of type ." + extension + " are not allowed");
+        if (!allowedExtensionsFor(subDirectory).contains(extension)) {
+            throw new BadRequestException("Files of type ." + extension + " are not allowed in " + subDirectory);
         }
         String filename = UUID.randomUUID() + (extension.isEmpty() ? "" : "." + extension);
         String key = objectKey(subDirectory, filename);
@@ -176,6 +185,16 @@ public class FileStorageService {
             throw new BadRequestException("Invalid upload path");
         }
         return target;
+    }
+
+    private Set<String> allowedExtensionsFor(String subDirectory) {
+        return switch (subDirectory) {
+            case "videos" -> VIDEO_EXTENSIONS;
+            case "documents" -> DOCUMENT_EXTENSIONS;
+            case "submissions" -> SUBMISSION_EXTENSIONS;
+            case "certificate-templates" -> CERTIFICATE_TEMPLATE_EXTENSIONS;
+            default -> Set.of();
+        };
     }
 
     private String objectKey(String subDirectory, String filename) {

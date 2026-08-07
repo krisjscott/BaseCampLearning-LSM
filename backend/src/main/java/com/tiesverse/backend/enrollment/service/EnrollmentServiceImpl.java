@@ -15,14 +15,18 @@ import com.tiesverse.backend.enrollment.mapper.EnrollmentMapper;
 import com.tiesverse.backend.enrollment.repository.EnrollmentRepository;
 import com.tiesverse.backend.enrollment.repository.LearningPathCourseRepository;
 import com.tiesverse.backend.enrollment.repository.LearningPathRepository;
+import com.tiesverse.backend.auth.entity.Account;
 import com.tiesverse.backend.course.entity.Course;
 import com.tiesverse.backend.course.repository.CourseRepository;
+import com.tiesverse.backend.security.AuthContext;
+import com.tiesverse.backend.security.OrganizationScope;
 import com.tiesverse.backend.user.entity.User;
 import com.tiesverse.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +42,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final EnrollmentMapper enrollmentMapper;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final AuthContext authContext;
+    private final OrganizationScope organizationScope;
 
     @Override
     @Transactional
@@ -61,7 +67,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     @Transactional
-    public EnrollmentResponse assignCourse(AssignCourseRequest request) {
+    public EnrollmentResponse assignCourse(AssignCourseRequest request, Principal principal) {
+        Account caller = authContext.currentAccount(principal);
+        organizationScope.requireSameOrganizationAsUser(caller, request.getUserId());
+
         enrollmentRepository.findByUserIdAndCourseId(request.getUserId(), request.getCourseId())
                 .ifPresent(existing -> {
                     throw new ConflictException("User is already enrolled in this course");
@@ -100,9 +109,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     @Transactional
-    public EnrollmentResponse updateStatus(UUID enrollmentId, EnrollmentStatus status) {
+    public EnrollmentResponse updateStatus(UUID enrollmentId, EnrollmentStatus status, Principal principal) {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Enrollment", "id", enrollmentId));
+
+        Account caller = authContext.currentAccount(principal);
+        organizationScope.requireSameOrganizationAsUser(caller, enrollment.getUserId());
 
         enrollment.setStatus(status);
         if (status == EnrollmentStatus.COMPLETED) {

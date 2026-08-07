@@ -69,7 +69,15 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/actuator/info"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        // Course media/marketing assets stay public; per-learner assignment
+                        // submissions and lesson documents require a login (and are further
+                        // ownership-checked in UploadController itself) since a leaked URL
+                        // to a UUID-named file is the only thing standing between them and
+                        // anyone on the internet otherwise.
+                        .requestMatchers(HttpMethod.GET, "/uploads/videos/**", "/uploads/captions/**",
+                                "/uploads/certificate-templates/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/documents/**", "/uploads/submissions/**")
+                        .authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/certificates/verify/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/courses/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()

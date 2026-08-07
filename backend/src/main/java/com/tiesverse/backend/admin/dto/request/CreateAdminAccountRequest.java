@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,4 +33,9 @@ public class CreateAdminAccountRequest {
 
     @NotNull(message = "Role is required")
     private Role role;
+
+    // Optional: scopes this admin to a single organization (see OrganizationScope). Leave
+    // null for a platform-wide admin - which is every admin account today, since this
+    // deployment has no organizations configured yet.
+    private UUID organizationId;
 }

@@ -24,6 +24,7 @@ import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.common.exception.BadRequestException;
 import com.tiesverse.backend.common.exception.ForbiddenException;
 import com.tiesverse.backend.common.exception.ResourceNotFoundException;
+import com.tiesverse.backend.security.OrganizationScope;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,7 @@ public class AssessmentServiceImpl implements AssessmentService {
     private final AssessmentResultRepository assessmentResultRepository;
     private final AnswerRepository answerRepository;
     private final AssessmentMapper assessmentMapper;
+    private final OrganizationScope organizationScope;
 
     @Override
     @Transactional
@@ -254,10 +256,13 @@ public class AssessmentServiceImpl implements AssessmentService {
     public AssessmentResultResponse getResult(UUID resultId, Account requester) {
         AssessmentResult result = assessmentResultRepository.findById(resultId)
                 .orElseThrow(() -> new ResourceNotFoundException("AssessmentResult", "id", resultId));
-        boolean canRead = requester != null
-                && (result.getUserId().equals(requester.getUserId()) || ADMIN_ROLES.contains(requester.getRole()));
-        if (!canRead) {
+        boolean isOwner = requester != null && result.getUserId().equals(requester.getUserId());
+        boolean isAdmin = requester != null && ADMIN_ROLES.contains(requester.getRole());
+        if (!isOwner && !isAdmin) {
             throw new ForbiddenException("You can only access your own assessment results");
+        }
+        if (!isOwner) {
+            organizationScope.requireSameOrganizationAsUser(requester, result.getUserId());
         }
 
         AssessmentResultResponse response = assessmentMapper.toAssessmentResultResponse(result);

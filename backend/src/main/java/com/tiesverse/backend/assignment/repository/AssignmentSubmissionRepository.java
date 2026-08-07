@@ -14,4 +14,6 @@ public interface AssignmentSubmissionRepository extends JpaRepository<Assignment
     Optional<AssignmentSubmission> findByLessonIdAndUserId(UUID lessonId, UUID userId);
 
     List<AssignmentSubmission> findByLessonIdOrderByCreatedAtDesc(UUID lessonId);
+
+    Optional<AssignmentSubmission> findByFileUrl(String fileUrl);
 }

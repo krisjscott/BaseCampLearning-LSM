@@ -398,7 +398,8 @@ public class AdminController {
     public ApiResponse<PageResponse<AdminLearnerResponse>> getLearners(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String search) {
-        return ApiResponse.success(adminService.getLearners(page, size, search));
+            @RequestParam(required = false) String search,
+            Principal principal) {
+        return ApiResponse.success(adminService.getLearners(page, size, search, principal));
     }
 }

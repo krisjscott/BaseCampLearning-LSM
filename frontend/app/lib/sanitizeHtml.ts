@@ -9,9 +9,23 @@ const ALLOWED_ATTRS: Record<string, Set<string>> = {
   IMG: new Set(["src", "alt", "title", "width", "height"]),
 };
 
-function isSafeUrl(value: string): boolean {
-  const trimmed = value.trim().toLowerCase();
-  return !trimmed.startsWith("javascript:") && !trimmed.startsWith("data:text/html");
+const LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+const IMAGE_PROTOCOLS = new Set(["http:", "https:"]);
+
+function isSafeUrl(value: string, protocols: Set<string>): boolean {
+  // Browsers strip ASCII tab/newline/CR from a URL before evaluating its scheme, so a
+  // denylist keyed on startsWith("javascript:") can be bypassed with "java\tscript:" -
+  // strip those control characters first so we evaluate what the browser will actually see.
+  const cleaned = value.replace(/[\t\n\r]/g, "").trim();
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(cleaned)) {
+    // No scheme - a same-document/relative URL, which is safe.
+    return true;
+  }
+  try {
+    return protocols.has(new URL(cleaned, "https://basecamp.invalid").protocol);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -26,33 +40,45 @@ export function sanitizeLessonHtml(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
-  function clean(node: Element) {
-    Array.from(node.children).forEach((child) => {
-      if (!ALLOWED_TAGS.has(child.tagName)) {
-        child.replaceWith(...Array.from(child.childNodes));
+  // Iterative queue, not a per-child recursive walk: when a disallowed tag is unwrapped
+  // (replaced by its own children), those promoted children must be re-queued and scanned
+  // too - a single top-down pass that unwraps-and-moves-on lets an attacker smuggle a
+  // dangerous attribute past the filter by nesting it inside any disallowed wrapper tag.
+  const queue: Element[] = Array.from(doc.body.children);
+
+  while (queue.length > 0) {
+    const child = queue.shift()!;
+
+    if (!ALLOWED_TAGS.has(child.tagName)) {
+      const promoted = Array.from(child.childNodes);
+      child.replaceWith(...promoted);
+      promoted.forEach((n) => {
+        if (n.nodeType === Node.ELEMENT_NODE) queue.push(n as Element);
+      });
+      continue;
+    }
+
+    Array.from(child.attributes).forEach((attr) => {
+      const allowed = ALLOWED_ATTRS[child.tagName];
+      const name = attr.name.toLowerCase();
+      if (name.startsWith("on") || !allowed?.has(name)) {
+        child.removeAttribute(attr.name);
         return;
       }
-
-      Array.from(child.attributes).forEach((attr) => {
-        const allowed = ALLOWED_ATTRS[child.tagName];
-        const name = attr.name.toLowerCase();
-        if (name.startsWith("on") || !allowed?.has(name)) {
-          child.removeAttribute(attr.name);
-          return;
-        }
-        if ((name === "href" || name === "src") && !isSafeUrl(attr.value)) {
-          child.removeAttribute(attr.name);
-        }
-      });
-
-      if (child.tagName === "A") {
-        child.setAttribute("rel", "noopener noreferrer");
+      if (name === "href" && !isSafeUrl(attr.value, LINK_PROTOCOLS)) {
+        child.removeAttribute(attr.name);
       }
-
-      clean(child);
+      if (name === "src" && !isSafeUrl(attr.value, IMAGE_PROTOCOLS)) {
+        child.removeAttribute(attr.name);
+      }
     });
+
+    if (child.tagName === "A") {
+      child.setAttribute("rel", "noopener noreferrer");
+    }
+
+    Array.from(child.children).forEach((c) => queue.push(c));
   }
 
-  clean(doc.body);
   return doc.body.innerHTML;
 }

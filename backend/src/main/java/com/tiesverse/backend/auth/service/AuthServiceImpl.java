@@ -19,6 +19,7 @@ import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.common.exception.ConflictException;
 import com.tiesverse.backend.common.exception.UnauthorizedException;
+import com.tiesverse.backend.common.util.TokenHashUtil;
 import com.tiesverse.backend.security.jwt.JwtProvider;
 import com.tiesverse.backend.security.turnstile.TurnstileService;
 import com.tiesverse.backend.user.entity.User;
@@ -31,17 +32,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.HexFormat;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -51,6 +51,12 @@ public class AuthServiceImpl implements AuthService {
 
     private static final int RESET_TOKEN_BYTES = 32;
     private static final int RESET_TOKEN_MINUTES = 30;
+    // A fixed, valid BCrypt hash to compare against when no account was found, so a
+    // login attempt against a non-existent email takes comparable time to a wrong-password
+    // attempt against a real one - otherwise the response-time gap lets an attacker
+    // enumerate registered emails via login().
+    private static final String DUMMY_PASSWORD_HASH =
+            new BCryptPasswordEncoder().encode("account-enumeration-timing-defense");
 
     private final AccountRepository accountRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
@@ -105,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
         );
         String refreshToken = jwtProvider.generateRefreshToken(savedAccount.getEmail());
 
-        savedAccount.setRefreshToken(refreshToken);
+        savedAccount.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
         accountRepository.save(savedAccount);
 
         return AuthMapper.INSTANCE.toAuthResponse(savedAccount, accessToken, refreshToken, request.getFullName());
@@ -115,12 +121,15 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         turnstileService.verify(request.getTurnstileToken());
 
-        Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+        Optional<Account> accountOpt = accountRepository.findByEmail(request.getEmail());
+        boolean passwordMatches = accountOpt.isPresent()
+                ? passwordEncoder.matches(request.getPassword(), accountOpt.get().getPassword())
+                : matchesDummyHashForTiming(request.getPassword());
 
-        if (!passwordEncoder.matches(request.getPassword(), account.getPassword())) {
+        if (accountOpt.isEmpty() || !passwordMatches) {
             throw new UnauthorizedException("Invalid email or password");
         }
+        Account account = accountOpt.get();
 
         if (!account.isActive()) {
             throw new UnauthorizedException("This account has been deactivated");
@@ -132,15 +141,20 @@ public class AuthServiceImpl implements AuthService {
         );
         String refreshToken = jwtProvider.generateRefreshToken(account.getEmail());
 
-        account.setRefreshToken(refreshToken);
+        account.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
         accountRepository.save(account);
 
         return AuthMapper.INSTANCE.toAuthResponse(account, accessToken, refreshToken, null);
     }
 
+    private boolean matchesDummyHashForTiming(String rawPassword) {
+        passwordEncoder.matches(rawPassword, DUMMY_PASSWORD_HASH);
+        return false;
+    }
+
     @Override
     public TokenResponse refreshToken(RefreshTokenRequest request) {
-        Account account = accountRepository.findByRefreshToken(request.getRefreshToken())
+        Account account = accountRepository.findByRefreshToken(TokenHashUtil.sha256Hex(request.getRefreshToken()))
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         if (!jwtProvider.isTokenValid(request.getRefreshToken(), account.getEmail())) {
             account.setRefreshToken(null);
@@ -158,7 +172,7 @@ public class AuthServiceImpl implements AuthService {
         );
         String newRefreshToken = jwtProvider.generateRefreshToken(account.getEmail());
 
-        account.setRefreshToken(newRefreshToken);
+        account.setRefreshToken(TokenHashUtil.sha256Hex(newRefreshToken));
         accountRepository.save(account);
 
         return TokenResponse.builder()
@@ -204,7 +218,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         PasswordResetToken resetToken = passwordResetTokenRepository
-                .findByTokenHashAndUsedAtIsNull(hashToken(request.getToken()))
+                .findByTokenHashAndUsedAtIsNull(TokenHashUtil.sha256Hex(request.getToken()))
                 .orElseThrow(() -> new UnauthorizedException("This password reset link is invalid or expired"));
         if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new UnauthorizedException("This password reset link is invalid or expired");
@@ -239,7 +253,7 @@ public class AuthServiceImpl implements AuthService {
 
         PasswordResetToken resetToken = new PasswordResetToken();
         resetToken.setAccountId(account.getId());
-        resetToken.setTokenHash(hashToken(rawToken));
+        resetToken.setTokenHash(TokenHashUtil.sha256Hex(rawToken));
         resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(RESET_TOKEN_MINUTES));
         passwordResetTokenRepository.save(resetToken);
 
@@ -259,13 +273,4 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
-    private String hashToken(String token) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(token.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is unavailable", exception);
-        }
-    }
 }

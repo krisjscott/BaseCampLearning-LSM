@@ -20,10 +20,19 @@ public class JwtProvider {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    // Access and refresh tokens are otherwise indistinguishable signed JWTs for the same
+    // subject - without this claim, a captured refresh token (7x the access-token lifetime)
+    // works as a bearer credential on every API call, and stays valid past logout/password
+    // change since JwtFilter never consults the DB-stored refresh token at all.
+    public static final String TYPE_CLAIM = "type";
+    public static final String TYPE_ACCESS = "access";
+    public static final String TYPE_REFRESH = "refresh";
+
     public String generateToken(String subject, Map<String, Object> claims) {
         return Jwts.builder()
                 .subject(subject)
                 .claims(claims)
+                .claim(TYPE_CLAIM, TYPE_ACCESS)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignKey())
@@ -33,6 +42,7 @@ public class JwtProvider {
     public String generateRefreshToken(String subject) {
         return Jwts.builder()
                 .subject(subject)
+                .claim(TYPE_CLAIM, TYPE_REFRESH)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration * 7))
                 .signWith(getSignKey())
@@ -41,19 +51,16 @@ public class JwtProvider {
 
     public boolean isTokenValid(String token, String expectedSubject) {
         try {
-            String subject = Jwts.parser()
+            var claims = Jwts.parser()
                     .verifyWith(getSignKey())
                     .build()
                     .parseSignedClaims(token)
-                    .getPayload()
-                    .getSubject();
-            Date expirationDate = Jwts.parser()
-                    .verifyWith(getSignKey())
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload()
-                    .getExpiration();
-            return expectedSubject.equals(subject) && expirationDate != null && expirationDate.after(new Date());
+                    .getPayload();
+            String subject = claims.getSubject();
+            Date expirationDate = claims.getExpiration();
+            String type = claims.get(TYPE_CLAIM, String.class);
+            return expectedSubject.equals(subject) && TYPE_REFRESH.equals(type)
+                    && expirationDate != null && expirationDate.after(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }

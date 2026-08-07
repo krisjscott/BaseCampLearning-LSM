@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
 import java.util.UUID;
 
 @RestController
@@ -31,24 +32,28 @@ public class AdminCertificateTemplateController {
 
     @PostMapping("/course/{courseId}")
     public ApiResponse<CertificateTemplateResponse> upload(@PathVariable UUID courseId,
-                                                             @RequestPart("file") MultipartFile file) {
-        return ApiResponse.success("Certificate template uploaded", certificateTemplateService.uploadTemplate(courseId, file));
+                                                             @RequestPart("file") MultipartFile file,
+                                                             Principal principal) {
+        return ApiResponse.success("Certificate template uploaded",
+                certificateTemplateService.uploadTemplate(courseId, file, principal));
     }
 
     @GetMapping("/course/{courseId}")
-    public ApiResponse<CertificateTemplateResponse> getByCourse(@PathVariable UUID courseId) {
-        return ApiResponse.success(certificateTemplateService.getByCourseId(courseId));
+    public ApiResponse<CertificateTemplateResponse> getByCourse(@PathVariable UUID courseId, Principal principal) {
+        return ApiResponse.success(certificateTemplateService.getByCourseId(courseId, principal));
     }
 
     @PutMapping("/{templateId}/layout")
     public ApiResponse<CertificateTemplateResponse> saveLayout(@PathVariable UUID templateId,
-                                                                 @Valid @RequestBody SaveCertificateTemplateLayoutRequest request) {
-        return ApiResponse.success("Layout saved", certificateTemplateService.saveLayout(templateId, request.getElements()));
+                                                                 @Valid @RequestBody SaveCertificateTemplateLayoutRequest request,
+                                                                 Principal principal) {
+        return ApiResponse.success("Layout saved",
+                certificateTemplateService.saveLayout(templateId, request.getElements(), principal));
     }
 
     @GetMapping("/{templateId}/preview")
-    public ResponseEntity<byte[]> preview(@PathVariable UUID templateId) {
-        byte[] pdf = certificateTemplateService.preview(templateId);
+    public ResponseEntity<byte[]> preview(@PathVariable UUID templateId, Principal principal) {
+        byte[] pdf = certificateTemplateService.preview(templateId, principal);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"preview.pdf\"")
@@ -56,8 +61,8 @@ public class AdminCertificateTemplateController {
     }
 
     @DeleteMapping("/{templateId}")
-    public ApiResponse<Void> delete(@PathVariable UUID templateId) {
-        certificateTemplateService.delete(templateId);
+    public ApiResponse<Void> delete(@PathVariable UUID templateId, Principal principal) {
+        certificateTemplateService.delete(templateId, principal);
         return ApiResponse.success("Certificate template deleted", null);
     }
 }

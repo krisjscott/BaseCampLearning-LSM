@@ -1,5 +1,8 @@
 server:
   port: ${SERVER_PORT:8081}
+  # Trust X-Forwarded-Proto/-For from the platform's TLS-terminating proxy so
+  # request.isSecure() (used for the Secure cookie flag) reflects the real client scheme.
+  forward-headers-strategy: framework
 
 spring:
   datasource:
@@ -33,6 +36,12 @@ spring:
       - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+springdoc:
+  api-docs:
+    enabled: ${API_DOCS_ENABLED:false}
+  swagger-ui:
+    enabled: ${SWAGGER_UI_ENABLED:false}
 
 management:
   health:

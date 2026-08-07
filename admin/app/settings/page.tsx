@@ -2,10 +2,11 @@
 
 import { Save } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AdminGuard from "../components/AdminGuard";
 import AdminSidebar from "../components/AdminSidebar";
 import { CardSkeleton } from "../components/Skeleton";
-import { getAuthSession, getCurrentUser, UserResponse } from "../lib/backendApi";
+import { clearAuthSession, getAuthSession, getCurrentUser, UserResponse } from "../lib/backendApi";
 import { getVideoRules, updateVideoRules } from "../lib/adminApi";
 import { changePassword } from "../lib/backendApi";
 
@@ -35,6 +36,7 @@ function bytesToMb(bytes?: number | null) {
 }
 
 function SettingsContent() {
+  const router = useRouter();
   const [admin, setAdmin] = useState<UserResponse | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(true);
@@ -97,7 +99,15 @@ function SettingsContent() {
     try {
       await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
       setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-      setPasswordStatus("Password changed. Please sign in again.");
+      setPasswordStatus("Password changed. Signing you out...");
+      // The backend revokes the refresh token on password change, but the current
+      // access token still works until it naturally expires - clear it here so this
+      // browser tab actually stops being an authenticated session, matching what the
+      // message tells the admin just happened.
+      window.setTimeout(() => {
+        clearAuthSession();
+        router.push("/login");
+      }, 1200);
     } catch (err) {
       setPasswordStatus(err instanceof Error ? err.message : "Could not change password.");
     } finally {
