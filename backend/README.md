@@ -24,6 +24,9 @@ For local frontend testing against a backend running on `prod`, include the loca
 CORS_ALLOWED_ORIGINS=http://localhost:3100,http://localhost:3101,http://127.0.0.1:3100,http://127.0.0.1:3101
 ```
 
+`CORS_ALLOWED_ORIGINS` is the canonical variable name. `FRONTEND_URL` is
+also added automatically to the CORS allowlist for the OAuth code exchange.
+
 If the frontend runs on another port, add that exact origin too, for example `http://localhost:3001`. A missing origin causes Spring to return `Invalid CORS request` before the API controller is reached.
 
 ## Build

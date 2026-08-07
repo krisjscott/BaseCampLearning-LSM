@@ -379,10 +379,19 @@ export function getGoogleOAuthUrl(): string {
 }
 
 export async function exchangeGoogleOAuthCode(code: string): Promise<AuthPayload & { newUser: boolean }> {
-  const response = await backendRequest<{ auth: AuthPayload; newUser: boolean }>("/api/v1/auth/oauth/exchange", {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  });
+  let rawResponse: Response;
+  try {
+    rawResponse = await fetch(`${API_BASE_URL}/api/v1/auth/oauth/exchange`, {
+      method: "POST",
+      credentials: "omit",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    });
+  } catch {
+    throw new Error("Could not reach BaseCamp backend during Google sign-in. Check that the backend is running.");
+  }
+
+  const response = await parseResponse<{ auth: AuthPayload; newUser: boolean }>(rawResponse);
   if (!response.data?.auth) {
     throw new Error(response.message || "Google sign-in did not complete");
   }
