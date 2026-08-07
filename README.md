@@ -4,7 +4,7 @@ BaseCamp is a learning and certification platform with three pieces:
 
 - **`backend/`** - Spring Boot 3 / Java 21 REST API (Postgres via Flyway migrations, JWT auth).
 - **`frontend/`** - Next.js app for learners, port **3100**.
-- **`admin/`** - Next.js "Ops Console" for trainers/admins, port **3101**.
+- **`admin/`** - Next.js "Ops Console" for platform administrators, port **3101**.
 
 This document is written for the next engineer picking up the project: how the backend is organized, how to run everything locally in one step, every seeded test account, and what's intentionally out of scope.
 
@@ -12,7 +12,7 @@ This document is written for the next engineer picking up the project: how the b
 
 ## 1. Architecture
 
-The backend is a single Spring Boot monolith, but its packages are organized 1:1 with the service boundaries from the platform's reference architecture (HLD). Nothing here is a literal microservice - there's one JVM process and one Postgres database - but the package split maps directly onto that design, so splitting any of these out later is a lift-and-shift, not a rewrite.
+The backend is a single Spring Boot monolith organized by domain. It runs as one JVM process against one Postgres database.
 
 | Backend package | Reference service | Responsibility |
 |---|---|---|
@@ -28,10 +28,10 @@ The backend is a single Spring Boot monolith, but its packages are organized 1:1
 | `enrollment`, `progress` | Enrollment/Progress Service | Enrollments, course/lesson progress, learning paths |
 | `organization` | Org/Directory Service | Organizations/departments/teams/employees - **retained in the backend but no longer surfaced in the admin UI** (see [Known limitations](#7-known-limitations--not-built)) |
 | `analytics`, `dashboard` | Analytics Service | Aggregated stats for admin and learner dashboards |
-| `common.storage` | Object Storage (S3 in the target design) | `FileStorageService` writes uploads to local disk under `backend/uploads/` and serves them back via `/uploads/**`. There is no real S3 bucket wired up - see [Known limitations](#7-known-limitations--not-built) |
+| `common.storage` | Object Storage | `FileStorageService` uploads to Cloudflare R2 through its S3-compatible API when R2 credentials are configured. Files remain accessible through `/uploads/**`; local `backend/uploads/` files are used as a development and migration fallback. |
 | `search` | Search Service | Course/content search |
 
-**Security model**: five roles (`PUBLIC_USER`, `EMPLOYEE`, `TRAINER`, `HR_ADMIN`, `ORGANIZATION_ADMIN`, `SUPER_ADMIN`). `/api/v1/admin/**` requires `TRAINER`/`HR_ADMIN`/`ORGANIZATION_ADMIN`/`SUPER_ADMIN` at the `SecurityConfig` path-matcher level (defense in depth on top of any per-endpoint `@PreAuthorize`). The **admin frontend app** additionally gates on `HR_ADMIN`/`ORGANIZATION_ADMIN`/`SUPER_ADMIN` only - `TRAINER` accounts can call the admin API directly but don't currently get a UI for it.
+**Security model**: four roles (`PUBLIC_USER`, `HR_ADMIN`, `ORGANIZATION_ADMIN`, `SUPER_ADMIN`). `/api/v1/admin/**` and course-authoring mutations require `HR_ADMIN`/`ORGANIZATION_ADMIN`/`SUPER_ADMIN` at the `SecurityConfig` path-matcher level, with per-endpoint authorization providing defense in depth.
 
 **File uploads**: lesson videos, captions, and assignment submission files all go through `FileStorageService.store()`, which sanitizes the extension (rejects path-traversal characters) and blocks executable/script extensions (`.html`, `.svg`, `.js`, `.exe`, etc.) so an upload endpoint can't be used to plant content that executes when served back from `/uploads/**`. Video uploads are additionally validated server-side against the admin-configurable `VideoRules` (allowed formats, max size). Caption uploads (`.vtt`/`.srt`) are normalized to WebVTT by `SubtitleConverter` - `.srt` timestamps are rewritten (`,` → `.`) and a `WEBVTT` header is prepended, since `<track>` only accepts WebVTT.
 
@@ -51,7 +51,7 @@ run-all.sh  One-click launcher (Linux/macOS/WSL/Git Bash)
 run-all.bat One-click launcher (Windows, native cmd)
 ```
 
-Uploaded media referenced by the seed data lives in `backend/uploads/` and is committed to the repo (a real deployment would point `app.storage.root` at a persistent volume or swap `FileStorageService` for a real object-storage client instead).
+Uploaded media referenced by the seed data lives in `backend/uploads/` and is committed to the repo. When R2 is configured, new uploads go to R2 while those local seed files remain readable until migrated.
 
 ---
 
@@ -93,28 +93,27 @@ cd admin && npm install && npm run dev:local        # -> :3101
 
 ### Environment
 
-Copy `backend/.env.example` to `backend/.env` and fill in a real Postgres `DB_URL`/`DB_USERNAME`/`DB_PASSWORD` (Flyway runs automatically on startup). Everything else in that file (Turnstile, Google OAuth, SMTP, Redis, RabbitMQ) is optional for local dev - **Google OAuth in particular can be left blank**: the client autoconfiguration is explicitly excluded in `BaseCampLearningApplication` because nothing wires it into Spring Security's login flow, and leaving it enabled with an empty `GOOGLE_CLIENT_ID` used to hard-crash startup.
+Copy `backend/.env.example` to `backend/.env` for local development. Production credentials and integration secrets are supplied only through the deployment platform's secret manager; they are not documented here.
 
 `frontend/` and `admin/` each proxy `/api/v1/**` and `/uploads/**` to the backend via Next.js rewrites (see `next.config.ts` in each app). If `NEXT_PUBLIC_API_BASE_URL` is set, it must point to the running backend - for the local stack use `http://localhost:8081`, never the `https://api.your-basecamp-domain.com` example placeholder. Restart the frontend after changing a `NEXT_PUBLIC_*` value.
 
+### Cloudflare R2 uploads
+
+R2 credentials are backend-only deployment secrets. When configured, new uploads use R2 and the backend proxies `/uploads/**` reads, so the frontend never receives R2 credentials. Existing local files are used only if the object is not yet present in R2.
+
 ### Google sign-up
 
-Google sign-up is available through Spring Security OAuth2. Configure the following values before starting the backend:
-
-```env
-# backend/.env
-GOOGLE_CLIENT_ID=<google-oauth-client-id>
-GOOGLE_CLIENT_SECRET=<google-oauth-client-secret>
-FRONTEND_URL=http://localhost:3100
-
-# frontend/.env.local
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8081
-NEXT_PUBLIC_GOOGLE_SIGN_UP_URL=http://localhost:8081/oauth2/authorization/google
-```
+Google sign-up is available through Spring Security OAuth2. Configure the OAuth client credentials through local `.env` files or the deployment secret manager; do not commit them or document their values.
 
 In Google Cloud Console, register `http://localhost:8081/login/oauth2/code/google` as an authorized redirect URI (use the deployed backend URL in production). A successful Google authorization creates a new `PUBLIC_USER` account and user settings, or links Google to an existing account with the same email. New users go to onboarding; returning users go to learning.
 
+Google provides the user's display name and profile picture through the standard `openid profile email` scope, so those are saved automatically. Google does not normally provide a phone number through that scope; new users are prompted for an optional phone number during onboarding, and it is saved to `users.phone`. If an identity provider supplies a `phone_number` claim, BaseCamp stores it when the account is created or when the existing profile has no phone number.
+
 The OAuth authorization request needs an HTTP session, so the security configuration uses `SessionCreationPolicy.IF_REQUIRED` rather than a fully stateless policy. `GoogleOAuthService` injects `PasswordEncoder` with `@Lazy`: the OAuth success handler is created by `SecurityConfig`, which also declares the password-encoder bean, and lazy injection breaks that otherwise circular dependency.
+
+### Production deployment checklist
+
+Before deployment, run the backend with the `prod` profile, configure `CORS_ALLOWED_ORIGINS` with the exact HTTPS origins of the learner and admin applications, and provide database, JWT, OAuth, R2, SMTP, Turnstile, and messaging values through the deployment secret manager. Register the deployed backend callback URL with Google OAuth, provide the one-time initial-admin bootstrap values, remove the initial password secret after the first successful start, and confirm that Flyway applies the production-only demo-data cleanup migration. Build both Next.js applications with their production environment values before publishing them.
 
 ---
 
@@ -131,6 +130,11 @@ Flyway migrations live in `backend/src/main/resources/db/migration/`, applied in
 | `V5__lms_completion.sql` | `lessons.captions_url`; new `notes`, `bookmarks`, `discussion_posts`, `assignment_submissions`, `contests` tables; **seed data** (accounts, the "Full-Stack Foundations" demo course, a quiz, a contest, notes/bookmarks/discussion) |
 | `V6__fix_seed_account_user_links.sql` | Patches a bug in V5's seed: `accounts.user_id` (the forward pointer `AuthContext.currentUserId()` reads) was never set for the 6 seeded accounts, which silently broke every self-scoped endpoint (enrollments, notes, bookmarks...) for those users |
 | `V7__seed_course_progress.sql` | Adds `course_progress`/`lesson_progress` rows for the seeded learner, so "Continue learning" on the dashboard isn't empty on first login |
+| `V10__remove_legacy_roles.sql` | Converts legacy `TRAINER` and `EMPLOYEE` account rows to the current role model before the application loads them |
+| `V11__password_reset_tokens.sql` | Adds hashed, expiring, one-time password reset tokens |
+| `V12__oauth_exchange_codes.sql` | Adds hashed, expiring, one-time Google OAuth exchange codes |
+
+Production additionally loads `db/migration-prod/V13__remove_demo_seed_data.sql`, which removes the local/demo accounts and sample course data created by the shared V5/V7 migrations. Local development continues to receive the demo dataset. Create the first production super-admin with the one-time `INITIAL_ADMIN_*` deployment secrets, then remove the password secret after the first successful start.
 
 **Never edit an already-applied migration** - Flyway checksums it. If you need to fix a mistake in seed data or schema, add a new `Vn__...sql` file, as `V6`/`V7` do above.
 
@@ -138,16 +142,17 @@ Flyway migrations live in `backend/src/main/resources/db/migration/`, applied in
 
 ## 5. Test accounts
 
-All seeded via `V5`/`V6`, password **`Passw0rd!123`** for every account, hashed with pgcrypto's `crypt(password, gen_salt('bf', 10))` (bcrypt-compatible with Spring Security's `BCryptPasswordEncoder`).
+These accounts are for local development only. Production loads the production-only cleanup migration and does not retain them. Do not use these credentials in a deployed environment.
 
 | Email | Role | Where to log in |
 |---|---|---|
-| `super.admin@basecamp.dev` | SUPER_ADMIN | admin (:3101) |
-| `org.admin@basecamp.dev` | ORGANIZATION_ADMIN | admin (:3101) |
-| `hr.admin@basecamp.dev` | HR_ADMIN | admin (:3101) |
-| `trainer@basecamp.dev` | TRAINER | backend API only (admin UI restricts to HR/Org/Super admin - see [Architecture](#1-architecture)) |
-| `learner.one@basecamp.dev` | PUBLIC_USER | frontend (:3100) - enrolled in the seed course with progress, notes, a bookmark, a discussion post, and an ungraded assignment submission |
-| `learner.two@basecamp.dev` | PUBLIC_USER | frontend (:3100) - enrolled, no activity yet (clean-state test account) |
+| `super.admin@basecamp.dev` | SUPER_ADMIN | admin (:3101), local only |
+| `org.admin@basecamp.dev` | ORGANIZATION_ADMIN | admin (:3101), local only |
+| `hr.admin@basecamp.dev` | HR_ADMIN | admin (:3101), local only |
+| `learner.one@basecamp.dev` | PUBLIC_USER | frontend (:3100), local only |
+| `learner.two@basecamp.dev` | PUBLIC_USER | frontend (:3100), local only |
+
+For local development, the seeded accounts use the password configured in the local seed migration. Production administrators must be created through the one-time `INITIAL_ADMIN_*` bootstrap secrets described above.
 
 The seed course, **"Full-Stack Foundations"**, has 2 modules and 5 lessons covering every content type: a `VIDEO` lesson with a real seeded video file, WebVTT captions, and a derived transcript; an `ARTICLE` lesson with Markdown + LaTeX; a `DOCUMENT` lesson; an `ASSIGNMENT` lesson (with one ungraded submission from `learner.one`, ready to grade from the admin's course editor); and a `QUIZ` lesson backed by a real 2-question `Assessment`, wrapped by a seeded "Quiz Sprint Challenge" contest with a live leaderboard entry.
 
@@ -160,7 +165,8 @@ Several other accounts pre-date this seed (from earlier manual QA sessions again
 All endpoints are under `/api/v1/`. Learner-facing endpoints require a valid JWT (`Authorization: Bearer ...`) unless noted; admin endpoints additionally require an admin-tier role.
 
 - **`auth`** - `POST /auth/register`, `/auth/login`, `/auth/refresh`, `/auth/forgot-password`, `/auth/reset-password`, `/auth/verify-email`, `/auth/verify-otp` (all public)
-- **`courses`** - `GET /courses`, `/courses/{id}`, `/courses/{id}/modules`, `/courses/lessons/{id}` (GET is public; POST/PUT/DELETE require TRAINER+)
+- **Password security** - authenticated `POST /auth/change-password` for all account roles, plus one-time expiring email reset links through `/auth/forgot-password` and `/auth/reset-password`
+- **`courses`** - `GET /courses`, `/courses/{id}`, `/courses/{id}/modules`, `/courses/lessons/{id}` (GET is public; POST/PUT/DELETE require an administrator role)
 - **`assessments`** - quiz CRUD, `POST /assessments/submit`, `GET /assessments/results`
 - **`contests`** - `GET /contests/active?courseId=`, `GET /contests/{id}/leaderboard` (learner-facing, read-only)
 - **`notes`** - full CRUD under `/notes`, scoped to the authenticated user
@@ -174,10 +180,9 @@ All endpoints are under `/api/v1/`. Learner-facing endpoints require a valid JWT
 
 ## 7. Known limitations / not built
 
-- **No real object storage.** `FileStorageService` writes to local disk (`backend/uploads/`, configurable via `app.storage.root`) instead of S3/GCS. Fine for a single-instance deployment; would need to change for anything horizontally scaled.
-- **No literal microservice split.** One Spring Boot process, one database. The package structure maps onto the reference architecture (see [Architecture](#1-architecture)) so a future split is straightforward, but nothing here is independently deployable today.
+- **R2 object migration is manual.** New uploads use R2 once configured, but existing seed and historical files in `backend/uploads/` are not copied automatically. Upload or migrate them to their matching R2 prefixes before removing local storage from a deployment.
 - **Contests have no dedicated scoring table** by design - see [Contests design](#contests-design). If contests ever need their own timer/scoring rules independent of the underlying quiz, that'll need a real design pass.
 - **The admin app's bulk CSS cleanup was scoped down.** `admin/app/globals.css` looks like it's ~90% duplicated from the learner frontend's stylesheet, but it is **not** dead code - the admin app's own auth/onboarding pages reuse those unprefixed classes for a consistent look. A full audit (there are 5 more `:root` blocks scattered through the file besides the one at the top) was out of scope for this pass; a targeted overlap bug in the mobile course-list layout was found and fixed instead (see the CSS trim-and-revert in the `admin/app/courses` styles history if you want the story).
-- **`organization`/`department`/`team`/`employee`** backend domain is untouched and still fully functional at the API level - it's just no longer exposed in the admin UI (the Learners page and dashboard now use org-independent endpoints). Nothing else in the system depends on it being removed, so it was left in place rather than deleted.
-- **The `TRAINER` role has no admin UI.** The backend authorizes trainers for the full `/api/v1/admin/**` surface, but `admin/app/components/AdminGuard.tsx` only allows `HR_ADMIN`/`ORGANIZATION_ADMIN`/`SUPER_ADMIN` into the console itself. A trainer today would need direct API access or a role upgrade.
-- **Google OAuth tokens are passed through the browser callback.** The OAuth callback currently redirects to the learner frontend with BaseCamp tokens in the query string, which the callback page immediately stores and replaces with an in-app route. A production hardening pass should replace this with a short-lived, one-time server-side exchange code or secure same-site cookies.
+- **Organization directory records** remain available in the backend API but are no longer exposed in the admin UI. The Learners page and dashboard use org-independent endpoints; these records are separate from the four authentication roles.
+- **Google OAuth uses a short-lived, one-time exchange code.** The callback URL contains only an opaque code; the frontend exchanges it once with the backend for JWTs, and the code is then invalidated.
+- **Fonts are self-contained at build time.** Both Next.js apps use a system font stack and do not require Google Fonts network access during production builds.

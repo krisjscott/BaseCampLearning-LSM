@@ -6,7 +6,6 @@ import com.tiesverse.backend.common.enums.CourseVisibility;
 import com.tiesverse.backend.course.entity.Course;
 import com.tiesverse.backend.course.repository.CourseRepository;
 import com.tiesverse.backend.dashboard.dto.response.AdminDashboardResponse;
-import com.tiesverse.backend.dashboard.dto.response.EmployeeDashboardResponse;
 import com.tiesverse.backend.dashboard.dto.response.PublicDashboardResponse;
 import com.tiesverse.backend.progress.repository.CourseProgressRepository;
 import com.tiesverse.backend.progress.repository.LessonProgressRepository;
@@ -101,17 +100,6 @@ public class DashboardServiceImpl implements DashboardService {
                 .recommendedCourses(recommendedCourses)
                 .recentActivities(recentActivities)
                 .xpPoints(Math.toIntExact(Math.min(xpPoints, Integer.MAX_VALUE)))
-                .build();
-    }
-
-    @Override
-    @Cacheable(value = "employeeDashboard", key = "#userId")
-    public EmployeeDashboardResponse getEmployeeDashboard(UUID userId) {
-        return EmployeeDashboardResponse.builder()
-                .assignedModules(List.of())
-                .complianceTraining(List.of())
-                .teamProgress(EmployeeDashboardResponse.TeamProgressItem.builder().build())
-                .internalCertifications(List.of())
                 .build();
     }
 

@@ -106,7 +106,7 @@ import java.util.stream.Collectors;
 public class AdminServiceImpl implements AdminService {
 
     private static final Set<Role> ADMIN_TIER_ROLES = Set.of(
-            Role.TRAINER, Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
+            Role.HR_ADMIN, Role.ORGANIZATION_ADMIN, Role.SUPER_ADMIN);
 
     private final CourseRepository courseRepository;
     private final CategoryRepository categoryRepository;
@@ -776,7 +776,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public AdminAccountResponse createAdmin(CreateAdminAccountRequest request, Principal principal) {
         if (!ADMIN_TIER_ROLES.contains(request.getRole())) {
-            throw new BadRequestException("Role must be one of TRAINER, HR_ADMIN, ORGANIZATION_ADMIN, SUPER_ADMIN");
+            throw new BadRequestException("Role must be one of HR_ADMIN, ORGANIZATION_ADMIN, SUPER_ADMIN");
         }
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email already registered");
@@ -809,7 +809,7 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public AdminAccountResponse updateAdminRole(UUID id, UpdateAdminAccountRoleRequest request, Principal principal) {
         if (!ADMIN_TIER_ROLES.contains(request.getRole())) {
-            throw new BadRequestException("Role must be one of TRAINER, HR_ADMIN, ORGANIZATION_ADMIN, SUPER_ADMIN");
+            throw new BadRequestException("Role must be one of HR_ADMIN, ORGANIZATION_ADMIN, SUPER_ADMIN");
         }
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin account", "id", id));

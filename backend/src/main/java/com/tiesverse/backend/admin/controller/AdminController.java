@@ -57,7 +57,7 @@ import java.util.UUID;
 /**
  * Admin-only backend API surface, separate from the shared learner-facing
  * controllers under /api/v1/courses, /api/v1/assessments, etc. Access is
- * restricted to TRAINER/HR_ADMIN/ORGANIZATION_ADMIN/SUPER_ADMIN roles - see
+ * restricted to HR_ADMIN/ORGANIZATION_ADMIN/SUPER_ADMIN roles - see
  * SecurityConfig.
  */
 @RestController
