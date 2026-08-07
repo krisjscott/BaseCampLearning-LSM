@@ -1,8 +1,12 @@
 {
+  "name": "basecamp",
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
     "dev:local": "next dev -H 127.0.0.1 -p 3100",
     "build": "next build",
+    "cf-build": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start -H 0.0.0.0",
     "start:local": "next start -H 0.0.0.0 -p 3100"
   },
@@ -17,9 +21,11 @@
     "remark-math": "^6.0.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "wrangler": "^4.120.0",
     "typescript": "^5.9.2"
   }
 }

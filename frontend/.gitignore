@@ -1,0 +1,4 @@
+.dev.vars
+.open-next/
+.wrangler/
+cloudflare-env.d.ts
