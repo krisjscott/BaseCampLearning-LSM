@@ -7,6 +7,7 @@ import AdminSidebar from "../components/AdminSidebar";
 import { CardSkeleton } from "../components/Skeleton";
 import { getAuthSession, getCurrentUser, UserResponse } from "../lib/backendApi";
 import { getVideoRules, updateVideoRules } from "../lib/adminApi";
+import { changePassword } from "../lib/backendApi";
 
 type FormState = {
   allowedFormats: string;
@@ -40,6 +41,9 @@ function SettingsContent() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordStatus, setPasswordStatus] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const session = getAuthSession();
   const role = session?.role || "";
@@ -82,6 +86,22 @@ function SettingsContent() {
       setError(err instanceof Error ? err.message : "Could not save video rules.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleChangePassword() {
+    setPasswordStatus("");
+    if (passwordForm.newPassword.length < 8) return setPasswordStatus("New password must be at least 8 characters.");
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) return setPasswordStatus("Passwords do not match.");
+    setChangingPassword(true);
+    try {
+      await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordStatus("Password changed. Please sign in again.");
+    } catch (err) {
+      setPasswordStatus(err instanceof Error ? err.message : "Could not change password.");
+    } finally {
+      setChangingPassword(false);
     }
   }
 
@@ -173,6 +193,17 @@ function SettingsContent() {
               </div>
             </div>
           )}
+        </section>
+
+        <section className="admin-panel admin-panel-wide">
+          <div className="admin-panel-heading"><div><h2>Account security</h2></div></div>
+          <div className="admin-form-grid">
+            <label><span>Current password</span><input type="password" autoComplete="current-password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} /></label>
+            <label><span>New password</span><input type="password" autoComplete="new-password" minLength={8} value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} /></label>
+            <label><span>Confirm new password</span><input type="password" autoComplete="new-password" minLength={8} value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))} /></label>
+            {passwordStatus && <p className="admin-form-span-2 admin-panel-caption">{passwordStatus}</p>}
+            <div><button type="button" className="admin-primary-btn" onClick={handleChangePassword} disabled={changingPassword}>{changingPassword ? "Changing..." : "Change password"}</button></div>
+          </div>
         </section>
       </section>
     </main>

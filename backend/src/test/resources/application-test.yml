@@ -16,10 +16,6 @@ spring:
   flyway:
     enabled: false
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
-
 jwt:
   secret: VGhpcy1pcy1hLXRlc3QtYmFzZWNhbXAtc2VjcmV0LWtleS0zMi1ieXRlcy1sb25n
   expiration: 3600000

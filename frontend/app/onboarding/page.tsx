@@ -156,6 +156,7 @@ function OnboardingScreens() {
   const [interestQuery, setInterestQuery] = useState("");
   const [profileType, setProfileType] = useState("");
   const [role, setRole] = useState("");
+  const [phone, setPhone] = useState("");
   const [educationLevel, setEducationLevel] = useState("");
   const [loadingDone, setLoadingDone] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -168,7 +169,10 @@ function OnboardingScreens() {
     let active = true;
     getCurrentUser()
       .then((data) => {
-        if (active && data) setUser(data);
+        if (active && data) {
+          setUser(data);
+          setPhone(data.phone || "");
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -192,7 +196,7 @@ function OnboardingScreens() {
     const minimumDelay = new Promise((resolve) => window.setTimeout(resolve, 1500));
 
     Promise.all([
-      updateCurrentUser({ fullName: user?.fullName || "", bio: profileSummary }),
+      updateCurrentUser({ fullName: user?.fullName || "", phone, bio: profileSummary }),
       minimumDelay,
     ])
       .then(() => {
@@ -208,7 +212,7 @@ function OnboardingScreens() {
     return () => {
       active = false;
     };
-  }, [isLoading, retryCount, goal, selectedInterests, profileType, role, educationLevel, user, router]);
+  }, [isLoading, retryCount, goal, selectedInterests, profileType, role, phone, educationLevel, user, router]);
 
   const progress = useMemo(() => Math.min((step + 1) * 25, 100), [step]);
   const filteredInterests = useMemo(() => {
@@ -411,6 +415,18 @@ function OnboardingScreens() {
                   </button>
                 ))}
               </div>
+              <label className="role-search">
+                <span>Phone number <small>(optional)</small></span>
+                <div>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value)}
+                    placeholder="Enter your phone number"
+                    autoComplete="tel"
+                  />
+                </div>
+              </label>
               <p className="hint-pill">You can update or remove this information from your profile.</p>
             </div>
             <Footer final onBack={back} onNext={next} />
@@ -479,4 +495,3 @@ export default function OnboardingPage() {
     </AuthGuard>
   );
 }
-

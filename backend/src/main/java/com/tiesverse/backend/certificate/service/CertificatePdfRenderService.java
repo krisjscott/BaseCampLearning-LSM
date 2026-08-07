@@ -23,7 +23,6 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -51,12 +50,7 @@ public class CertificatePdfRenderService {
 
     public byte[] render(CertificateTemplate template, List<CertificateTemplateElement> elements,
                           Map<String, String> tokenValues, String verifyUrl) {
-        byte[] originalPdf;
-        try {
-            originalPdf = Files.readAllBytes(fileStorageService.resolve(template.getOriginalPdfUrl()));
-        } catch (IOException e) {
-            throw new BadRequestException("Could not read the certificate template file: " + e.getMessage());
-        }
+        byte[] originalPdf = fileStorageService.readAllBytes(template.getOriginalPdfUrl());
 
         try (PDDocument document = Loader.loadPDF(originalPdf);
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {

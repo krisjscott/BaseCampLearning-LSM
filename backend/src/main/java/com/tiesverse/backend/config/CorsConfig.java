@@ -21,6 +21,9 @@ public class CorsConfig {
     @Value("${app.cors.allowed-origins:}")
     private String configuredAllowedOrigins;
 
+    @Value("${app.frontend-url:}")
+    private String frontendUrl;
+
     @Value("${spring.profiles.active:}")
     private String activeProfiles;
 
@@ -47,9 +50,26 @@ public class CorsConfig {
                     .toList());
         }
 
+        // The OAuth success handler redirects to this same frontend URL, and
+        // the browser then POSTs the one-time code back to the API. Keeping
+        // FRONTEND_URL in the CORS set prevents that exchange from depending
+        // on a second, easy-to-miss environment variable.
+        if (frontendUrl != null && !frontendUrl.isBlank()) {
+            allowedOrigins.add(frontendUrl.trim().replaceAll("/$", ""));
+        }
+
         config.setAllowedOriginPatterns(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
+        // Keep this explicit because browsers can reject wildcard CORS
+        // headers when credentials are enabled, even if the preflight itself
+        // reaches the server successfully.
+        config.setAllowedHeaders(List.of(
+                "Accept",
+                "Authorization",
+                "Content-Type",
+                "Origin",
+                "X-Requested-With"
+        ));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
 

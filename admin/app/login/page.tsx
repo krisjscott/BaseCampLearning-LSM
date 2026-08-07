@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { login } from "../lib/backendApi";
@@ -69,6 +70,8 @@ export default function AdminLoginPage() {
               type="password"
               required
             />
+
+            <Link href="/recover-access" className="forgot-password-link">Forgot your password?</Link>
 
             {status ? <p className="auth-status">{status}</p> : null}
 

@@ -18,7 +18,7 @@ import {
   updateAdminRole,
 } from "../lib/adminApi";
 
-const emptyForm = { fullName: "", email: "", password: "", role: "TRAINER" as AdminTierRole };
+const emptyForm = { fullName: "", email: "", password: "", role: "HR_ADMIN" as AdminTierRole };
 
 function formatDate(value?: string | null) {
   if (!value) return "-";

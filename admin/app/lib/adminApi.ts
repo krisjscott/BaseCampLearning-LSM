@@ -290,7 +290,7 @@ export type AdminDashboardStatsResponse = {
 // Admin account management - backed by /api/v1/admin/admins (AdminAccountResponse)
 // ---------------------------------------------------------------------------
 
-export const ADMIN_TIER_ROLES = ["TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN"] as const;
+export const ADMIN_TIER_ROLES = ["HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN"] as const;
 export type AdminTierRole = (typeof ADMIN_TIER_ROLES)[number];
 
 export type AdminAccountResponse = {

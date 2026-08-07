@@ -12,28 +12,20 @@ Create an ignored `.env` file:
 copy .env.example .env
 ```
 
-Required production values:
+Set `SPRING_PROFILES_ACTIVE=prod` and provide database, JWT, OAuth, R2, SMTP, CORS, and other runtime values through the deployment platform's secret manager. The variable names and local-development placeholders are maintained in `.env.example`; secret values are intentionally not documented here.
 
-```text
-SPRING_PROFILES_ACTIVE=prod
-SERVER_PORT=8081
-JWT_SECRET=<strong-base64-secret>
-DB_URL=<production-jdbc-url>
-DB_USERNAME=<production-db-user>
-DB_PASSWORD=<production-db-password>
-REDIS_HOST=<redis-host>
-RABBITMQ_HOST=<rabbitmq-host>
-RABBITMQ_USERNAME=<rabbitmq-user>
-RABBITMQ_PASSWORD=<rabbitmq-password>
-TURNSTILE_ENABLED=true
-TURNSTILE_SECRET=<cloudflare-turnstile-secret>
-```
+The production profiles use a ten-minute Hikari connection lifetime and one-minute keepalive by default, allowing the pool to replace connections before common managed-PostgreSQL idle limits. Override `DB_POOL_MAX_LIFETIME_MS`, `DB_POOL_KEEPALIVE_MS`, and `DB_POOL_IDLE_TIMEOUT_MS` when the database provider specifies different limits.
+
+Production migrations remove the local/demo accounts and sample course data. Set the three `INITIAL_ADMIN_*` values for the first start only, then remove `INITIAL_ADMIN_PASSWORD` from deployment secrets. The bootstrap is idempotent and only creates the account when that email does not already exist.
 
 For local frontend testing against a backend running on `prod`, include the local browser origin in CORS:
 
 ```text
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+CORS_ALLOWED_ORIGINS=http://localhost:3100,http://localhost:3101,http://127.0.0.1:3100,http://127.0.0.1:3101
 ```
+
+`CORS_ALLOWED_ORIGINS` is the canonical variable name. `FRONTEND_URL` is
+also added automatically to the CORS allowlist for the OAuth code exchange.
 
 If the frontend runs on another port, add that exact origin too, for example `http://localhost:3001`. A missing origin causes Spring to return `Invalid CORS request` before the API controller is reached.
 

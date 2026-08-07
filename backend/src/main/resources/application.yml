@@ -4,7 +4,7 @@ spring:
   config:
     import: optional:file:.env[.properties]
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:cloud}
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
   jpa:
     properties:
@@ -26,11 +26,11 @@ spring:
             # are set.
             client-id: ${GOOGLE_CLIENT_ID:unconfigured-google-client-id}
             client-secret: ${GOOGLE_CLIENT_SECRET:unconfigured-google-client-secret}
-            scope: openid,profile,email
+            scope: [openid,profile,email]
 
   mail:
-    host: ://gmail.com
-    port: 587
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
@@ -50,8 +50,15 @@ server:
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3100}
+  password-reset-url: ${PASSWORD_RESET_URL:${FRONTEND_URL:http://localhost:3100}/recover-access}
   storage:
     root: ${STORAGE_ROOT:./uploads}
+
+r2:
+  endpoint: ${R2_ENDPOINT:}
+  bucket: ${R2_BUCKET:}
+  access-key-id: ${R2_ACCESS_KEY_ID:}
+  secret-access-key: ${R2_SECRET_ACCESS_KEY:}
 
 springdoc:
   api-docs:
@@ -61,7 +68,7 @@ springdoc:
     enabled: true
 
 jwt:
-  secret: ${JWT_SECRET:VGhpcy1pcy1hLWJhc2VjYW1wLWxvY2FsLWRldi1zZWNyZXQta2V5LTMyLWJ5dGVzLWxvbmc=}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}
 
 turnstile:
