@@ -29,8 +29,8 @@ spring:
             scope: openid,profile,email
 
   mail:
-    host: ://gmail.com
-    port: 587
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
@@ -50,8 +50,15 @@ server:
 
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3100}
+  password-reset-url: ${PASSWORD_RESET_URL:${FRONTEND_URL:http://localhost:3100}/recover-access}
   storage:
     root: ${STORAGE_ROOT:./uploads}
+
+r2:
+  endpoint: ${R2_ENDPOINT:}
+  bucket: ${R2_BUCKET:}
+  access-key-id: ${R2_ACCESS_KEY_ID:}
+  secret-access-key: ${R2_SECRET_ACCESS_KEY:}
 
 springdoc:
   api-docs:
