@@ -8,9 +8,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     hikari:
-      keepalive-time: 30000
-      max-lifetime: 1800000
+      keepalive-time: ${DB_POOL_KEEPALIVE_MS:60000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME_MS:600000}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT_MS:300000}
       connection-timeout: 30000
+      validation-timeout: 5000
 
   jpa:
     hibernate:

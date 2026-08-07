@@ -14,6 +14,8 @@ copy .env.example .env
 
 Set `SPRING_PROFILES_ACTIVE=prod` and provide database, JWT, OAuth, R2, SMTP, CORS, and other runtime values through the deployment platform's secret manager. The variable names and local-development placeholders are maintained in `.env.example`; secret values are intentionally not documented here.
 
+The production profiles use a ten-minute Hikari connection lifetime and one-minute keepalive by default, allowing the pool to replace connections before common managed-PostgreSQL idle limits. Override `DB_POOL_MAX_LIFETIME_MS`, `DB_POOL_KEEPALIVE_MS`, and `DB_POOL_IDLE_TIMEOUT_MS` when the database provider specifies different limits.
+
 Production migrations remove the local/demo accounts and sample course data. Set the three `INITIAL_ADMIN_*` values for the first start only, then remove `INITIAL_ADMIN_PASSWORD` from deployment secrets. The bootstrap is idempotent and only creates the account when that email does not already exist.
 
 For local frontend testing against a backend running on `prod`, include the local browser origin in CORS:
