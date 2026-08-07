@@ -17,6 +17,7 @@ import java.io.IOException;
 public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     private final GoogleOAuthService googleOAuthService;
+    private final OAuthExchangeService exchangeService;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -24,11 +25,13 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                          Authentication authentication) throws IOException {
+        response.setHeader("Cache-Control", "no-store");
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String googleId = oAuth2User.getAttribute("sub");
         String fullName = oAuth2User.getAttribute("name");
         String pictureUrl = oAuth2User.getAttribute("picture");
+        String phoneNumber = oAuth2User.getAttribute("phone_number");
 
         if (email == null || googleId == null) {
             redirectWithError(response, "Google did not share an email address for this account.");
@@ -37,21 +40,16 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
         GoogleOAuthService.GoogleAuthentication googleAuthentication;
         try {
-            googleAuthentication = googleOAuthService.authenticate(googleId, email, fullName, pictureUrl);
+            googleAuthentication = googleOAuthService.authenticate(googleId, email, fullName, pictureUrl, phoneNumber);
         } catch (IllegalStateException ex) {
             redirectWithError(response, ex.getMessage());
             return;
         }
 
-        var auth = googleAuthentication.auth();
+        String exchangeCode = exchangeService.createCode(googleAuthentication);
         String redirectUrl = UriComponentsBuilder.fromUriString(frontendUrl)
                 .path("/oauth/callback")
-                .queryParam("accessToken", auth.getAccessToken())
-                .queryParam("refreshToken", auth.getRefreshToken())
-                .queryParam("email", auth.getEmail())
-                .queryParam("role", auth.getRole().name())
-                .queryParam("fullName", auth.getFullName())
-                .queryParam("newUser", googleAuthentication.newUser())
+                .queryParam("code", exchangeCode)
                 .build()
                 .encode()
                 .toUriString();

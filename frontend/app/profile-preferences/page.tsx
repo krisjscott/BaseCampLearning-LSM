@@ -9,6 +9,7 @@ import {
   getCurrentUser,
   getCurrentUserSettings,
   getPublicDashboard,
+  changePassword,
   logout,
   updateCurrentUser,
   updateCurrentUserSettings,
@@ -39,6 +40,9 @@ function ProfilePreferencesDesktop() {
   const [status, setStatus] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordStatus, setPasswordStatus] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -120,6 +124,28 @@ function ProfilePreferencesDesktop() {
   async function handleSignOut() {
     setIsSigningOut(true);
     await logout();
+  }
+
+  async function handleChangePassword() {
+    setPasswordStatus("");
+    if (passwordForm.newPassword.length < 8) {
+      setPasswordStatus("New password must be at least 8 characters.");
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordStatus("Passwords do not match.");
+      return;
+    }
+    setIsChangingPassword(true);
+    try {
+      await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordStatus("Password changed. Please sign in again.");
+    } catch (error) {
+      setPasswordStatus(error instanceof Error ? error.message : "Could not change password.");
+    } finally {
+      setIsChangingPassword(false);
+    }
   }
 
   const name = displayName(user);
@@ -261,7 +287,15 @@ function ProfilePreferencesDesktop() {
             {loading ? <CardSkeleton lines={3} /> : (
               <>
                 <h2>Account security</h2>
-                <p>Email sign-in and Crew ID access are active. Sign out clears this browser session and notifies the backend.</p>
+                <p>Change your password or sign out of this browser session.</p>
+                <input type="password" placeholder="Current password" autoComplete="current-password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} />
+                <input type="password" placeholder="New password" autoComplete="new-password" minLength={8} value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} />
+                <input type="password" placeholder="Confirm new password" autoComplete="new-password" minLength={8} value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, confirmPassword: event.target.value }))} />
+                {passwordStatus ? <p className="profile-save-status">{passwordStatus}</p> : null}
+                <button type="button" className="secondary" onClick={handleChangePassword} disabled={isChangingPassword}>
+                  <UserCheck size={17} />
+                  <span>{isChangingPassword ? "Changing..." : "Change password"}</span>
+                </button>
                 <button type="button" className="secondary" onClick={handleSignOut} disabled={isSigningOut}>
                   <LogOut size={17} />
                   <span>{isSigningOut ? "Signing out..." : "Sign out"}</span>

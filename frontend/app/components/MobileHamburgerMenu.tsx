@@ -36,7 +36,6 @@ const learningRoutes = [
   "/category/business-management",
   "/profile-preferences",
   "/help-support",
-  "/recover-access",
   "/verify-credential",
   "/assignment-submission",
   "/notes-bookmarks",
@@ -55,6 +54,7 @@ function getActivePath(pathname: string) {
 
 export default function MobileHamburgerMenu() {
   const pathname = usePathname();
+  const isPublicRecoveryRoute = pathname === "/recover-access" || pathname.startsWith("/recover-access/");
   const [open, setOpen] = useState(false);
   const [xpPoints, setXpPoints] = useState(0);
   const [loadingStatus, setLoadingStatus] = useState(true);
@@ -94,7 +94,7 @@ export default function MobileHamburgerMenu() {
     };
   }, [pathname]);
 
-  if (!shouldShow) return null;
+  if (!shouldShow || isPublicRecoveryRoute) return null;
 
   async function handleSignOut() {
     setSigningOut(true);

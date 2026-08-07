@@ -55,6 +55,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/refresh",
+                                "/api/v1/auth/oauth/exchange",
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/reset-password",
                                 "/api/v1/auth/verify-email",
@@ -77,13 +78,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/assessments/results/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/assessments/results").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
-                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
-                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/courses/**", "/api/v1/contents/**", "/api/v1/assessments/**")
-                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/admin/**")
-                        .hasAnyRole("TRAINER", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
+                        .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/enrollments/assign", "/api/v1/enrollments/learning-paths")
                         .hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/enrollments/**")
@@ -93,7 +94,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/organizations/**").hasAnyRole("ORGANIZATION_ADMIN", "HR_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/analytics/**").hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .requestMatchers("/api/v1/dashboard/admin").hasAnyRole("HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
-                        .requestMatchers("/api/v1/dashboard/employee").hasAnyRole("EMPLOYEE", "HR_ADMIN", "ORGANIZATION_ADMIN", "SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

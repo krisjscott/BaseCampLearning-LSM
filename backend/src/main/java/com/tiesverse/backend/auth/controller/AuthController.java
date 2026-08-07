@@ -1,5 +1,6 @@
 package com.tiesverse.backend.auth.controller;
 
+import com.tiesverse.backend.auth.dto.request.ChangePasswordRequest;
 import com.tiesverse.backend.auth.dto.request.ForgotPasswordRequest;
 import com.tiesverse.backend.auth.dto.request.LoginRequest;
 import com.tiesverse.backend.auth.dto.request.OtpRequest;
@@ -52,6 +53,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Void>> logout(Principal principal) {
         authService.logout(authContext.currentAccount(principal).getEmail());
         return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            Principal principal,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(authContext.currentAccount(principal).getId(), request);
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
 
     @PostMapping("/forgot-password")

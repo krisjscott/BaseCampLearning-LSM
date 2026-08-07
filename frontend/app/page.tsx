@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
 import { ArrowRight, BookOpenCheck, CalendarDays, CheckCircle2, Eye, EyeOff } from "lucide-react";
@@ -177,7 +178,7 @@ export default function AuthScreen() {
             </div>
 
             {mode === "login" && (
-              <a href="/recover-access" className="forgot-password-link">Forgot your password?</a>
+          <Link href="/recover-access" className="forgot-password-link">Forgot your password?</Link>
             )}
 
             {status ? <p className="auth-status">{status}</p> : null}

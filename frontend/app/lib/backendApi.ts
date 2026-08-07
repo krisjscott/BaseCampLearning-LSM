@@ -232,7 +232,9 @@ function clearSessionCookie(): void {
 }
 
 function redirectToLogin(): void {
-  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+  const publicRecoveryRoute = typeof window !== "undefined"
+    && (window.location.pathname === "/recover-access" || window.location.pathname.startsWith("/recover-access/"));
+  if (typeof window !== "undefined" && window.location.pathname !== "/" && !publicRecoveryRoute) {
     window.location.href = "/";
   }
 }
@@ -369,11 +371,23 @@ export async function backendRequest<T>(
 /**
  * Kicks off the backend's Spring Security oauth2Login flow for Google. The
  * backend handles the whole round trip with Google and redirects the browser
- * back to /oauth/callback with tokens in the query string once it's done -
- * this isn't an API call, just the URL the browser should navigate to.
+ * back to /oauth/callback with a short-lived one-time exchange code once it's
+ * done - this isn't an API call, just the URL the browser should navigate to.
  */
 export function getGoogleOAuthUrl(): string {
   return `${API_BASE_URL}/oauth2/authorization/google`;
+}
+
+export async function exchangeGoogleOAuthCode(code: string): Promise<AuthPayload & { newUser: boolean }> {
+  const response = await backendRequest<{ auth: AuthPayload; newUser: boolean }>("/api/v1/auth/oauth/exchange", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+  if (!response.data?.auth) {
+    throw new Error(response.message || "Google sign-in did not complete");
+  }
+  saveAuth(response.data.auth);
+  return { ...response.data.auth, newUser: response.data.newUser };
 }
 
 export async function login(email: string, password: string, turnstileToken?: string | null): Promise<AuthPayload> {
@@ -674,6 +688,13 @@ export async function forgotPassword(email: string, turnstileToken?: string | nu
   await backendRequest<void>("/api/v1/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify({ email, turnstileToken }),
+  });
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await backendRequest<void>("/api/v1/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, newPassword }),
   });
 }
 
