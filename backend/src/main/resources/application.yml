@@ -11,20 +11,15 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+
   flyway:
     out-of-order: true
+
   security:
     oauth2:
       client:
         registration:
           google:
-            # Spring Boot only builds a ClientRegistrationRepository bean (needed for
-            # oauth2Login()/"/oauth2/authorization/google" to exist at all) when a
-            # registration has a non-blank client-id/secret - an empty default would
-            # make the whole app fail to start. These placeholders keep the app
-            # booting with Google sign-in wired up but non-functional (Google will
-            # reject the placeholder id) until real GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET
-            # are set.
             client-id: ${GOOGLE_CLIENT_ID:unconfigured-google-client-id}
             client-secret: ${GOOGLE_CLIENT_SECRET:unconfigured-google-client-secret}
             scope: [openid,profile,email]
@@ -76,6 +71,7 @@ turnstile:
   secret-key: ${TURNSTILE_SECRET:}
   enabled: ${TURNSTILE_ENABLED:}
 
+# ROOT LEVEL ACTUATOR CONFIGURATION
 management:
   endpoints:
     web:
@@ -83,7 +79,14 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
+  health:
+    redis:
+      enabled: false
+    rabbit:
+      enabled: false
+    mail:
+      enabled: false
   metrics:
     export:
       prometheus:
