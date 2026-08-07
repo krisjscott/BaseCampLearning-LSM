@@ -1,41 +1,109 @@
 -- Production-only cleanup for the local/demo dataset created by V5 and V7.
--- Local development uses the shared migrations without this location.
+-- This version is defensive: it removes demo rows by their course/assessment
+-- and lesson relationships so extra seeded child rows do not break Flyway.
 
 DELETE FROM answers
-WHERE result_id = 'd0000002-0000-0000-0000-000000000001'::uuid
-   OR question_id IN ('d0000001-0000-0000-0000-000000000011'::uuid, 'd0000001-0000-0000-0000-000000000012'::uuid);
-DELETE FROM assessment_results WHERE id = 'd0000002-0000-0000-0000-000000000001'::uuid;
-DELETE FROM question_options WHERE question_id IN ('d0000001-0000-0000-0000-000000000011'::uuid, 'd0000001-0000-0000-0000-000000000012'::uuid);
-DELETE FROM questions WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid;
-DELETE FROM contests WHERE id = 'f0000001-0000-0000-0000-000000000001'::uuid;
-DELETE FROM assessments WHERE id = 'd0000001-0000-0000-0000-000000000001'::uuid;
-DELETE FROM assignment_submissions WHERE id = 'a000000a-0000-0000-0000-000000000001'::uuid;
-DELETE FROM discussion_posts WHERE id IN ('a0000009-0000-0000-0000-000000000001'::uuid, 'a0000009-0000-0000-0000-000000000002'::uuid);
-DELETE FROM bookmarks WHERE id = 'a0000008-0000-0000-0000-000000000001'::uuid;
-DELETE FROM notes WHERE id IN ('a0000007-0000-0000-0000-000000000001'::uuid, 'a0000007-0000-0000-0000-000000000002'::uuid);
+WHERE result_id IN (
+        SELECT id
+        FROM assessment_results
+        WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid
+    )
+   OR question_id IN (
+        SELECT id
+        FROM questions
+        WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid
+    );
+DELETE FROM assessment_results
+WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM question_options
+WHERE question_id IN (
+    SELECT id
+    FROM questions
+    WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid
+);
+DELETE FROM questions
+WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM contests
+WHERE assessment_id = 'd0000001-0000-0000-0000-000000000001'::uuid
+   OR course_id = 'c0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM assessments
+WHERE id = 'd0000001-0000-0000-0000-000000000001'::uuid
+   OR course_id = 'c0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM assignment_submissions
+WHERE lesson_id IN (
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
+);
+DELETE FROM discussion_posts
+WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM bookmarks
+WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+   OR lesson_id IN (
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
+);
+DELETE FROM notes
+WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+   OR lesson_id IN (
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
+);
 DELETE FROM lesson_progress
 WHERE lesson_id IN (
-    'c0000001-0000-0000-0000-000000000021'::uuid,
-    'c0000001-0000-0000-0000-000000000022'::uuid,
-    'c0000001-0000-0000-0000-000000000023'::uuid,
-    'c0000001-0000-0000-0000-000000000024'::uuid,
-    'c0000001-0000-0000-0000-000000000025'::uuid
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
 );
 DELETE FROM course_progress
 WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
    OR last_lesson_id IN (
-    'c0000001-0000-0000-0000-000000000021'::uuid,
-    'c0000001-0000-0000-0000-000000000022'::uuid,
-    'c0000001-0000-0000-0000-000000000023'::uuid,
-    'c0000001-0000-0000-0000-000000000024'::uuid,
-    'c0000001-0000-0000-0000-000000000025'::uuid
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
 );
 DELETE FROM enrollments
-WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
-   OR id IN ('e0000001-0000-0000-0000-000000000001'::uuid, 'e0000001-0000-0000-0000-000000000002'::uuid);
-DELETE FROM reading_contents WHERE id = 'c0000001-0000-0000-0000-000000000031'::uuid;
-DELETE FROM lessons WHERE id IN ('c0000001-0000-0000-0000-000000000021'::uuid, 'c0000001-0000-0000-0000-000000000022'::uuid, 'c0000001-0000-0000-0000-000000000023'::uuid, 'c0000001-0000-0000-0000-000000000024'::uuid, 'c0000001-0000-0000-0000-000000000025'::uuid);
-DELETE FROM course_modules WHERE id IN ('c0000001-0000-0000-0000-000000000011'::uuid, 'c0000001-0000-0000-0000-000000000012'::uuid);
+WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid;
+DELETE FROM reading_contents
+WHERE lesson_id IN (
+    SELECT id
+    FROM lessons
+    WHERE module_id IN (
+        SELECT id
+        FROM course_modules
+        WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+    )
+);
+DELETE FROM lessons
+WHERE module_id IN (
+    SELECT id
+    FROM course_modules
+    WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid
+);
+DELETE FROM course_modules
+WHERE course_id = 'c0000001-0000-0000-0000-000000000001'::uuid;
 DELETE FROM courses WHERE id = 'c0000001-0000-0000-0000-000000000001'::uuid;
 DELETE FROM categories WHERE id = 'b0000001-0000-0000-0000-000000000001'::uuid;
 
