@@ -2,7 +2,6 @@ package com.tiesverse.backend.config;
 
 import com.tiesverse.backend.security.jwt.JwtAuthenticationEntryPoint;
 import com.tiesverse.backend.security.jwt.JwtFilter;
-import com.tiesverse.backend.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.tiesverse.backend.security.oauth.OAuthFailureHandler;
 import com.tiesverse.backend.security.oauth.OAuthSuccessHandler;
 import org.springframework.context.annotation.Bean;
@@ -49,8 +48,6 @@ public class SecurityConfig {
                         // every JWT-bearer API request still never triggers a session.
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(authorization->authorization
-                                .authorizationRequestRepository(cookieAuthorizationRequestRepository()))
                         .successHandler(oAuthSuccessHandler)
                         .failureHandler(oAuthFailureHandler))
                         .authorizeHttpRequests(auth -> auth
@@ -111,10 +108,5 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
-        return new HttpCookieOAuth2AuthorizationRequestRepository();
     }
 }
