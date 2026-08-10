@@ -16,5 +16,7 @@ public interface AuthMapper {
     @Mapping(target = "email", source = "account.email")
     @Mapping(target = "role", source = "account.role")
     @Mapping(target = "fullName", source = "fullName")
+    @Mapping(target = "mfaRequired", ignore = true)
+    @Mapping(target = "emailVerificationRequired", ignore = true)
     AuthResponse toAuthResponse(Account account, String accessToken, String refreshToken, String fullName);
 }

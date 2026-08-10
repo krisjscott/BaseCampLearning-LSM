@@ -50,7 +50,7 @@ public class GoogleOAuthService {
                         .role(Role.PUBLIC_USER)
                         .authProvider(AuthProvider.GOOGLE)
                         .googleId(googleId)
-                        .emailVerified(true)
+                        .emailVerified(false)
                         .build();
                 account = accountRepository.save(account);
 

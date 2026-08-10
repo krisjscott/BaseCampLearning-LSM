@@ -32,7 +32,13 @@ export default function OAuthCallbackPage() {
     exchangeGoogleOAuthCode(code)
       .then((auth) => {
         window.history.replaceState({}, document.title, window.location.pathname);
-        router.replace(auth.newUser ? "/onboarding" : "/learning");
+        if (auth.mfaRequired) {
+          router.replace(`/otp-verify?email=${encodeURIComponent(auth.email)}&type=LOGIN_MFA`);
+        } else if (auth.emailVerificationRequired) {
+          router.replace(`/otp-verify?email=${encodeURIComponent(auth.email)}&type=EMAIL_VERIFICATION`);
+        } else {
+          router.replace(auth.newUser ? "/onboarding" : "/learning");
+        }
       })
       .catch((err) => {
         processedCodeRef.current = null;

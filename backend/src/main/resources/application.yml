@@ -91,3 +91,11 @@ management:
     export:
       prometheus:
         enabled: true
+
+aws:
+  ses:
+    access-key-id: ${AWS_SES_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SES_SECRET_ACCESS_KEY:}
+    region: ${AWS_SES_REGION:us-east-1}
+    from-email: ${AWS_SES_FROM_EMAIL:no-reply@tiesverse.com}
+    endpoint: ${AWS_SES_ENDPOINT:}

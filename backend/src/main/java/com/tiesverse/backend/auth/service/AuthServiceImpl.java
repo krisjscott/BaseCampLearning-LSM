@@ -7,14 +7,17 @@ import com.tiesverse.backend.auth.dto.request.OtpRequest;
 import com.tiesverse.backend.auth.dto.request.RefreshTokenRequest;
 import com.tiesverse.backend.auth.dto.request.RegisterRequest;
 import com.tiesverse.backend.auth.dto.request.ResetPasswordRequest;
+import com.tiesverse.backend.auth.dto.request.ResendOtpRequest;
 import com.tiesverse.backend.auth.dto.request.VerifyEmailRequest;
 import com.tiesverse.backend.auth.dto.response.AuthResponse;
 import com.tiesverse.backend.auth.dto.response.TokenResponse;
 import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.auth.entity.Otp;
 import com.tiesverse.backend.auth.entity.PasswordResetToken;
 import com.tiesverse.backend.auth.mapper.AuthMapper;
 import com.tiesverse.backend.auth.repository.AccountRepository;
 import com.tiesverse.backend.auth.repository.PasswordResetTokenRepository;
+import com.tiesverse.backend.auth.service.OtpService;
 import com.tiesverse.backend.common.enums.AuthProvider;
 import com.tiesverse.backend.common.enums.Role;
 import com.tiesverse.backend.common.exception.ConflictException;
@@ -66,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TurnstileService turnstileService;
     private final JavaMailSender mailSender;
+    private final OtpService otpService;
 
     @Value("${app.password-reset-url:${app.frontend-url}/recover-access}")
     private String passwordResetUrl;
@@ -105,16 +109,14 @@ public class AuthServiceImpl implements AuthService {
                 .timezone("Asia/Kolkata")
                 .build());
 
-        String accessToken = jwtProvider.generateToken(
-                savedAccount.getEmail(),
-                Map.of("role", savedAccount.getRole().name())
-        );
-        String refreshToken = jwtProvider.generateRefreshToken(savedAccount.getEmail());
+        otpService.sendOtp(savedAccount.getEmail(), savedAccount.getId(), "EMAIL_VERIFICATION");
 
-        savedAccount.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
-        accountRepository.save(savedAccount);
-
-        return AuthMapper.INSTANCE.toAuthResponse(savedAccount, accessToken, refreshToken, request.getFullName());
+        return AuthResponse.builder()
+                .email(savedAccount.getEmail())
+                .fullName(request.getFullName())
+                .role(savedAccount.getRole())
+                .emailVerificationRequired(true)
+                .build();
     }
 
     @Override
@@ -135,16 +137,22 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("This account has been deactivated");
         }
 
-        String accessToken = jwtProvider.generateToken(
-                account.getEmail(),
-                Map.of("role", account.getRole().name())
-        );
-        String refreshToken = jwtProvider.generateRefreshToken(account.getEmail());
+        if (!account.isEmailVerified()) {
+            otpService.sendOtp(account.getEmail(), account.getId(), "EMAIL_VERIFICATION");
+            return AuthResponse.builder()
+                    .email(account.getEmail())
+                    .role(account.getRole())
+                    .emailVerificationRequired(true)
+                    .build();
+        }
 
-        account.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
-        accountRepository.save(account);
+        otpService.sendOtp(account.getEmail(), account.getId(), "LOGIN_MFA");
 
-        return AuthMapper.INSTANCE.toAuthResponse(account, accessToken, refreshToken, null);
+        return AuthResponse.builder()
+                .email(account.getEmail())
+                .role(account.getRole())
+                .mfaRequired(true)
+                .build();
     }
 
     private boolean matchesDummyHashForTiming(String rawPassword) {
@@ -240,8 +248,55 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void verifyOtp(OtpRequest request) {
-        throw new RuntimeException("Not implemented");
+    @Transactional
+    public AuthResponse verifyOtp(OtpRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        Otp otp = otpService.verifyOtp(email, request.getOtp());
+
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("Account not found"));
+
+        if (!account.isActive()) {
+            throw new UnauthorizedException("This account has been deactivated");
+        }
+
+        if ("EMAIL_VERIFICATION".equals(otp.getType())) {
+            account.setEmailVerified(true);
+        }
+
+        String accessToken = jwtProvider.generateToken(
+                account.getEmail(),
+                Map.of("role", account.getRole().name())
+        );
+        String refreshToken = jwtProvider.generateRefreshToken(account.getEmail());
+
+        account.setRefreshToken(TokenHashUtil.sha256Hex(refreshToken));
+        accountRepository.save(account);
+
+        String fullName = userRepository.findById(account.getUserId())
+                .map(User::getFullName)
+                .orElse(account.getEmail());
+
+        return AuthMapper.INSTANCE.toAuthResponse(account, accessToken, refreshToken, fullName);
+    }
+
+    @Override
+    @Transactional
+    public void resendOtp(ResendOtpRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new UnauthorizedException("Account not found"));
+
+        if (!account.isActive()) {
+            throw new UnauthorizedException("This account has been deactivated");
+        }
+
+        String type = request.getType();
+        if (!"EMAIL_VERIFICATION".equals(type) && !"LOGIN_MFA".equals(type)) {
+            throw new IllegalArgumentException("Invalid OTP type");
+        }
+
+        otpService.sendOtp(email, account.getId(), type);
     }
 
     private void createAndSendResetToken(Account account) {

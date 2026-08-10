@@ -1,7 +1,12 @@
 package com.tiesverse.backend.security.oauth;
 
 import com.tiesverse.backend.auth.dto.response.AuthResponse;
+import com.tiesverse.backend.auth.entity.Account;
+import com.tiesverse.backend.auth.repository.AccountRepository;
+import com.tiesverse.backend.auth.service.OtpService;
 import com.tiesverse.backend.common.exception.UnauthorizedException;
+import com.tiesverse.backend.user.entity.User;
+import com.tiesverse.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +27,9 @@ public class OAuthExchangeService {
 
     private final OAuthExchangeCodeRepository codeRepository;
     private final GoogleOAuthService googleOAuthService;
+    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
+    private final OtpService otpService;
 
     @Transactional
     public String createCode(GoogleOAuthService.GoogleAuthentication authentication) {
@@ -50,8 +58,38 @@ public class OAuthExchangeService {
 
         code.setUsedAt(LocalDateTime.now());
         codeRepository.save(code);
-        AuthResponse auth = googleOAuthService.issueAuth(code.getAccountId());
-        return new OAuthExchangeResponse(auth, code.isNewUser());
+
+        Account account = accountRepository.findById(code.getAccountId())
+                .orElseThrow(() -> new UnauthorizedException("Account not found"));
+
+        if (!account.isActive()) {
+            throw new UnauthorizedException("This account has been deactivated");
+        }
+
+        String fullName = userRepository.findById(account.getUserId())
+                .map(User::getFullName)
+                .orElse(account.getEmail());
+
+        AuthResponse authResponse;
+        if (!account.isEmailVerified()) {
+            otpService.sendOtp(account.getEmail(), account.getId(), "EMAIL_VERIFICATION");
+            authResponse = AuthResponse.builder()
+                    .email(account.getEmail())
+                    .fullName(fullName)
+                    .role(account.getRole())
+                    .emailVerificationRequired(true)
+                    .build();
+        } else {
+            otpService.sendOtp(account.getEmail(), account.getId(), "LOGIN_MFA");
+            authResponse = AuthResponse.builder()
+                    .email(account.getEmail())
+                    .fullName(fullName)
+                    .role(account.getRole())
+                    .mfaRequired(true)
+                    .build();
+        }
+
+        return new OAuthExchangeResponse(authResponse, code.isNewUser());
     }
 
     private String hash(String value) {

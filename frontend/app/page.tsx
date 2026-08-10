@@ -46,11 +46,21 @@ export default function AuthScreen() {
 
     try {
       if (mode === "login") {
-        await login(email, password, turnstileToken);
-        router.push("/learning");
+        const payload = await login(email, password, turnstileToken);
+        if (payload.mfaRequired) {
+          router.push(`/otp-verify?email=${encodeURIComponent(email)}&type=LOGIN_MFA`);
+        } else if (payload.emailVerificationRequired) {
+          router.push(`/otp-verify?email=${encodeURIComponent(email)}&type=EMAIL_VERIFICATION`);
+        } else {
+          router.push("/learning");
+        }
       } else {
-        await register(email, password, fullName, turnstileToken);
-        router.push("/onboarding");
+        const payload = await register(email, password, fullName, turnstileToken);
+        if (payload.emailVerificationRequired) {
+          router.push(`/otp-verify?email=${encodeURIComponent(email)}&type=EMAIL_VERIFICATION`);
+        } else {
+          router.push("/onboarding");
+        }
       }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not reach BaseCamp backend");

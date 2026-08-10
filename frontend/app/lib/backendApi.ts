@@ -5,11 +5,13 @@ export type ApiEnvelope<T> = {
 };
 
 export type AuthPayload = {
-  accessToken: string;
-  refreshToken: string;
+  accessToken?: string | null;
+  refreshToken?: string | null;
   email: string;
-  role: string;
+  role?: string | null;
   fullName?: string | null;
+  mfaRequired?: boolean;
+  emailVerificationRequired?: boolean;
 };
 
 export type PageResponse<T> = {
@@ -724,20 +726,38 @@ export async function resetPassword(token: string, newPassword: string): Promise
   });
 }
 
-export async function verifyOtp(email: string, otp: string): Promise<void> {
-  await backendRequest<void>("/api/v1/auth/verify-otp", {
+export async function verifyOtp(email: string, otp: string): Promise<AuthPayload> {
+  const response = await backendRequest<AuthPayload>("/api/v1/auth/verify-otp", {
     method: "POST",
     body: JSON.stringify({ email, otp }),
+  });
+
+  if (!response.data) {
+    throw new Error(response.message || "OTP verification failed");
+  }
+
+  saveAuth(response.data);
+  return response.data;
+}
+
+export async function resendOtp(email: string, type: string): Promise<void> {
+  await backendRequest<void>("/api/v1/auth/resend-otp", {
+    method: "POST",
+    body: JSON.stringify({ email, type }),
   });
 }
 
 export function saveAuth(payload: AuthPayload): void {
-  localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, payload.accessToken);
-  localStorage.setItem(AUTH_STORAGE_KEYS.refreshToken, payload.refreshToken);
-  localStorage.setItem(AUTH_STORAGE_KEYS.email, payload.email);
-  localStorage.setItem(AUTH_STORAGE_KEYS.role, payload.role);
-  localStorage.setItem(AUTH_STORAGE_KEYS.fullName, payload.fullName || "");
-  setSessionCookie();
+  if (payload.accessToken && payload.refreshToken) {
+    localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, payload.accessToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.refreshToken, payload.refreshToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.email, payload.email);
+    if (payload.role) {
+      localStorage.setItem(AUTH_STORAGE_KEYS.role, payload.role);
+    }
+    localStorage.setItem(AUTH_STORAGE_KEYS.fullName, payload.fullName || "");
+    setSessionCookie();
+  }
 }
 
 export function getAuthSession() {

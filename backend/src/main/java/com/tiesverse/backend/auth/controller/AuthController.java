@@ -6,6 +6,7 @@ import com.tiesverse.backend.auth.dto.request.LoginRequest;
 import com.tiesverse.backend.auth.dto.request.OtpRequest;
 import com.tiesverse.backend.auth.dto.request.RefreshTokenRequest;
 import com.tiesverse.backend.auth.dto.request.RegisterRequest;
+import com.tiesverse.backend.auth.dto.request.ResendOtpRequest;
 import com.tiesverse.backend.auth.dto.request.ResetPasswordRequest;
 import com.tiesverse.backend.auth.dto.request.VerifyEmailRequest;
 import com.tiesverse.backend.auth.dto.response.AuthResponse;
@@ -82,8 +83,14 @@ public class AuthController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<ApiResponse<Void>> verifyOtp(@Valid @RequestBody OtpRequest request) {
-        authService.verifyOtp(request);
-        return ResponseEntity.ok(ApiResponse.success("OTP verified successfully", null));
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyOtp(@Valid @RequestBody OtpRequest request) {
+        AuthResponse response = authService.verifyOtp(request);
+        return ResponseEntity.ok(ApiResponse.success("OTP verified successfully", response));
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<ApiResponse<Void>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
+        authService.resendOtp(request);
+        return ResponseEntity.ok(ApiResponse.success("OTP resent successfully", null));
     }
 }
