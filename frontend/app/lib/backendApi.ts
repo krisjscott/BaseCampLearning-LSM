@@ -200,7 +200,12 @@ const SESSION_COOKIE = "basecamp_session";
 const AUTH_ROUTES = new Set(["/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh"]);
 
 const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
-const API_BASE_URL = configuredApiBaseUrl ? configuredApiBaseUrl.replace(/\/$/, "") : "";
+const API_BASE_URL = configuredApiBaseUrl?.replace(/\/$/, "")
+  || (process.env.NODE_ENV === "development"
+    ? "http://localhost:8081"
+    : (() => {
+        throw new Error("NEXT_PUBLIC_API_BASE_URL must be set for production builds");
+      })());
 
 /**
  * Uploaded media (lesson videos, captions) is served by the backend under
