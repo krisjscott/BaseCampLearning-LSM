@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { exchangeGoogleOAuthCode } from "../../lib/backendApi";
 
+let globalExchangeStarted = false;
+
 export default function OAuthCallbackPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const exchangeStartedRef = useRef(false);
 
   useEffect(() => {
-    // React Strict Mode intentionally runs effects twice in development.
-    // The OAuth code is single-use, so never exchange it more than once.
-    if (exchangeStartedRef.current) return;
+    if (globalExchangeStarted) return;
 
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get("error");
@@ -23,20 +22,24 @@ export default function OAuthCallbackPage() {
     }
 
     const code = params.get("code");
-
     if (!code) {
-      setError("Google sign-in did not complete. Please try again.");
+      if (!globalExchangeStarted) {
+        setError("Google sign-in did not complete. Please try again.");
+      }
       return;
     }
 
-    exchangeStartedRef.current = true;
-
-    // Remove the one-time code from the address bar as soon as it is captured.
-    window.history.replaceState({}, document.title, window.location.pathname);
+    globalExchangeStarted = true;
 
     exchangeGoogleOAuthCode(code)
-      .then((auth) => router.replace(auth.newUser ? "/onboarding" : "/learning"))
-      .catch((error) => setError(error instanceof Error ? error.message : "Google sign-in did not complete. Please try again."));
+      .then((auth) => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        router.replace(auth.newUser ? "/onboarding" : "/learning");
+      })
+      .catch((err) => {
+        globalExchangeStarted = false;
+        setError(err instanceof Error ? err.message : "Google sign-in did not complete. Please try again.");
+      });
   }, [router]);
 
   return (
