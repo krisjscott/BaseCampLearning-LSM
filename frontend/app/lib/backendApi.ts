@@ -365,9 +365,11 @@ export async function backendRequest<T>(
       const retryResponse = await fetch(`${API_BASE_URL}${path}`, { ...options, headers });
       return parseResponse<T>(retryResponse);
     }
-    clearSessionCookie();
-    clearAuthSession();
-    redirectToLogin();
+    if (token) {
+      clearSessionCookie();
+      clearAuthSession();
+      redirectToLogin();
+    }
   }
 
   return parseResponse<T>(response);
@@ -554,6 +556,7 @@ export async function getGlobalSearch(query: string, size = 12): Promise<SearchR
 }
 
 export async function getCurrentUser(): Promise<UserResponse | null> {
+  if (!getAuthSession()) return null;
   const response = await backendRequest<UserResponse>("/api/v1/users/me", {
     headers: { Accept: "application/json" },
   });
@@ -670,6 +673,7 @@ export async function verifyCertificate(certificateNumber: string): Promise<Cert
 }
 
 export async function getNotifications(): Promise<NotificationResponse[]> {
+  if (!getAuthSession()) return [];
   const response = await backendRequest<NotificationResponse[]>("/api/v1/notifications/my-notifications", {
     headers: { Accept: "application/json" },
   });
@@ -677,6 +681,7 @@ export async function getNotifications(): Promise<NotificationResponse[]> {
 }
 
 export async function getUnreadNotificationCount(): Promise<number> {
+  if (!getAuthSession()) return 0;
   const response = await backendRequest<number>("/api/v1/notifications/unread-count", {
     headers: { Accept: "application/json" },
   });
