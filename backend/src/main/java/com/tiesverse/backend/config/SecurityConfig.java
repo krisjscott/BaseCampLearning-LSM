@@ -4,7 +4,7 @@ import com.tiesverse.backend.security.jwt.JwtAuthenticationEntryPoint;
 import com.tiesverse.backend.security.jwt.JwtFilter;
 import com.tiesverse.backend.security.oauth.OAuthFailureHandler;
 import com.tiesverse.backend.security.oauth.OAuthSuccessHandler;
-import com.tiesverse.backend.security.oauth.StatefulOAuth2AuthorizationRequestRepository;
+import com.tiesverse.backend.security.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,7 +36,7 @@ public class SecurityConfig {
                                                      JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
                                                      OAuthSuccessHandler oAuthSuccessHandler,
                                                      OAuthFailureHandler oAuthFailureHandler,
-                                                     StatefulOAuth2AuthorizationRequestRepository authorizationRequestRepository) throws Exception {
+                                                     HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository) throws Exception {
         http
                         .csrf(AbstractHttpConfigurer::disable)
                         .cors(cors -> {})
