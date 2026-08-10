@@ -1,6 +1,9 @@
 server:
   port: ${SERVER_PORT:8081}
 
+app:
+  frontend-url: http://localhost:3100
+
 
 spring:
   datasource:
