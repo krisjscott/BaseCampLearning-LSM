@@ -5,15 +5,12 @@ import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { exchangeGoogleOAuthCode } from "../../lib/backendApi";
 
-let globalExchangeStarted = false;
-
 export default function OAuthCallbackPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const processedCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (globalExchangeStarted) return;
-
     const params = new URLSearchParams(window.location.search);
     const oauthError = params.get("error");
     if (oauthError) {
@@ -23,13 +20,14 @@ export default function OAuthCallbackPage() {
 
     const code = params.get("code");
     if (!code) {
-      if (!globalExchangeStarted) {
+      if (!processedCodeRef.current) {
         setError("Google sign-in did not complete. Please try again.");
       }
       return;
     }
 
-    globalExchangeStarted = true;
+    if (processedCodeRef.current === code) return;
+    processedCodeRef.current = code;
 
     exchangeGoogleOAuthCode(code)
       .then((auth) => {
@@ -37,7 +35,7 @@ export default function OAuthCallbackPage() {
         router.replace(auth.newUser ? "/onboarding" : "/learning");
       })
       .catch((err) => {
-        globalExchangeStarted = false;
+        processedCodeRef.current = null;
         setError(err instanceof Error ? err.message : "Google sign-in did not complete. Please try again.");
       });
   }, [router]);
